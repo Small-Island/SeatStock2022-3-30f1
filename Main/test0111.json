@@ -1,0 +1,26 @@
+{
+    "A1Speed": "nomal",
+    "lift": 0.5,
+    "pedal": 1,
+    "leftSlider": 2,
+    "rightSlider": 2,
+    "Person": [
+        {
+            "name": "kawaguchi",
+            "case": [
+                {
+                    "init": 0.76,
+                    "period": 0.59
+                },
+                {
+                    "init": 0.38,
+                    "period": 0.43
+                },
+                {
+                    "init": 0.76,
+                    "period": 0.61
+                }
+            ]
+        }
+    ]
+}
