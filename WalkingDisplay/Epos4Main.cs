@@ -37,8 +37,9 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
         this.rightSlider.MotorInit();
         // this.waitForSeconds = new UnityEngine.WaitForSeconds(0.1f);
         // this.coroutineActualPosition = StartCoroutine(this.getActualPositionAsync());
-        this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
-        this.th.Start();
+        // this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
+        System.Threading.Tasks.Task.Run(this.getActualPositionAsync);
+        // this.th.Start();
     }
 
     public void clearError() {

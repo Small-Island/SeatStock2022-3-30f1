@@ -19,22 +19,22 @@ public class CurrentWriteCSV : UnityEngine.MonoBehaviour {
     }
 
     private void getActualPositionAsync() {
-        int N = 500;
+        int N = 1000;
         float[,] data = new float[N,10];
         System.Threading.Thread.Sleep(5000);
         int i = 0;
         while (!this.Destroied && i < N) {
-            float lifter_actualPosition      = this.epos4Main.lifter.getPositionIs();
-            float leftPedal_actualPosition   = this.epos4Main.leftPedal.getPositionIs();
-            float leftSlider_actualPosition  = this.epos4Main.leftSlider.getPositionIs();
-            float rightPedal_actualPosition  = this.epos4Main.rightPedal.getPositionIs();
-            float rightSlider_actualPosition = this.epos4Main.rightSlider.getPositionIs();
+            float lifter_actualPosition      = this.epos4Main.lifter.actualPosition;
+            float leftPedal_actualPosition   = this.epos4Main.leftPedal.actualPosition;
+            float leftSlider_actualPosition  = this.epos4Main.leftSlider.actualPosition;
+            float rightPedal_actualPosition  = this.epos4Main.rightPedal.actualPosition;
+            float rightSlider_actualPosition = this.epos4Main.rightSlider.actualPosition;
 
-            float lifter_current      = this.epos4Main.lifter.getCurrentIs();
-            float leftPedal_current   = this.epos4Main.leftPedal.getCurrentIs();
-            float leftSlider_current  = this.epos4Main.leftSlider.getCurrentIs();
-            float rightPedal_current  = this.epos4Main.rightPedal.getCurrentIs();
-            float rightSlider_current = this.epos4Main.rightSlider.getCurrentIs();
+            float lifter_current      = this.epos4Main.lifter.current;
+            float leftPedal_current   = this.epos4Main.leftPedal.current;
+            float leftSlider_current  = this.epos4Main.leftSlider.current;
+            float rightPedal_current  = this.epos4Main.rightPedal.current;
+            float rightSlider_current = this.epos4Main.rightSlider.current;
 
             data[i,0] = lifter_actualPosition * 2f / 2000f;
             data[i,1] = leftPedal_actualPosition * 6f / 2000f;
