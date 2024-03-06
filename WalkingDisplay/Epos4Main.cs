@@ -72,11 +72,11 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
             this.rightPedal.actualPosition  = this.rightPedal.getPositionIs();
             this.rightSlider.actualPosition = this.rightSlider.getPositionIs();
 
-            this.lifter.current      = this.lifter.getCurrentIs();
-            this.leftPedal.current   = this.leftPedal.getCurrentIs();
-            this.leftSlider.current  = this.leftSlider.getCurrentIs();
-            this.rightPedal.current  = this.rightPedal.getCurrentIs();
-            this.rightSlider.current = this.rightSlider.getCurrentIs();
+            this.lifter.current      = this.lifter.getCurrentIs()/1000f;
+            this.leftPedal.current   = this.leftPedal.getCurrentIs()/1000f;
+            this.leftSlider.current  = this.leftSlider.getCurrentIs()/1000f;
+            this.rightPedal.current  = this.rightPedal.getCurrentIs()/1000f;
+            this.rightSlider.current = this.rightSlider.getCurrentIs()/1000f;
             System.Threading.Thread.Sleep(10);
         }
         return;

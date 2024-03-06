@@ -12,7 +12,7 @@ public class Epos4MainEditor : Editor
         
         EditorGUIUtility.labelWidth = 120;
 
-        int maxCurrent = 30000;
+        int maxCurrent = 20;
         int maxActualPosition = 8000;
         int maxPosition = 8000;
         int maxVel = 5000;
@@ -23,7 +23,7 @@ public class Epos4MainEditor : Editor
         }
 
         EditorGUILayout.LabelField("Lifter");
-        EditorGUILayout.Slider("Current (mA)", epos4Main.lifter.current, -maxCurrent, maxCurrent);
+        EditorGUILayout.Slider("Current (A)", epos4Main.lifter.current, -maxCurrent, maxCurrent);
         EditorGUILayout.Slider("Actual Pos (inch)", epos4Main.lifter.actualPosition, -maxActualPosition, maxActualPosition);
         if (GUILayout.Button("Set Home")) {
             epos4Main.lifter.definePosition();
@@ -51,7 +51,7 @@ public class Epos4MainEditor : Editor
         using (new EditorGUILayout.HorizontalScope()) {
             using (new EditorGUILayout.VerticalScope()) {
                 EditorGUILayout.LabelField("Left Pedal");
-                EditorGUILayout.Slider("Current (mA)", epos4Main.leftPedal.current, -maxCurrent, maxCurrent);
+                EditorGUILayout.Slider("Current (A)", epos4Main.leftPedal.current, -maxCurrent, maxCurrent);
                 EditorGUILayout.Slider("Actual Pos (inch)", epos4Main.leftPedal.actualPosition, -maxActualPosition, maxActualPosition);
                 if (GUILayout.Button("Set Home")) {
                     epos4Main.leftPedal.definePosition();
@@ -77,7 +77,7 @@ public class Epos4MainEditor : Editor
                 EditorGUILayout.Space(20);
 
                 EditorGUILayout.LabelField("Left Slider");
-                EditorGUILayout.Slider("Current (mA)", epos4Main.leftSlider.current, -maxCurrent, maxCurrent);
+                EditorGUILayout.Slider("Current (A)", epos4Main.leftSlider.current, -maxCurrent, maxCurrent);
                 EditorGUILayout.Slider("Actual Pos (inch)", epos4Main.leftSlider.actualPosition, -maxActualPosition, maxActualPosition);
                 if (GUILayout.Button("Set Home")) {
                     epos4Main.leftSlider.definePosition();
@@ -104,7 +104,7 @@ public class Epos4MainEditor : Editor
 
             using (new EditorGUILayout.VerticalScope()) {
                 EditorGUILayout.LabelField("Right Pedal");
-                EditorGUILayout.Slider("Current (mA)", epos4Main.rightPedal.current, -maxCurrent, maxCurrent);
+                EditorGUILayout.Slider("Current (A)", epos4Main.rightPedal.current, -maxCurrent, maxCurrent);
                 EditorGUILayout.Slider("Actual Pos (inch)", epos4Main.rightPedal.actualPosition, -maxActualPosition, maxActualPosition);
                 if (GUILayout.Button("Set Home")) {
                     epos4Main.rightPedal.definePosition();
@@ -130,7 +130,7 @@ public class Epos4MainEditor : Editor
                 EditorGUILayout.Space(20);
 
                 EditorGUILayout.LabelField("Right Slider");
-                EditorGUILayout.Slider("Current (mA)", epos4Main.rightSlider.current, -maxCurrent, maxCurrent);
+                EditorGUILayout.Slider("Current (A)", epos4Main.rightSlider.current, -maxCurrent, maxCurrent);
                 EditorGUILayout.Slider("Actual Pos (inch)", epos4Main.rightSlider.actualPosition, -maxActualPosition, maxActualPosition);
                 if (GUILayout.Button("Set Home")) {
                     epos4Main.rightSlider.definePosition();

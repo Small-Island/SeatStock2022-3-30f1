@@ -26,7 +26,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     [System.Serializable]
     public class Amptitude {
         // Unit mm
-        [UnityEngine.SerializeField, Range(0, 10)] public double lift = 1;
+        [UnityEngine.SerializeField, Range(0, 50)] public double lift = 1;
         [UnityEngine.SerializeField, Range(0, 50)] public double pedal = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double leftSlider = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double rightSlider = 1;

@@ -30,23 +30,17 @@ public class CurrentWriteCSV : UnityEngine.MonoBehaviour {
             float rightPedal_actualPosition  = this.epos4Main.rightPedal.actualPosition;
             float rightSlider_actualPosition = this.epos4Main.rightSlider.actualPosition;
 
-            float lifter_current      = this.epos4Main.lifter.current;
-            float leftPedal_current   = this.epos4Main.leftPedal.current;
-            float leftSlider_current  = this.epos4Main.leftSlider.current;
-            float rightPedal_current  = this.epos4Main.rightPedal.current;
-            float rightSlider_current = this.epos4Main.rightSlider.current;
-
             data[i,0] = lifter_actualPosition * 2f / 2000f;
             data[i,1] = leftPedal_actualPosition * 6f / 2000f;
             data[i,2] = leftSlider_actualPosition * 12f / 2000f;
             data[i,3] = rightPedal_actualPosition * 6f / 2000f;
             data[i,4] = rightSlider_actualPosition * 12f / 2000f;
 
-            data[i,5] = lifter_current / 1000f;
-            data[i,6] = leftPedal_current / 1000f;
-            data[i,7] = leftSlider_current / 1000f;
-            data[i,8] = rightPedal_current / 1000f;
-            data[i,9] = rightSlider_current / 1000f;
+            data[i,5] = this.epos4Main.lifter.current;
+            data[i,6] = this.epos4Main.leftPedal.current;
+            data[i,7] = this.epos4Main.leftSlider.current;
+            data[i,8] = this.epos4Main.rightPedal.current;
+            data[i,9] = this.epos4Main.rightSlider.current;
 
             i++;
 

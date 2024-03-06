@@ -28,7 +28,7 @@ public class Epos4Node {
 
     [UnityEngine.HideInInspector] public Profile profile;
     [UnityEngine.HideInInspector] public int actualPosition = 0;
-    [UnityEngine.HideInInspector] public int current = 0;
+    [UnityEngine.HideInInspector] public float current = 0;
 
     public Epos4Node(EposCmd.Net.DeviceManager arg_connector, int arg_idx, string arg_name, double arg_milliPerARotation) {
         this.name = arg_name;
