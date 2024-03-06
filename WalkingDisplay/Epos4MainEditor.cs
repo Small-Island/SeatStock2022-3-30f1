@@ -15,7 +15,7 @@ public class Epos4MainEditor : Editor
         int maxCurrent = 20;
         int maxActualPosition = 8000;
         int maxPosition = 8000;
-        int maxVel = 5000;
+        int maxVel = 4545;
         int maxAcceleration = 20000;
 
         if (GUILayout.Button("All Node Clear Error")) {
