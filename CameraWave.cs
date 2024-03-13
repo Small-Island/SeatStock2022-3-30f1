@@ -6,6 +6,7 @@ public class CameraWave : UnityEngine.MonoBehaviour
     public int scale = 10;
     [UnityEngine.SerializeField, UnityEngine.Range(1.6f, 2.0f)]
     public float height = 1.6f;
+    public float amptitude = 0.4f;
     void Start() {
     }
     void Update() {
