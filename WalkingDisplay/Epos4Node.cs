@@ -12,6 +12,13 @@ public class Epos4Node {
     private DeviceOperation deviceOperation;
     private int motorId;
     private EposCmd.Net.DeviceManager connector;
+    [UnityEngine.HideInInspector] public float targetTime = 2;
+    [UnityEngine.HideInInspector] public float targetPosMilli = 0;
+
+    [UnityEngine.HideInInspector] public bool oldUpForwardRepeatButton = false;
+    [UnityEngine.HideInInspector] public bool oldDownBackwardRepeatButton = false;
+
+    private int incrementPerRotation = 2000;
 
     private string name = "";
 
@@ -20,7 +27,14 @@ public class Epos4Node {
         failed = 0
     }
 
+    public enum WhichMode {
+        Position,
+        Velocity,
+        Homing
+    }
+
     public ConnectionStatus cs;
+    public WhichMode whichMode;
 
     [UnityEngine.HideInInspector] public string status = ""; 
 
@@ -76,12 +90,14 @@ public class Epos4Node {
     }
 
     public void ActivateProfilePositionMode() {
+        if (this.cs == ConnectionStatus.failed) return;
         try {
             this.deviceOperation.ActivateProfilePositionMode();
         }
         catch (System.Exception e) {
             this.status = e.ToString();
         }
+        this.whichMode = WhichMode.Position;
         return;
     }
 
@@ -109,25 +125,38 @@ public class Epos4Node {
         return value;
     }
 
+    public void ActivateHomingMode() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.ActivateHomingMode();
+        }
+        catch (System.Exception e)
+        {
+            this.status = e.ToString();
+        }
+        this.whichMode = WhichMode.Homing;
+    }
+
     public void definePosition() {
         if (this.cs == ConnectionStatus.failed) return;
         try {
             this.deviceOperation.DefinePosition(0);
         }
-        catch (System.Exception)
+        catch (System.Exception e)
         {
-            // this.status = e.ToString();
+            this.status = e.ToString();
         }
     }
 
     private double old_arg_pos_in = 0;
 
     public void MoveToPositionInTime(double arg_pos_milli, double arg_sec_time) {
+        if (this.cs == ConnectionStatus.failed) return;
         double arg_pos_r = arg_pos_milli / this.milliPerARotation;
-        double arg_pos_in = 2000.0 * arg_pos_r;
+        double arg_pos_in = this.incrementPerRotation * arg_pos_r;
 
         double x_in = arg_pos_in - this.old_arg_pos_in;
-        double x_r  = x_in / 2000.0;
+        double x_r  = x_in / this.incrementPerRotation;
 
         this.old_arg_pos_in = arg_pos_in;
 
@@ -143,6 +172,7 @@ public class Epos4Node {
     }
 
     public void MoveToPosition() {
+        if (this.cs == ConnectionStatus.failed) return;
         try {
             this.deviceOperation.SetPositionProfile(
                 this.profile.velocity,
@@ -152,7 +182,7 @@ public class Epos4Node {
             this.deviceOperation.MoveToPosition(
                 this.profile.position,
                 this.profile.absolute,
-                true
+                false
             );
         }
         catch (System.Exception e) {
@@ -185,6 +215,44 @@ public class Epos4Node {
         this.profile.velocity     = 120;
         this.profile.acceleration = 240;
         this.profile.deceleration = 240;
+        // this.deviceOperation.SetQuickStopState();
+    }
+
+    public void QuickStop() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+           this.deviceOperation.SetQuickStopState();
+        }
+        catch (System.Exception e) {
+            this.status = e.ToString();
+        }
+    }
+
+    public void ActivateProfileVelocityMode() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.ActivateProfileVelocityMode();
+        }
+        catch (System.Exception e) {
+            this.status = e.ToString();
+        }
+        this.whichMode = WhichMode.Velocity;
+    }
+
+    public void MoveWithVelocity(int arg_pm) {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.SetVelocityProfile(
+                this.profile.acceleration,
+                this.profile.deceleration
+            );
+            this.deviceOperation.MoveWithVelocity(
+                arg_pm * this.profile.velocity
+            );
+        }
+        catch (System.Exception e) {
+            this.status = e.ToString();
+        }
     }
 
     // Unit inc   2000 inc == 1 rotation == 2 mm
@@ -195,16 +263,22 @@ public class Epos4Node {
 
     private class DeviceOperation {
         private EposCmd.Net.Device device;
-        EposCmd.Net.DeviceCmdSet.Operation.StateMachine sm;
+        private EposCmd.Net.DeviceCmdSet.Operation.StateMachine sm;
         private EposCmd.Net.DeviceCmdSet.Operation.ProfilePositionMode ppm;
+        private EposCmd.Net.DeviceCmdSet.Operation.ProfileVelocityMode pvm;
         private EposCmd.Net.DeviceCmdSet.Operation.MotionInfo mi;
         private EposCmd.Net.DeviceCmdSet.Operation.HomingMode hm;
         public DeviceOperation(EposCmd.Net.Device arg_device) {
             this.device = arg_device;
             this.sm = this.device.Operation.StateMachine;
             this.ppm = this.device.Operation.ProfilePositionMode;
+            this.pvm = this.device.Operation.ProfileVelocityMode;
             this.mi = this.device.Operation.MotionInfo;
             this.hm = this.device.Operation.HomingMode;
+        }
+
+        public void SetQuickStopState() {
+            this.sm.SetQuickStopState();
         }
 
         public void ClearFaultAndSetEnableState() {
@@ -223,11 +297,32 @@ public class Epos4Node {
             }
         }
 
+        public void ActivateProfileVelocityMode() {
+            try {
+                this.pvm.ActivateProfileVelocityMode();
+            }
+            catch (System.Exception e) {
+                throw e;
+            }
+        }
+
         public void MoveToPosition(int arg_position, bool arg_absolute, bool arg_immediately) {
             try
             {
-                // arg_position (inch) == 360/2000 (deg)
+                // arg_position (inc) == 360/2000 (deg)
                 this.ppm.MoveToPosition(arg_position, arg_absolute, arg_immediately);
+            }
+            catch (System.Exception e) {
+                throw e;
+            }
+            return;
+        }
+
+        public void MoveWithVelocity(int arg_target_velocity) {
+            try
+            {
+                // arg_position (inc) == 360/2000 (deg)
+                this.pvm.MoveWithVelocity(arg_target_velocity);
             }
             catch (System.Exception e) {
                 throw e;
@@ -251,6 +346,33 @@ public class Epos4Node {
             catch (System.Exception e) {
                 throw e;
                 // UnityEngine.MonoBehaviour.print(e);
+            }
+        }
+
+        public void SetVelocityProfile(
+            int arg_ProfileAcceleration,
+            int arg_ProfileDeceleration
+        )
+        {
+            try {
+                this.pvm.SetVelocityProfile(
+                    (uint)System.Math.Abs(arg_ProfileAcceleration),
+                    (uint)System.Math.Abs(arg_ProfileDeceleration)
+                );
+            }
+            catch (System.Exception e) {
+                throw e;
+                // UnityEngine.MonoBehaviour.print(e);
+            }
+        }
+
+        public void ActivateHomingMode() {
+            try {
+                this.hm.ActivateHomingMode();
+            }
+            catch (System.Exception e)
+            {
+                throw e;
             }
         }
 
@@ -290,6 +412,9 @@ public class Epos4Node {
             if (this.ppm != null) {
                 this.ppm.Advanced.Dispose();
             }
+            if (this.pvm != null) {
+                this.pvm.Advanced.Dispose();
+            }
         }
     }
 
@@ -297,7 +422,7 @@ public class Epos4Node {
     public class Profile {
         public bool absolute = false;
 
-        // [UnityEngine.SerializeField, UnityEngine.Range(-2000, 2000), UnityEngine.Header("Unit inch")]
+        // [UnityEngine.SerializeField, UnityEngine.Range(-2000, 2000), UnityEngine.Header("Unit inc")]
         public int position = 0;
         // [UnityEngine.SerializeField, UnityEngine.Range(0, 120), UnityEngine.Header("Unit rpm")]
         public int velocity = 120;

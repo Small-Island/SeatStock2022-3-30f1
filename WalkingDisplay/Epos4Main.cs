@@ -37,9 +37,9 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
         this.rightSlider.MotorInit();
         // this.waitForSeconds = new UnityEngine.WaitForSeconds(0.1f);
         // this.coroutineActualPosition = StartCoroutine(this.getActualPositionAsync());
-        // this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
-        System.Threading.Tasks.Task.Run(this.getActualPositionAsync);
-        // this.th.Start();
+        this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
+        // System.Threading.Tasks.Task.Run(this.getActualPositionAsync);
+        this.th.Start();
     }
 
     public void clearError() {
@@ -66,20 +66,29 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
 
     private void getActualPositionAsync() {
         while (!this.Destroied) {
-            this.lifter.actualPosition      = this.lifter.getPositionIs();
-            this.leftPedal.actualPosition   = this.leftPedal.getPositionIs();
-            this.leftSlider.actualPosition  = this.leftSlider.getPositionIs();
-            this.rightPedal.actualPosition  = this.rightPedal.getPositionIs();
-            this.rightSlider.actualPosition = this.rightSlider.getPositionIs();
+            this.lifter.actualPosition      = (int)(-(float) this.lifter.getPositionIs()/2000f*2f);
+            this.leftPedal.actualPosition   = (int)(-(float) this.leftPedal.getPositionIs()/2000f*6f);
+            this.leftSlider.actualPosition  = (int)(-(float) this.leftSlider.getPositionIs()/2000f*12f);
+            this.rightPedal.actualPosition  = (int)(-(float) this.rightPedal.getPositionIs()/2000f*6f);
+            this.rightSlider.actualPosition = (int)(-(float) this.rightSlider.getPositionIs()/2000f*12f);
 
             this.lifter.current      = this.lifter.getCurrentIs()/1000f;
             this.leftPedal.current   = this.leftPedal.getCurrentIs()/1000f;
             this.leftSlider.current  = this.leftSlider.getCurrentIs()/1000f;
             this.rightPedal.current  = this.rightPedal.getCurrentIs()/1000f;
             this.rightSlider.current = this.rightSlider.getCurrentIs()/1000f;
-            System.Threading.Thread.Sleep(10);
+            System.Threading.Thread.Sleep(20);
         }
         return;
+    }
+
+    public void AllNodeActivateProfilePositionMode()
+    {
+        this.lifter.ActivateProfilePositionMode();
+        this.leftPedal.ActivateProfilePositionMode();
+        this.leftSlider.ActivateProfilePositionMode();
+        this.rightPedal.ActivateProfilePositionMode();
+        this.rightSlider.ActivateProfilePositionMode();
     }
 
     public void AllNodeMoveToHome()

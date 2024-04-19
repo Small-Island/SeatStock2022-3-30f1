@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
-    [UnityEngine.SerializeField, Range(0.3f, 4f)] public float period = 1.4f;
-    [UnityEngine.SerializeField, Range(1, 10)] public int forwardRate = 4;
-    [UnityEngine.SerializeField, Range(1, 10)] public int backwardRate = 6;
+    [UnityEngine.SerializeField, Range(0.3f, 4f)] public float period = 2f;
+    [UnityEngine.SerializeField, Range(1, 10)] public int forwardRate = 5;
+    [UnityEngine.SerializeField, Range(1, 10)] public int backwardRate = 5;
     // [UnityEngine.SerializeField] private UnityEngine.AddressableAssets.AssetReference csvFile;
 
     [UnityEngine.SerializeField] private Activate activate;
@@ -26,7 +26,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     [System.Serializable]
     public class Amptitude {
         // Unit mm
-        [UnityEngine.SerializeField, Range(0, 50)] public double lift = 1;
+        [UnityEngine.SerializeField, Range(0, 200)] public double lift = 1;
         [UnityEngine.SerializeField, Range(0, 50)] public double pedal = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double leftSlider = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double rightSlider = 1;
@@ -159,6 +159,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     {
         this.walkstop = false;
         this.period = this.period + incdec_time;
+        // this.epos4Main.AllNodeActivateProfilePositionMode();
         this.epos4Main.AllNodeDefinePosition();
         this.setPeriod();
         // LegThreads.start(this);
@@ -179,57 +180,57 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         }
     }
 
-    private void WalkStraightLifterThread() {
-        while (true) {
-            this.status = Status.walking;
-            this.setPeriod();
-            this.epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5);
-            System.Threading.Thread.Sleep((int)(1000*this.forwardPeriod*0.5));
-            this.epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5);
-            System.Threading.Thread.Sleep((int)(1000*this.forwardPeriod*0.5));
-            System.Threading.Thread.Sleep((int)(1000*System.Math.Abs(this.halfPeriod - this.forwardPeriod)));
-        }
-    }
+    // private void WalkStraightLifterThread() {
+    //     while (true) {
+    //         this.status = Status.walking;
+    //         this.setPeriod();
+    //         this.epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5);
+    //         System.Threading.Thread.Sleep((int)(1000f*this.forwardPeriod*0.5));
+    //         this.epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5);
+    //         System.Threading.Thread.Sleep((int)(1000f*this.forwardPeriod*0.5));
+    //         System.Threading.Thread.Sleep((int)(1000f*System.Math.Abs(this.halfPeriod - this.forwardPeriod)));
+    //     }
+    // }
 
     private async void WalkStraightLifterAsync() {
         while (!this.walkstop) {
             this.status = Status.walking;
             this.setPeriod();
             this.epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5f);
-            await System.Threading.Tasks.Task.Delay((int)(1000*this.forwardPeriod*0.5f));
+            await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod*0.5f));
             if (this.walkstop) return;
             this.epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5f);
             // await System.Threading.Tasks.Task.Delay((int)(1000*this.forwardPeriod*0.5f));
-            await System.Threading.Tasks.Task.Delay((int)(1000*System.Math.Abs(this.halfPeriod - this.forwardPeriod*0.5)));
+            await System.Threading.Tasks.Task.Delay((int)(1000f*System.Math.Abs(this.halfPeriod - this.forwardPeriod*0.5)));
         }
         return;
     }
 
-    private void WalkStraightLeftPedalThread() {
-        while (true) {
-            this.status = Status.walking;
-            this.setPeriod();
-            this.epos4Main.leftPedal.MoveToPositionInTime(this.amptitude.pedal, this.forwardPeriod*0.5);
-            // epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5);
-            System.Threading.Thread.Sleep((int)(1000*this.forwardPeriod*0.5));
-            this.epos4Main.leftPedal.MoveToPositionInTime(0, this.forwardPeriod*0.5);
-            // epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5);
-            System.Threading.Thread.Sleep((int)(1000*this.forwardPeriod*0.5));
-            System.Threading.Thread.Sleep((int)(1000*this.backwardPeriod));
+    // private void WalkStraightLeftPedalThread() {
+    //     while (true) {
+    //         this.status = Status.walking;
+    //         this.setPeriod();
+    //         this.epos4Main.leftPedal.MoveToPositionInTime(this.amptitude.pedal, this.forwardPeriod*0.5);
+    //         // epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5);
+    //         System.Threading.Thread.Sleep((int)(1000f*this.forwardPeriod*0.5));
+    //         this.epos4Main.leftPedal.MoveToPositionInTime(0, this.forwardPeriod*0.5);
+    //         // epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5);
+    //         System.Threading.Thread.Sleep((int)(1000f*this.forwardPeriod*0.5));
+    //         System.Threading.Thread.Sleep((int)(1000f*this.backwardPeriod));
 
-            // epos4Main.leftPedal.MoveToPositionInTime(this.amptitude.pedal, this.quaterPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // epos4Main.leftPedal.MoveToPositionInTime(0, this.quaterPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-        }
-    }
+    //         // epos4Main.leftPedal.MoveToPositionInTime(this.amptitude.pedal, this.quaterPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // epos4Main.leftPedal.MoveToPositionInTime(0, this.quaterPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //     }
+    // }
 
      private async void WalkStraightLeftPedalAsync() {
         while (!this.walkstop) {
             this.status = Status.walking;
-            this.setPeriod();
+            // this.setPeriod();
             this.epos4Main.leftPedal.MoveToPositionInTime(this.amptitude.pedal, this.forwardPeriod*0.5f);
             // if (this.activate.lifter)
             // epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5);
@@ -250,27 +251,27 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         return;
     }
 
-    private void WalkStraightLeftSliderThread() {
-        while (true) {
-            this.status = Status.walking;
-            this.setPeriod();
-            this.epos4Main.leftSlider.MoveToPositionInTime(-this.amptitude.leftSlider, this.forwardPeriod);
-            System.Threading.Thread.Sleep((int)(1000*this.forwardPeriod));
-            this.epos4Main.leftSlider.MoveToPositionInTime(this.amptitude.leftSlider, this.backwardPeriod);
-            System.Threading.Thread.Sleep((int)(1000*this.backwardPeriod));
-            // epos4Main.leftSlider.MoveToPositionInTime(-this.amptitude.slider, this.halfPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // epos4Main.leftSlider.MoveToPositionInTime(this.amptitude.slider, this.halfPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-        }
-    }
+    // private void WalkStraightLeftSliderThread() {
+    //     while (true) {
+    //         this.status = Status.walking;
+    //         this.setPeriod();
+    //         this.epos4Main.leftSlider.MoveToPositionInTime(-this.amptitude.leftSlider, this.forwardPeriod);
+    //         System.Threading.Thread.Sleep((int)(1000f*this.forwardPeriod));
+    //         this.epos4Main.leftSlider.MoveToPositionInTime(this.amptitude.leftSlider, this.backwardPeriod);
+    //         System.Threading.Thread.Sleep((int)(1000f*this.backwardPeriod));
+    //         // epos4Main.leftSlider.MoveToPositionInTime(-this.amptitude.slider, this.halfPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // epos4Main.leftSlider.MoveToPositionInTime(this.amptitude.slider, this.halfPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //     }
+    // }
 
     private async void WalkStraightLeftSliderAsync() {
         while (!this.walkstop) {
             this.status = Status.walking;
-            this.setPeriod();
+            // this.setPeriod();
             this.epos4Main.leftSlider.MoveToPositionInTime(-this.amptitude.leftSlider, this.forwardPeriod);
             await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod));
             if (this.walkstop) return;
@@ -286,35 +287,35 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         return;
     }
 
-    private void WalkStraightRightPedalThread() {
-        this.setPeriod();
-        System.Threading.Thread.Sleep((int)(1000*this.halfPeriod));
-        while (true) {
-            this.status = Status.walking;
-            this.setPeriod();
-            this.epos4Main.rightPedal.MoveToPositionInTime(this.amptitude.pedal, this.forwardPeriod*0.5);
-            // epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5);
-            System.Threading.Thread.Sleep((int)(1000*this.forwardPeriod*0.5));
-            this.epos4Main.rightPedal.MoveToPositionInTime(0, this.forwardPeriod*0.5);
-            // epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5);
-            System.Threading.Thread.Sleep((int)(1000*this.forwardPeriod*0.5));
-            System.Threading.Thread.Sleep((int)(1000*this.backwardPeriod));
+    // private void WalkStraightRightPedalThread() {
+    //     this.setPeriod();
+    //     System.Threading.Thread.Sleep((int)(1000*this.halfPeriod));
+    //     while (true) {
+    //         this.status = Status.walking;
+    //         this.setPeriod();
+    //         this.epos4Main.rightPedal.MoveToPositionInTime(this.amptitude.pedal, this.forwardPeriod*0.5);
+    //         // epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5);
+    //         System.Threading.Thread.Sleep((int)(1000*this.forwardPeriod*0.5));
+    //         this.epos4Main.rightPedal.MoveToPositionInTime(0, this.forwardPeriod*0.5);
+    //         // epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5);
+    //         System.Threading.Thread.Sleep((int)(1000*this.forwardPeriod*0.5));
+    //         System.Threading.Thread.Sleep((int)(1000*this.backwardPeriod));
 
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // epos4Main.rightPedal.MoveToPositionInTime(this.amptitude.pedal, this.quaterPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // epos4Main.rightPedal.MoveToPositionInTime(0, this.quaterPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-        }
-    }
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // epos4Main.rightPedal.MoveToPositionInTime(this.amptitude.pedal, this.quaterPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // epos4Main.rightPedal.MoveToPositionInTime(0, this.quaterPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //     }
+    // }
 
     private async void WalkStraightRightPedalAsync() {
         this.setPeriod();
-        await System.Threading.Tasks.Task.Delay((int)(1062f*this.halfPeriod));
+        await System.Threading.Tasks.Task.Delay((int)(1000f*this.halfPeriod));
         while (!this.walkstop) {
             this.status = Status.walking;
-            this.setPeriod();
+            // this.setPeriod();
             this.epos4Main.rightPedal.MoveToPositionInTime(this.amptitude.pedal, this.forwardPeriod*0.5f);
             // if (this.activate.lifter)
             // epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5f);
@@ -335,32 +336,32 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         return;
     }
 
-    private void WalkStraightRightSliderThread() {
-        this.setPeriod();
-        System.Threading.Thread.Sleep((int)(1000*this.halfPeriod));
-        while (true) {
-            this.status = Status.walking;
-            this.setPeriod();
-            this.epos4Main.rightSlider.MoveToPositionInTime(-this.amptitude.rightSlider, this.forwardPeriod);
-            System.Threading.Thread.Sleep((int)(1000*this.forwardPeriod));
-            this.epos4Main.rightSlider.MoveToPositionInTime(this.amptitude.rightSlider, this.backwardPeriod);
-            System.Threading.Thread.Sleep((int)(1000*this.backwardPeriod));
-            // OVRInput.SetControllerVibration(1, 1, OVRInput.Controller.RTouch);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // epos4Main.rightSlider.MoveToPositionInTime(-this.amptitude.slider, this.halfPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // epos4Main.rightSlider.MoveToPositionInTime(this.amptitude.slider, this.halfPeriod);
-        }
-    }
+    // private void WalkStraightRightSliderThread() {
+    //     this.setPeriod();
+    //     System.Threading.Thread.Sleep((int)(1000*this.halfPeriod));
+    //     while (true) {
+    //         this.status = Status.walking;
+    //         this.setPeriod();
+    //         this.epos4Main.rightSlider.MoveToPositionInTime(-this.amptitude.rightSlider, this.forwardPeriod);
+    //         System.Threading.Thread.Sleep((int)(1000*this.forwardPeriod));
+    //         this.epos4Main.rightSlider.MoveToPositionInTime(this.amptitude.rightSlider, this.backwardPeriod);
+    //         System.Threading.Thread.Sleep((int)(1000*this.backwardPeriod));
+    //         // OVRInput.SetControllerVibration(1, 1, OVRInput.Controller.RTouch);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // epos4Main.rightSlider.MoveToPositionInTime(-this.amptitude.slider, this.halfPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // epos4Main.rightSlider.MoveToPositionInTime(this.amptitude.slider, this.halfPeriod);
+    //     }
+    // }
 
     private async void WalkStraightRightSliderAsync() {
         this.setPeriod();
-        await System.Threading.Tasks.Task.Delay((int)(1062f*this.halfPeriod));
+        await System.Threading.Tasks.Task.Delay((int)(1000f*this.halfPeriod));
         while (!this.walkstop) {
             this.status = Status.walking;
-            this.setPeriod();
+            // this.setPeriod();
             this.epos4Main.rightSlider.MoveToPositionInTime(-this.amptitude.rightSlider, this.forwardPeriod);
             await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod));
             if (this.walkstop) return;
