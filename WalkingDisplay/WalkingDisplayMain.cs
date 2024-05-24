@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
-    [UnityEngine.SerializeField, Range(0.3f, 4f)] public float period = 2f;
-    [UnityEngine.SerializeField, Range(1, 10)] public int forwardRate = 5;
-    [UnityEngine.SerializeField, Range(1, 10)] public int backwardRate = 5;
+    [UnityEngine.SerializeField, Range(0.3f, 10f)] public float period = 5f;
+    [UnityEngine.HideInInspector, UnityEngine.SerializeField, Range(1, 10)] public int forwardRate = 5;
+    [UnityEngine.HideInInspector, UnityEngine.SerializeField, Range(1, 10)] public int backwardRate = 5;
     // [UnityEngine.SerializeField] private UnityEngine.AddressableAssets.AssetReference csvFile;
 
-    [UnityEngine.SerializeField] private Activate activate;
+    [UnityEngine.SerializeField] public Activate activate;
 
     [System.Serializable]
     public class Activate {
@@ -19,17 +19,18 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField] public bool rightPedal  = false;
         [UnityEngine.SerializeField] public bool rightSlider = false;
     }
-
+    [UnityEngine.Header("Unit ms"), UnityEngine.SerializeField, Range(700, 1000), UnityEngine.HideInInspector] public float oneSec = 1000f;
     [UnityEngine.Header("Unit mm")]
     [UnityEngine.SerializeField] public Amptitude amptitude;
 
     [System.Serializable]
     public class Amptitude {
         // Unit mm
-        [UnityEngine.SerializeField, Range(0, 200)] public double lift = 1;
-        [UnityEngine.SerializeField, Range(0, 50)] public double pedal = 1;
-        [UnityEngine.SerializeField, Range(0, 100)] public double leftSlider = 1;
-        [UnityEngine.SerializeField, Range(0, 100)] public double rightSlider = 1;
+        [UnityEngine.SerializeField, Range(0, 1000)] public double lift = 1;
+        [UnityEngine.SerializeField, Range(0, 68)] public double leftPedal = 1;
+        [UnityEngine.SerializeField, Range(0, 68)] public double rightPedal = 1;
+        [UnityEngine.SerializeField, Range(0, 190)] public double leftSlider = 1;
+        [UnityEngine.SerializeField, Range(0, 190)] public double rightSlider = 1;
     }
 
     [UnityEngine.SerializeField] private Epos4Main epos4Main;
@@ -155,6 +156,9 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
 
     List<System.Threading.Tasks.Task> arrayTask;
 
+    private System.Timers.Timer timer;
+    public int phase = 0;
+
     public void WalkStraight(float incdec_time)
     {
         this.walkstop = false;
@@ -163,22 +167,203 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.epos4Main.AllNodeDefinePosition();
         this.setPeriod();
         // LegThreads.start(this);
-        if (this.activate.lifter) {
-            System.Threading.Tasks.Task.Run(this.WalkStraightLifterAsync);
-        }
-        if (this.activate.leftPedal) {
-            System.Threading.Tasks.Task.Run(this.WalkStraightLeftPedalAsync);
-        }
-        if (this.activate.leftSlider) {
-            System.Threading.Tasks.Task.Run(this.WalkStraightLeftSliderAsync);
-        }
-        if (this.activate.rightPedal) {
-            System.Threading.Tasks.Task.Run(this.WalkStraightRightPedalAsync);
-        }
-        if (this.activate.rightSlider) {
-            System.Threading.Tasks.Task.Run(this.WalkStraightRightSliderAsync);
-        }
+        // if (this.activate.lifter) {
+        //     System.Threading.Tasks.Task.Run(this.WalkStraightLifterAsync);
+        // }
+        // if (this.activate.leftPedal) {
+        //     System.Threading.Tasks.Task.Run(this.WalkStraightLeftPedalAsync);
+        // }
+        // if (this.activate.leftSlider) {
+        //     System.Threading.Tasks.Task.Run(this.WalkStraightLeftSliderAsync);
+        // }
+        // if (this.activate.rightPedal) {
+        //     System.Threading.Tasks.Task.Run(this.WalkStraightRightPedalAsync);
+        // }
+        // if (this.activate.rightSlider) {
+        //     System.Threading.Tasks.Task.Run(this.WalkStraightRightSliderAsync);
+        // }
+        // System.Threading.Tasks.Task.Run(this.WalkStraightWholeAsync);
+        // System.Threading.Tasks.Task.Run(this.RepeatWalk);
+        this.timer = new System.Timers.Timer(0.25f*this.period*1000f);
+
+        this.timer.Elapsed += (sender, e) => {
+            this.setPeriod();
+            if (this.walkstop) {
+                this.timer.Stop();
+                // return;
+            }
+            else if (this.phase == 0) {
+                this.phase++;
+                this.status = Status.walking;
+                // スライダ前進 1/4*Period (秒)
+                this.epos4Main.lifter.SetPositionProfileInTime(this.amptitude.lift, this.period*0.25f, 2f, 1f/2f);
+                this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
+                
+                //次のphaseをあらかじめ SetPositionProfileInTime
+                // this.epos4Main.lifter.SetPositionProfileInTime(0, this.period*0.75f);
+            }
+            else if (this.phase == 1) {
+                this.phase++;
+                this.status = Status.walking;
+                // スライダ後退 3/4*period (秒), 左踵下降 1/4*period (秒)
+                this.epos4Main.lifter.SetPositionProfileInTime(0, this.period*0.75f, 1f/1f, 1f);
+                this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
+            }
+            else if (this.phase == 2) {
+                this.phase++;
+                this.status = Status.walking;
+
+                //次のphaseをあらかじめ SetPositionProfileInTime
+                // this.epos4Main.lifter.SetPositionProfileInTime(0, this.period*0.25f);
+            }
+            else if (this.phase == 3) {
+                this.phase++;
+                this.status = Status.walking;
+
+                //次のphaseをあらかじめ SetPositionProfileInTime
+                // this.epos4Main.lifter.SetPositionProfileInTime(this.amptitude.lift, this.period*0.25f);
+            }
+            else if (this.phase == 4) {
+                this.phase = 1;
+                this.status = Status.walking;
+                this.epos4Main.lifter.SetPositionProfileInTime(this.amptitude.lift, this.period*0.25f, 2f, 1f/2f);
+                // 椅子上昇 1/4*Period (秒), 左踵下降 1/2*period (秒), 左足前進 1/2*period (秒), 右踵上昇 1/2*period (秒), 右足後退 1/2*period (秒)
+                this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
+                this.epos4Main.leftPedal.MoveToPosition(this.activate.leftPedal);
+                this.epos4Main.leftSlider.MoveToPosition(this.activate.leftSlider);
+                this.epos4Main.rightPedal.MoveToPosition(this.activate.rightPedal);
+                this.epos4Main.rightSlider.MoveToPosition(this.activate.rightSlider);
+
+                //次のphaseをあらかじめ SetPositionProfileInTime
+                // this.epos4Main.lifter.SetPositionProfileInTime(0, this.period*0.75f);
+                // this.epos4Main.leftPedal.SetPositionProfileInTime(0, this.period*0.25f);                
+            }
+        };
+
+        // this.timer.Elapsed += (sender, e) => {
+        //     this.setPeriod();
+        //     if (this.walkstop) {
+        //         this.timer.Stop();
+        //         // return;
+        //     }
+        //     else if (this.phase == 0) {
+        //         this.phase++;
+        //         this.status = Status.walking;
+        //         // 椅子上昇 1/4*Period (秒), 左踵上昇 1/4*period (秒), 左足前進 1/2*period (秒)
+        //         this.epos4Main.lifter.MoveToPositionInTime(this.amptitude.lift, this.period*0.25f, this.activate.lifter);
+        //         // this.epos4Main.leftPedal.MoveToPositionInTime(this.amptitude.pedal, this.period*0.25f);
+        //         this.epos4Main.leftSlider.MoveToPositionInTime(this.amptitude.leftSlider, this.period*0.5f, this.activate.leftSlider);
+                
+        //         //次のphaseをあらかじめ SetPositionProfileInTime
+        //         this.epos4Main.lifter.SetPositionProfileInTime(0, this.period*0.25f);
+        //         // this.epos4Main.leftPedal.SetPositionProfileInTime(0, this.period*0.25f);
+        //     }
+        //     else if (this.phase == 1) {
+        //         this.phase++;
+        //         this.status = Status.walking;
+        //         // 椅子下降 1/4*period (秒), 左踵下降 1/4*period (秒)
+        //         this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
+        //         // this.epos4Main.leftPedal.MoveToPosition();
+
+        //         //次のphaseをあらかじめ SetPositionProfileInTime
+        //         this.epos4Main.lifter.SetPositionProfileInTime(this.amptitude.lift, this.period*0.25f);
+        //         this.epos4Main.leftPedal.SetPositionProfileInTime(this.amptitude.leftPedal, this.period*0.5f);
+        //         this.epos4Main.leftSlider.SetPositionProfileInTime(-this.amptitude.leftSlider, this.period*0.5);
+        //         this.epos4Main.rightPedal.SetPositionProfileInTime(0, this.period*0.5f);
+        //         this.epos4Main.rightSlider.SetPositionProfileInTime(this.amptitude.rightSlider, this.period*0.5);
+        //     }
+        //     else if (this.phase == 2) {
+        //         this.phase++;
+        //         this.status = Status.walking;
+        //         // 椅子上昇 1/4*Period (秒), 左踵上昇 1/2*period (秒), 左足後退 1/2*period (秒), 右踵下降 1/4*period (秒), 右足前進 1/2*period (秒)
+        //         this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
+        //         this.epos4Main.leftPedal.MoveToPosition(this.activate.leftPedal);
+        //         this.epos4Main.leftSlider.MoveToPosition(this.activate.leftSlider);
+        //         this.epos4Main.rightPedal.MoveToPosition(this.activate.rightPedal);
+        //         this.epos4Main.rightSlider.MoveToPosition(this.activate.rightSlider);
+
+        //         //次のphaseをあらかじめ SetPositionProfileInTime
+        //         this.epos4Main.lifter.SetPositionProfileInTime(0, this.period*0.25f);
+        //         this.epos4Main.rightPedal.SetPositionProfileInTime(0, this.period*0.5);
+        //     }
+        //     else if (this.phase == 3) {
+        //         this.phase++;
+        //         this.status = Status.walking;
+        //         // 椅子下降 1/4*period (秒), 右踵下降 1/4*period (秒)
+        //         this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
+        //         // this.epos4Main.rightPedal.MoveToPosition();
+
+        //         //次のphaseをあらかじめ SetPositionProfileInTime
+        //         this.epos4Main.lifter.SetPositionProfileInTime(this.amptitude.lift, this.period*0.25f);
+        //         this.epos4Main.leftPedal.SetPositionProfileInTime(0, this.period*0.5f);
+        //         this.epos4Main.leftSlider.SetPositionProfileInTime(this.amptitude.leftSlider, this.period*0.5);
+        //         this.epos4Main.rightPedal.SetPositionProfileInTime(this.amptitude.rightPedal, this.period*0.5);
+        //         this.epos4Main.rightSlider.SetPositionProfileInTime(-this.amptitude.rightSlider, this.period*0.5);
+        //     }
+        //     else if (this.phase == 4) {
+        //         this.phase = 1;
+        //         this.status = Status.walking;
+        //         // 椅子上昇 1/4*Period (秒), 左踵下降 1/2*period (秒), 左足前進 1/2*period (秒), 右踵上昇 1/2*period (秒), 右足後退 1/2*period (秒)
+        //         this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
+        //         this.epos4Main.leftPedal.MoveToPosition(this.activate.leftPedal);
+        //         this.epos4Main.leftSlider.MoveToPosition(this.activate.leftSlider);
+        //         this.epos4Main.rightPedal.MoveToPosition(this.activate.rightPedal);
+        //         this.epos4Main.rightSlider.MoveToPosition(this.activate.rightSlider);
+
+        //         //次のphaseをあらかじめ SetPositionProfileInTime
+        //         this.epos4Main.lifter.SetPositionProfileInTime(0, this.period*0.25f);
+        //         // this.epos4Main.leftPedal.SetPositionProfileInTime(0, this.period*0.25f);                
+        //     }
+        // };
+
+        this.phase = 0;
+        this.timer.Start();
     }
+
+    // private async void WalkStraightWholeAsync() {
+    //     // this.timer.Start();
+    //     while (!this.walkstop) {
+    //         this.setPeriod();
+    //         // 椅子上昇 1/4*Period (秒), 左踵上昇 1/4*period (秒), 左足前進 1/2*period (秒)
+    //         this.status = Status.walking;
+    //         this.epos4Main.lifter.MoveToPositionInTime(this.amptitude.lift, this.period*0.25f);
+    //         this.epos4Main.leftPedal.MoveToPositionInTime(this.amptitude.pedal, this.period*0.25f);
+    //         this.epos4Main.leftSlider.MoveToPositionInTime(this.amptitude.leftSlider, this.period*0.5);
+    //         // 1/4*period (秒) 待機
+    //         await System.Threading.Tasks.Task.Delay((int)(this.oneSec*this.period*0.25f));
+    //         if (this.walkstop) {
+    //             return;
+    //         }
+            
+    //         // 椅子下降 1/4*period (秒), 左踵下降 1/4*period (秒)
+    //         this.epos4Main.lifter.MoveToPositionInTime(0, this.period*0.25f);
+    //         this.epos4Main.leftPedal.MoveToPositionInTime(0, this.period*0.25);
+    //         // 1/4*period (秒) 待機
+    //         await System.Threading.Tasks.Task.Delay((int)(this.oneSec*this.period*0.25f));
+    //         if (this.walkstop) {
+    //             return;
+    //         }
+            
+    //         // 椅子上昇 1/4*Period (秒), 左足後退 1/2*period (秒), 右踵上昇 1/4*period (秒), 右足前進 1/2*period (秒)
+    //         this.epos4Main.lifter.MoveToPositionInTime(this.amptitude.lift, this.period*0.25f);
+    //         this.epos4Main.leftSlider.MoveToPositionInTime(-this.amptitude.leftSlider, this.period*0.5);
+    //         this.epos4Main.rightPedal.MoveToPositionInTime(this.amptitude.pedal, this.period*0.25f);
+    //         this.epos4Main.rightSlider.MoveToPositionInTime(this.amptitude.rightSlider, this.period*0.5);
+    //         // 1/4*period (秒) 待機
+    //         await System.Threading.Tasks.Task.Delay((int)(this.oneSec*this.period*0.25f));
+    //         if (this.walkstop) return;
+            
+    //         // 椅子下降 1/4*period (秒), 右踵下降 1/4*period (秒)
+    //         this.epos4Main.lifter.MoveToPositionInTime(0, this.period*0.25f);
+    //         this.epos4Main.rightPedal.MoveToPositionInTime(0, this.period*0.25);
+    //         // 1/4*period (秒) 待機
+    //         await System.Threading.Tasks.Task.Delay((int)(this.oneSec*this.period*0.25f));
+    //         if (this.walkstop) return;
+
+
+    //         this.epos4Main.rightSlider.MoveToPositionInTime(-this.amptitude.rightSlider, this.period*0.5);
+    //     }
+    // }
 
     // private void WalkStraightLifterThread() {
     //     while (true) {
@@ -192,19 +377,19 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     //     }
     // }
 
-    private async void WalkStraightLifterAsync() {
-        while (!this.walkstop) {
-            this.status = Status.walking;
-            this.setPeriod();
-            this.epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5f);
-            await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod*0.5f));
-            if (this.walkstop) return;
-            this.epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5f);
-            // await System.Threading.Tasks.Task.Delay((int)(1000*this.forwardPeriod*0.5f));
-            await System.Threading.Tasks.Task.Delay((int)(1000f*System.Math.Abs(this.halfPeriod - this.forwardPeriod*0.5)));
-        }
-        return;
-    }
+    // private async void WalkStraightLifterAsync() {
+    //     while (!this.walkstop) {
+    //         this.status = Status.walking;
+    //         this.setPeriod();
+    //         this.epos4Main.lifter.MoveToPositionInTime(this.amptitude.lift, this.forwardPeriod*0.5f);
+    //         await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod*0.5f));
+    //         if (this.walkstop) return;
+    //         this.epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5f);
+    //         // await System.Threading.Tasks.Task.Delay((int)(1000*this.forwardPeriod*0.5f));
+    //         await System.Threading.Tasks.Task.Delay((int)(1000f*System.Math.Abs(this.halfPeriod - this.forwardPeriod*0.5)));
+    //     }
+    //     return;
+    // }
 
     // private void WalkStraightLeftPedalThread() {
     //     while (true) {
@@ -227,29 +412,29 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     //     }
     // }
 
-     private async void WalkStraightLeftPedalAsync() {
-        while (!this.walkstop) {
-            this.status = Status.walking;
-            // this.setPeriod();
-            this.epos4Main.leftPedal.MoveToPositionInTime(this.amptitude.pedal, this.forwardPeriod*0.5f);
-            // if (this.activate.lifter)
-            // epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5);
-            await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod*0.5f));
-            if (this.walkstop) return;
-            this.epos4Main.leftPedal.MoveToPositionInTime(0, this.forwardPeriod*0.5);
-            // if (this.activate.lifter)
-            // epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5);
-            await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod*0.5f + 1000f*this.backwardPeriod));
+    //  private async void WalkStraightLeftPedalAsync() {
+    //     while (!this.walkstop) {
+    //         this.status = Status.walking;
+    //         // this.setPeriod();
+    //         this.epos4Main.leftPedal.MoveToPositionInTime(this.amptitude.pedal, this.forwardPeriod*0.5f);
+    //         // if (this.activate.lifter)
+    //         // epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5);
+    //         await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod*0.5f));
+    //         if (this.walkstop) return;
+    //         this.epos4Main.leftPedal.MoveToPositionInTime(0, this.forwardPeriod*0.5);
+    //         // if (this.activate.lifter)
+    //         // epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5);
+    //         await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod*0.5f + 1000f*this.backwardPeriod));
 
-            // epos4Main.leftPedal.MoveToPositionInTime(this.amptitude.pedal, this.quaterPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // epos4Main.leftPedal.MoveToPositionInTime(0, this.quaterPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-        }
-        return;
-    }
+    //         // epos4Main.leftPedal.MoveToPositionInTime(this.amptitude.pedal, this.quaterPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // epos4Main.leftPedal.MoveToPositionInTime(0, this.quaterPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //     }
+    //     return;
+    // }
 
     // private void WalkStraightLeftSliderThread() {
     //     while (true) {
@@ -268,24 +453,24 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     //     }
     // }
 
-    private async void WalkStraightLeftSliderAsync() {
-        while (!this.walkstop) {
-            this.status = Status.walking;
-            // this.setPeriod();
-            this.epos4Main.leftSlider.MoveToPositionInTime(-this.amptitude.leftSlider, this.forwardPeriod);
-            await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod));
-            if (this.walkstop) return;
-            this.epos4Main.leftSlider.MoveToPositionInTime(this.amptitude.leftSlider, this.backwardPeriod);
-            await System.Threading.Tasks.Task.Delay((int)(1000f*this.backwardPeriod));
-            // epos4Main.leftSlider.MoveToPositionInTime(-this.amptitude.slider, this.halfPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // epos4Main.leftSlider.MoveToPositionInTime(this.amptitude.slider, this.halfPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-        }
-        return;
-    }
+    // private async void WalkStraightLeftSliderAsync() {
+    //     while (!this.walkstop) {
+    //         this.status = Status.walking;
+    //         // this.setPeriod();
+    //         this.epos4Main.leftSlider.MoveToPositionInTime(this.amptitude.leftSlider, this.forwardPeriod);
+    //         await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod));
+    //         if (this.walkstop) return;
+    //         this.epos4Main.leftSlider.MoveToPositionInTime(-this.amptitude.leftSlider, this.backwardPeriod);
+    //         await System.Threading.Tasks.Task.Delay((int)(1000f*this.backwardPeriod));
+    //         // epos4Main.leftSlider.MoveToPositionInTime(-this.amptitude.slider, this.halfPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // epos4Main.leftSlider.MoveToPositionInTime(this.amptitude.slider, this.halfPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //     }
+    //     return;
+    // }
 
     // private void WalkStraightRightPedalThread() {
     //     this.setPeriod();
@@ -310,31 +495,31 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     //     }
     // }
 
-    private async void WalkStraightRightPedalAsync() {
-        this.setPeriod();
-        await System.Threading.Tasks.Task.Delay((int)(1000f*this.halfPeriod));
-        while (!this.walkstop) {
-            this.status = Status.walking;
-            // this.setPeriod();
-            this.epos4Main.rightPedal.MoveToPositionInTime(this.amptitude.pedal, this.forwardPeriod*0.5f);
-            // if (this.activate.lifter)
-            // epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5f);
-            await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod*0.5f));
-            if (this.walkstop) return;
-            this.epos4Main.rightPedal.MoveToPositionInTime(0, this.forwardPeriod*0.5f);
-            // if (this.activate.lifter)
-            // epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5f);
-            await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod*0.5f + 1000f*this.backwardPeriod));
+    // private async void WalkStraightRightPedalAsync() {
+    //     this.setPeriod();
+    //     await System.Threading.Tasks.Task.Delay((int)(1000f*this.halfPeriod));
+    //     while (!this.walkstop) {
+    //         this.status = Status.walking;
+    //         // this.setPeriod();
+    //         this.epos4Main.rightPedal.MoveToPositionInTime(this.amptitude.pedal, this.forwardPeriod*0.5f);
+    //         // if (this.activate.lifter)
+    //         // epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.forwardPeriod*0.5f);
+    //         await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod*0.5f));
+    //         if (this.walkstop) return;
+    //         this.epos4Main.rightPedal.MoveToPositionInTime(0, this.forwardPeriod*0.5f);
+    //         // if (this.activate.lifter)
+    //         // epos4Main.lifter.MoveToPositionInTime(0, this.forwardPeriod*0.5f);
+    //         await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod*0.5f + 1000f*this.backwardPeriod));
 
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // epos4Main.rightPedal.MoveToPositionInTime(this.amptitude.pedal, this.quaterPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // epos4Main.rightPedal.MoveToPositionInTime(0, this.quaterPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-        }
-        return;
-    }
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // epos4Main.rightPedal.MoveToPositionInTime(this.amptitude.pedal, this.quaterPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // epos4Main.rightPedal.MoveToPositionInTime(0, this.quaterPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //     }
+    //     return;
+    // }
 
     // private void WalkStraightRightSliderThread() {
     //     this.setPeriod();
@@ -356,27 +541,27 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     //     }
     // }
 
-    private async void WalkStraightRightSliderAsync() {
-        this.setPeriod();
-        await System.Threading.Tasks.Task.Delay((int)(1000f*this.halfPeriod));
-        while (!this.walkstop) {
-            this.status = Status.walking;
-            // this.setPeriod();
-            this.epos4Main.rightSlider.MoveToPositionInTime(-this.amptitude.rightSlider, this.forwardPeriod);
-            await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod));
-            if (this.walkstop) return;
-            this.epos4Main.rightSlider.MoveToPositionInTime(this.amptitude.rightSlider, this.backwardPeriod);
-            await System.Threading.Tasks.Task.Delay((int)(1000f*this.backwardPeriod));
-            // OVRInput.SetControllerVibration(1, 1, OVRInput.Controller.RTouch);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // epos4Main.rightSlider.MoveToPositionInTime(-this.amptitude.slider, this.halfPeriod);
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
-            // epos4Main.rightSlider.MoveToPositionInTime(this.amptitude.slider, this.halfPeriod);
-        }
-        return;
-    }
+    // private async void WalkStraightRightSliderAsync() {
+    //     this.setPeriod();
+    //     await System.Threading.Tasks.Task.Delay((int)(1000f*this.halfPeriod));
+    //     while (!this.walkstop) {
+    //         this.status = Status.walking;
+    //         // this.setPeriod();
+    //         this.epos4Main.rightSlider.MoveToPositionInTime(this.amptitude.rightSlider, this.forwardPeriod);
+    //         await System.Threading.Tasks.Task.Delay((int)(1000f*this.forwardPeriod));
+    //         if (this.walkstop) return;
+    //         this.epos4Main.rightSlider.MoveToPositionInTime(-this.amptitude.rightSlider, this.backwardPeriod);
+    //         await System.Threading.Tasks.Task.Delay((int)(1000f*this.backwardPeriod));
+    //         // OVRInput.SetControllerVibration(1, 1, OVRInput.Controller.RTouch);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // epos4Main.rightSlider.MoveToPositionInTime(-this.amptitude.slider, this.halfPeriod);
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // System.Threading.Thread.Sleep((int)(1000*this.quaterPeriod));
+    //         // epos4Main.rightSlider.MoveToPositionInTime(this.amptitude.slider, this.halfPeriod);
+    //     }
+    //     return;
+    // }
 
     public void WalkStop()
     {

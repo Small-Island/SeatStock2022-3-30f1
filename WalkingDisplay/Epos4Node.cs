@@ -10,7 +10,7 @@
 public class Epos4Node {
     private EposCmd.Net.Device device;
     private DeviceOperation deviceOperation;
-    private int motorId;
+    private ushort nodeId;
     private EposCmd.Net.DeviceManager connector;
     [UnityEngine.HideInInspector] public float targetTime = 2;
     [UnityEngine.HideInInspector] public float targetPosMilli = 0;
@@ -18,7 +18,8 @@ public class Epos4Node {
     [UnityEngine.HideInInspector] public bool oldUpForwardRepeatButton = false;
     [UnityEngine.HideInInspector] public bool oldDownBackwardRepeatButton = false;
 
-    private int incrementPerRotation = 2000;
+    private double direction = 1;
+    private float incPerRotation = 2000;
 
     private string name = "";
 
@@ -33,22 +34,36 @@ public class Epos4Node {
         Homing
     }
 
-    public ConnectionStatus cs;
-    public WhichMode whichMode;
+    [UnityEngine.SerializeField, ReadOnly] public ConnectionStatus cs;
+    [UnityEngine.SerializeField, ReadOnly] public WhichMode whichMode;
+    [UnityEngine.SerializeField, ReadOnly] public double milliPerRotation = 0;
+    [UnityEngine.SerializeField, UnityEngine.Range(0.1f, 0.9f)] public double maxVelocityTimeRate = 0.5f;
+    [UnityEngine.SerializeField, UnityEngine.Range(0.1f, 2f)] public double speedRate = 1f;
 
     [UnityEngine.HideInInspector] public string status = ""; 
-
-    [UnityEngine.SerializeField] public double milliPerARotation = 0;
-
     [UnityEngine.HideInInspector] public Profile profile;
     [UnityEngine.HideInInspector] public int actualPosition = 0;
     [UnityEngine.HideInInspector] public float current = 0;
 
-    public Epos4Node(EposCmd.Net.DeviceManager arg_connector, int arg_idx, string arg_name, double arg_milliPerARotation) {
+    public int keyHandle = 0;
+
+    public Epos4Node(
+        EposCmd.Net.DeviceManager arg_connector, 
+        int arg_idx,
+        string arg_name,
+        double arg_milliPerRotation,
+        double arg_direction,
+        double arg_maxVelocityTimeRate,
+        double arg_speedRate
+    )
+    {
         this.name = arg_name;
-        this.motorId = arg_idx;
+        this.nodeId = (ushort)arg_idx;
         this.connector = arg_connector;
-        this.milliPerARotation = arg_milliPerARotation;
+        this.milliPerRotation = arg_milliPerRotation;
+        this.direction = arg_direction;
+        this.maxVelocityTimeRate = arg_maxVelocityTimeRate;
+        this.speedRate = arg_speedRate;
     }
 
     public void MotorInit()
@@ -61,9 +76,17 @@ public class Epos4Node {
         //     this.status = "Connection failed";
         //     return;
         // }
+
+        uint errorCode = 0;
+        // this.keyHandle = EposCmd.Net.VcsWrapper.Device.VcsOpenDevice("EPOS4", "MAXON SERIAL V2", "USB", "USB0", ref errorCode);
+        
+        // EposCmd.Net.VcsWrapper.Device.VcsGetKeyHandle("EPOS4", "MAXON SERIAL V2", "USB", "USB0", ref this.keyHandle, ref errorCode);
+
+
+
         this.status = "";
         try {
-            this.device = this.connector.CreateDevice((ushort)this.motorId);
+            this.device = this.connector.CreateDevice((ushort)this.nodeId);
         }
         catch (EposCmd.Net.DeviceException) {
             this.status = "Connection failed";
@@ -76,6 +99,9 @@ public class Epos4Node {
             return;
         }
         this.deviceOperation = new DeviceOperation(this.device);
+
+        this.getError();
+
         try {
             this.deviceOperation.ClearFaultAndSetEnableState();
         }
@@ -86,6 +112,7 @@ public class Epos4Node {
         }
         this.ActivateProfilePositionMode();
         this.cs = ConnectionStatus.success;
+        EposCmd.Net.VcsWrapper.Device.VcsGetKeyHandle("EPOS4", "MAXON SERIAL V2", "USB", "USB0", ref this.keyHandle, ref errorCode);
         return;
     }
 
@@ -125,6 +152,26 @@ public class Epos4Node {
         return value;
     }
 
+    public void getError() {
+        if (this.cs == ConnectionStatus.failed) return;
+        // uint ecode = 2000;
+        // try {
+        //     ecode = this.deviceOperation.getLastError();
+        //     this.status = ecode.ToString();
+        // }
+        // catch (System.Exception e) {
+        //     this.status = e.ToString();
+        // }
+        // EposCmd.Net.VcsWrapper.Device.Init();
+        int isInFault = 0;
+        uint errorCode = 0;
+        EposCmd.Net.VcsWrapper.Device.VcsGetFaultState(this.keyHandle, this.nodeId, ref isInFault, ref errorCode);
+
+        this.status = $"Falt State: {isInFault} Error Code: {errorCode:X}";
+
+        return;
+    }
+
     public void ActivateHomingMode() {
         if (this.cs == ConnectionStatus.failed) return;
         try {
@@ -139,40 +186,11 @@ public class Epos4Node {
 
     public void definePosition() {
         if (this.cs == ConnectionStatus.failed) return;
-        try {
-            this.deviceOperation.DefinePosition(0);
-        }
-        catch (System.Exception e)
-        {
-            this.status = e.ToString();
-        }
-    }
-
-    private double old_arg_pos_in = 0;
-
-    public void MoveToPositionInTime(double arg_pos_milli, double arg_sec_time) {
-        if (this.cs == ConnectionStatus.failed) return;
-        double arg_pos_r = arg_pos_milli / this.milliPerARotation;
-        double arg_pos_in = this.incrementPerRotation * arg_pos_r;
-
-        double x_in = arg_pos_in - this.old_arg_pos_in;
-        double x_r  = x_in / this.incrementPerRotation;
-
-        this.old_arg_pos_in = arg_pos_in;
-
-        double c = 1.0;
-
-        this.profile.absolute     = true;
-        this.profile.position     = (int)arg_pos_in;
-        this.profile.velocity     = (int)System.Math.Abs(c * 2.0 * x_r / arg_sec_time * 60.0);
-        this.profile.acceleration = (int)System.Math.Abs(c * 4.0 * x_r / arg_sec_time / arg_sec_time * 60.0);
-        this.profile.deceleration = (int)System.Math.Abs(c * 4.0 * x_r / arg_sec_time / arg_sec_time * 60.0);
-
-        this.MoveToPosition();
-    }
-
-    public void MoveToPosition() {
-        if (this.cs == ConnectionStatus.failed) return;
+        this.profile.absolute     = false;
+        this.profile.position     = 0;
+        this.profile.velocity     = 120;
+        this.profile.acceleration = 240;
+        this.profile.deceleration = 240;
         try {
             this.deviceOperation.SetPositionProfile(
                 this.profile.velocity,
@@ -182,7 +200,106 @@ public class Epos4Node {
             this.deviceOperation.MoveToPosition(
                 this.profile.position,
                 this.profile.absolute,
-                false
+                true
+            );
+        }
+        catch (System.Exception e) {
+            this.status = e.ToString();
+        }
+        try {
+            this.deviceOperation.DefinePosition(0);
+        }
+        catch (System.Exception e)
+        {
+            this.status = e.ToString();
+        }
+    }
+
+    private double old_arg_pos_inc = 0;
+
+    public void MoveToPositionInTime(double arg_pos_milli, double arg_sec_time, bool arg_activate) {
+        if (this.cs == ConnectionStatus.failed) return;
+        if (this.status != "") return;
+        double arg_pos_r = arg_pos_milli / this.milliPerRotation;
+        double arg_pos_inc = this.incPerRotation * arg_pos_r;
+
+        double x_in = arg_pos_inc - this.old_arg_pos_inc;
+        double x_r  = x_in / this.incPerRotation;
+
+        if (System.Math.Abs(x_r) < 0.0001) {
+            return;
+        }
+
+        this.old_arg_pos_inc = arg_pos_inc;
+
+        // this.profile.absolute     = true;
+        // this.profile.position     = (int)arg_pos_milli;
+        // this.profile.velocity     = (int)System.Math.Abs(c * 2.0 * x_r / arg_sec_time * 60.0);
+        // this.profile.acceleration = (int)System.Math.Abs(c * 4.0 * x_r / arg_sec_time / arg_sec_time * 60.0);
+        // this.profile.deceleration = (int)System.Math.Abs(c * 4.0 * x_r / arg_sec_time / arg_sec_time * 60.0);
+
+        this.profile.absolute     = true;
+        this.profile.position     = (int)arg_pos_milli;
+        this.profile.velocity     = (int)System.Math.Abs(this.speedRate * 2.0 * x_r / (arg_sec_time*(1 + this.maxVelocityTimeRate)) * 60.0);
+        this.profile.acceleration = (int)System.Math.Abs(this.speedRate * 4.0 * x_r / (arg_sec_time * arg_sec_time *(1 - this.maxVelocityTimeRate*this.maxVelocityTimeRate)) * 60.0);
+        this.profile.deceleration = (int)System.Math.Abs(this.speedRate * 4.0 * x_r / (arg_sec_time * arg_sec_time *(1 - this.maxVelocityTimeRate*this.maxVelocityTimeRate)) * 60.0);
+
+        this.SetPositionProfile();
+        this.MoveToPosition(arg_activate);
+    }
+
+    public void SetPositionProfileInTime(double arg_pos_milli, double arg_sec_time, double arg_arate, double arg_drate) {
+        // if (this.cs == ConnectionStatus.failed) return;
+        // if (this.status != "") return;
+        double arg_pos_r = arg_pos_milli / this.milliPerRotation;
+        double arg_pos_inc = this.incPerRotation * arg_pos_r;
+
+        double x_in = arg_pos_inc - this.old_arg_pos_inc;
+        double x_r  = x_in / this.incPerRotation;
+
+        if (System.Math.Abs(x_r) < 0.0001) {
+            return;
+        }
+
+        this.old_arg_pos_inc = arg_pos_inc;
+
+        // this.profile.absolute     = true;
+        // this.profile.position     = (int)arg_pos_milli;
+        // this.profile.velocity     = (int)System.Math.Abs(c * 2.0 * x_r / arg_sec_time * 60.0);
+        // this.profile.acceleration = (int)System.Math.Abs(c * 4.0 * x_r / arg_sec_time / arg_sec_time * 60.0);
+        // this.profile.deceleration = (int)System.Math.Abs(c * 4.0 * x_r / arg_sec_time / arg_sec_time * 60.0);
+
+        this.profile.absolute     = true;
+        this.profile.position     = (int)arg_pos_milli;
+        this.profile.velocity     = (int)System.Math.Abs(this.speedRate * 2.0 * x_r / (arg_sec_time*(1 + this.maxVelocityTimeRate)) * 60.0);
+        this.profile.acceleration = (int)System.Math.Abs(arg_arate*this.speedRate * 4.0 * x_r / (arg_sec_time * arg_sec_time *(1 - this.maxVelocityTimeRate*this.maxVelocityTimeRate)) * 60.0);
+        this.profile.deceleration = (int)System.Math.Abs(arg_drate*this.speedRate * 4.0 * x_r / (arg_sec_time * arg_sec_time *(1 - this.maxVelocityTimeRate*this.maxVelocityTimeRate)) * 60.0);
+
+        this.SetPositionProfile();
+    }
+
+    public void SetPositionProfile() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.SetPositionProfile(
+                this.profile.velocity,
+                this.profile.acceleration,
+                this.profile.deceleration
+            );
+        }
+        catch (System.Exception e) {
+            this.status = e.ToString();
+        }
+    }
+
+    public void MoveToPosition(bool arg_activate) {
+        if (arg_activate == false) return;
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.MoveToPosition(
+                (int)(this.direction * this.profile.position/this.milliPerRotation*this.incPerRotation),
+                this.profile.absolute,
+                true
             );
         }
         catch (System.Exception e) {
@@ -192,7 +309,7 @@ public class Epos4Node {
 
     public void MoveToHome() {
         if (this.cs == ConnectionStatus.failed) return;
-        this.old_arg_pos_in = 0;
+        this.old_arg_pos_inc = 0;
         this.profile.position = 0;
         this.profile.absolute = true;
         try {
@@ -247,7 +364,7 @@ public class Epos4Node {
                 this.profile.deceleration
             );
             this.deviceOperation.MoveWithVelocity(
-                arg_pm * this.profile.velocity
+                (int) (this.direction * arg_pm * this.profile.velocity)
             );
         }
         catch (System.Exception e) {
@@ -260,6 +377,10 @@ public class Epos4Node {
     {
         this.deviceOperation.AdvancedDispose();
     }
+
+    // private class VcsWrapper {
+    //     EposCmd.Net.VcsWrapper.Device.VcsGetErrorInfo();
+    // }
 
     private class DeviceOperation {
         private EposCmd.Net.Device device;
@@ -406,6 +527,13 @@ public class Epos4Node {
                 // UnityEngine.MonoBehaviour.print(e);
             }
             return value;
+        }
+
+        public uint getLastError() {
+            if (this.sm.GetFaultState()) {
+                return this.sm.LastError;
+            }
+            return 1000;
         }
 
         public void AdvancedDispose() {

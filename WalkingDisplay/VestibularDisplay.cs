@@ -39,11 +39,11 @@ public class VestibularDisplay : UnityEngine.MonoBehaviour {
     private async void WalkStraightLifterAsync() {
         while (!this.waveStopped) {
             this.status = Status.waving;
-            this.epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.period);
+            this.epos4Main.lifter.MoveToPositionInTime(-this.amptitude.lift, this.period, true);
             await System.Threading.Tasks.Task.Run(this.cameraWave.UpAsync);
             await System.Threading.Tasks.Task.Delay((int)(1000*this.period));
             if (this.waveStopped) return;
-            this.epos4Main.lifter.MoveToPositionInTime(0, this.period);
+            this.epos4Main.lifter.MoveToPositionInTime(0, this.period, true);
             await System.Threading.Tasks.Task.Run(this.cameraWave.downAsync);
             // await System.Threading.Tasks.Task.Delay((int)(1000*this.forwardPeriod*0.5f));
             await System.Threading.Tasks.Task.Delay((int)(1000*this.period));

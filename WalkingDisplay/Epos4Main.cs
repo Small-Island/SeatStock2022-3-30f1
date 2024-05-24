@@ -18,46 +18,32 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
 
     private bool Destroied = false;
 
+    private EposCmd.Net.DeviceManager connector = null;
+
     void Start() {
-        EposCmd.Net.DeviceManager connector = null;
-        try {
-            connector = new EposCmd.Net.DeviceManager("EPOS4", "MAXON SERIAL V2", "USB", "USB0");
-        }
-        catch (EposCmd.Net.DeviceException) {
-        }
-        this.lifter      = new Epos4Node(connector, 1, "Lifter",       2);
-        this.lifter.MotorInit();
-        this.leftPedal   = new Epos4Node(connector, 2, "Left Pedal",   6);
-        this.leftPedal.MotorInit();
-        this.leftSlider  = new Epos4Node(connector, 3, "Left Slider",  12);
-        this.leftSlider.MotorInit();
-        this.rightPedal  = new Epos4Node(connector, 4, "Right Pedal",  6);
-        this.rightPedal.MotorInit();
-        this.rightSlider = new Epos4Node(connector, 5, "Right Slider", 12);
-        this.rightSlider.MotorInit();
+        this.clearError();
         // this.waitForSeconds = new UnityEngine.WaitForSeconds(0.1f);
         // this.coroutineActualPosition = StartCoroutine(this.getActualPositionAsync());
         this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
-        // System.Threading.Tasks.Task.Run(this.getActualPositionAsync);
         this.th.Start();
     }
 
     public void clearError() {
-        EposCmd.Net.DeviceManager connector = null;
         try {
-            connector = new EposCmd.Net.DeviceManager("EPOS4", "MAXON SERIAL V2", "USB", "USB0");
+            this.connector = new EposCmd.Net.DeviceManager("EPOS4", "MAXON SERIAL V2", "USB", "USB0");
+            this.connector.Baudrate = 1000000;
         }
         catch (EposCmd.Net.DeviceException) {
         }
-        this.lifter      = new Epos4Node(connector, 1, "Lifter",       2);
+        this.lifter      = new Epos4Node(connector, 1, "Lifter",        20, -1, 0.5, 1);
         this.lifter.MotorInit();
-        this.leftPedal   = new Epos4Node(connector, 2, "Left Pedal",   6);
+        this.leftPedal   = new Epos4Node(connector, 2, "Left Pedal",    6,  1, 0.2, 1);
         this.leftPedal.MotorInit();
-        this.leftSlider  = new Epos4Node(connector, 3, "Left Slider",  12);
+        this.leftSlider  = new Epos4Node(connector, 3, "Left Slider",  12, -1, 0.2, 1);
         this.leftSlider.MotorInit();
-        this.rightPedal  = new Epos4Node(connector, 4, "Right Pedal",  6);
+        this.rightPedal  = new Epos4Node(connector, 4, "Right Pedal",   6,  1, 0.2, 1);
         this.rightPedal.MotorInit();
-        this.rightSlider = new Epos4Node(connector, 5, "Right Slider", 12);
+        this.rightSlider = new Epos4Node(connector, 5, "Right Slider", 12, -1, 0.2, 1);
         this.rightSlider.MotorInit();
     }
 
@@ -66,17 +52,19 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
 
     private void getActualPositionAsync() {
         while (!this.Destroied) {
-            this.lifter.actualPosition      = (int)(-(float) this.lifter.getPositionIs()/2000f*2f);
-            this.leftPedal.actualPosition   = (int)(-(float) this.leftPedal.getPositionIs()/2000f*6f);
-            this.leftSlider.actualPosition  = (int)(-(float) this.leftSlider.getPositionIs()/2000f*12f);
-            this.rightPedal.actualPosition  = (int)(-(float) this.rightPedal.getPositionIs()/2000f*6f);
-            this.rightSlider.actualPosition = (int)(-(float) this.rightSlider.getPositionIs()/2000f*12f);
+            this.lifter.actualPosition      = (int)(-(float) this.lifter.getPositionIs()/2000f*this.lifter.milliPerRotation);
+            this.leftPedal.actualPosition   = (int)((float) this.leftPedal.getPositionIs()/2000f*this.leftPedal.milliPerRotation);
+            this.leftSlider.actualPosition  = (int)(-(float) this.leftSlider.getPositionIs()/2000f*this.leftSlider.milliPerRotation);
+            this.rightPedal.actualPosition  = (int)((float) this.rightPedal.getPositionIs()/2000f*this.rightPedal.milliPerRotation);
+            this.rightSlider.actualPosition = (int)(-(float) this.rightSlider.getPositionIs()/2000f*this.rightSlider.milliPerRotation);
 
             this.lifter.current      = this.lifter.getCurrentIs()/1000f;
             this.leftPedal.current   = this.leftPedal.getCurrentIs()/1000f;
             this.leftSlider.current  = this.leftSlider.getCurrentIs()/1000f;
             this.rightPedal.current  = this.rightPedal.getCurrentIs()/1000f;
             this.rightSlider.current = this.rightSlider.getCurrentIs()/1000f;
+
+            // this.lifter.getError();
             System.Threading.Thread.Sleep(20);
         }
         return;

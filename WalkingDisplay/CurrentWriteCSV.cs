@@ -15,26 +15,22 @@ public class CurrentWriteCSV : UnityEngine.MonoBehaviour {
 
     void Start() {
         this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
+    }
+
+    public void writeStart() {
         this.th.Start();
     }
 
     private void getActualPositionAsync() {
         int N = 1000;
         float[,] data = new float[N,10];
-        System.Threading.Thread.Sleep(5000);
         int i = 0;
         while (!this.Destroied && i < N) {
-            float lifter_actualPosition      = this.epos4Main.lifter.actualPosition;
-            float leftPedal_actualPosition   = this.epos4Main.leftPedal.actualPosition;
-            float leftSlider_actualPosition  = this.epos4Main.leftSlider.actualPosition;
-            float rightPedal_actualPosition  = this.epos4Main.rightPedal.actualPosition;
-            float rightSlider_actualPosition = this.epos4Main.rightSlider.actualPosition;
-
-            data[i,0] = lifter_actualPosition * 2f / 2000f;
-            data[i,1] = leftPedal_actualPosition * 6f / 2000f;
-            data[i,2] = leftSlider_actualPosition * 12f / 2000f;
-            data[i,3] = rightPedal_actualPosition * 6f / 2000f;
-            data[i,4] = rightSlider_actualPosition * 12f / 2000f;
+            data[i,0] = this.epos4Main.lifter.actualPosition / 100f; // Unit 10cm
+            data[i,1] = this.epos4Main.leftPedal.actualPosition / 100f;
+            data[i,2] = this.epos4Main.leftSlider.actualPosition / 100f;
+            data[i,3] = this.epos4Main.rightPedal.actualPosition / 100f;
+            data[i,4] = this.epos4Main.rightSlider.actualPosition / 100f;
 
             data[i,5] = this.epos4Main.lifter.current;
             data[i,6] = this.epos4Main.leftPedal.current;
@@ -47,6 +43,8 @@ public class CurrentWriteCSV : UnityEngine.MonoBehaviour {
             System.Threading.Thread.Sleep(10);
         }
 
+        N = i;
+
         System.IO.StreamWriter sw; // これがキモらしい
         System.IO.FileInfo fi;
         　　// Aplication.dataPath で プロジェクトファイルがある絶対パスが取り込める
@@ -54,10 +52,11 @@ public class CurrentWriteCSV : UnityEngine.MonoBehaviour {
         string result = dt.ToString("yyyyMMddHHmmss");
         fi = new System.IO.FileInfo(UnityEngine.Application.dataPath + "/Scripts/log/current" + result + ".csv");
         sw = fi.AppendText();
-        sw.WriteLine("count, lifter pos (mm), left pedal pos (mm), left slider pos (mm), right pedal pos (mm), right slider pos (mm), lifter current (A), left pedal current (A), left slider current (A), right pedal current (A), right slider current (A)");
+        sw.WriteLine("count, Stick Right Slider (10cm), left pedal pos (cm), left slider pos (cm), right pedal pos (cm), right slider pos (cm), current (A), left pedal current (A), left slider current (A), right pedal current (A), right slider current (A)");
         for (i = 0; i < N; i++)
         {
-            string a = i.ToString() + ",";
+            float time = i*0.01f;
+            string a = time.ToString() + ",";
             for (int j = 0; j < 10; j++) {
                 a += data[i,j].ToString() + ",";
             }
@@ -71,6 +70,8 @@ public class CurrentWriteCSV : UnityEngine.MonoBehaviour {
     private void OnDestroy()
     {
         this.Destroied = true;
+        // this.sw.Flush();
+        // this.sw.Close();
         // this.th.Abort();
     }
 }
