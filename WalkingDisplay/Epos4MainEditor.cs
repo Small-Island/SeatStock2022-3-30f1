@@ -16,12 +16,13 @@ public class Epos4MainEditor : Editor
         int maxActualPosition = 500;
         int maxPosition = 1000;
         int maxVel = 4545;
-        int maxAcceleration = 20000;
+        int maxAcceleration = 100000;
 
         if (GUILayout.Button("All Node Clear Error")) {
             epos4Main.clearError();
         }
 
+        EditorGUILayout.LabelField("Seat");
         EditorGUILayout.LabelField("Lifter");
         EditorGUILayout.Slider("Current (A)", epos4Main.lifter.current, -maxCurrent, maxCurrent);
         EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.lifter.actualPosition, -maxActualPosition, maxActualPosition);
@@ -102,7 +103,8 @@ public class Epos4MainEditor : Editor
                 epos4Main.leftPedal.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.leftPedal.profile.acceleration, 0, maxAcceleration);
                 epos4Main.leftPedal.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.leftPedal.profile.deceleration, 0, maxAcceleration);
                 if (GUILayout.Button("Move to Position")) {
-                    epos4Main.lifter.SetPositionProfile();
+                    epos4Main.leftPedal.ActivateProfilePositionMode();
+                    epos4Main.leftPedal.SetPositionProfile();
                     epos4Main.leftPedal.MoveToPosition(true);
                 }
                 uprb = GUILayout.RepeatButton("Up    as Velocity Mode");
@@ -152,6 +154,7 @@ public class Epos4MainEditor : Editor
                 epos4Main.leftSlider.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.leftSlider.profile.acceleration, 0, maxAcceleration);
                 epos4Main.leftSlider.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.leftSlider.profile.deceleration, 0, maxAcceleration);
                 if (GUILayout.Button("Move to Position")) {
+                    epos4Main.leftSlider.ActivateProfilePositionMode();
                     epos4Main.leftSlider.SetPositionProfile();
                     epos4Main.leftSlider.MoveToPosition(true);
                 }
@@ -203,6 +206,7 @@ public class Epos4MainEditor : Editor
                 epos4Main.rightPedal.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.rightPedal.profile.acceleration, 0, maxAcceleration);
                 epos4Main.rightPedal.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.rightPedal.profile.deceleration, 0, maxAcceleration);
                 if (GUILayout.Button("Move to Position")) {
+                    epos4Main.rightPedal.ActivateProfilePositionMode();
                     epos4Main.rightPedal.SetPositionProfile();
                     epos4Main.rightPedal.MoveToPosition(true);
                 }
@@ -253,6 +257,7 @@ public class Epos4MainEditor : Editor
                 epos4Main.rightSlider.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.rightSlider.profile.acceleration, 0, maxAcceleration);
                 epos4Main.rightSlider.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.rightSlider.profile.deceleration, 0, maxAcceleration);
                 if (GUILayout.Button("Move to Position")) {
+                    epos4Main.rightSlider.ActivateProfilePositionMode();
                     epos4Main.rightSlider.SetPositionProfile();
                     epos4Main.rightSlider.MoveToPosition(true);
                 }
@@ -278,6 +283,213 @@ public class Epos4MainEditor : Editor
                 }
                 if (GUILayout.RepeatButton("Quick Stop")) {
                     epos4Main.rightSlider.QuickStop();
+                }
+            }
+        }
+
+        using (new EditorGUILayout.HorizontalScope()) {
+            using (new EditorGUILayout.VerticalScope()) {
+                EditorGUILayout.LabelField("Stock Left Extend");
+                EditorGUILayout.Slider("Current (A)", epos4Main.stockLeftExtend.current, -maxCurrent, maxCurrent);
+                EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.stockLeftExtend.actualPosition, -maxActualPosition, maxActualPosition);
+                if (GUILayout.Button("Set Home")) {
+                    epos4Main.stockLeftExtend.definePosition();
+                }
+                EditorGUILayout.TextArea(
+                    epos4Main.stockLeftExtend.status,
+                    GUILayout.Width(EditorGUIUtility.currentViewWidth/2 - 30)
+                );
+                if (GUILayout.Button("Clear Error")) {
+                    epos4Main.stockLeftExtend.MotorInit();
+                }
+                // if (GUILayout.Button("Activate PPM")) {
+                //     epos4Main.leftPedal.ActivateProfilePositionMode();
+                // }
+                epos4Main.stockLeftExtend.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.stockLeftExtend.profile.absolute);
+                epos4Main.stockLeftExtend.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.stockLeftExtend.profile.position, -maxPosition, maxPosition);
+                epos4Main.stockLeftExtend.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockLeftExtend.profile.velocity, 0, maxVel);
+                epos4Main.stockLeftExtend.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockLeftExtend.profile.acceleration, 0, maxAcceleration);
+                epos4Main.stockLeftExtend.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockLeftExtend.profile.deceleration, 0, maxAcceleration);
+                if (GUILayout.Button("Move to Position")) {
+                    epos4Main.stockLeftExtend.ActivateProfilePositionMode();
+                    epos4Main.stockLeftExtend.SetPositionProfile();
+                    epos4Main.stockLeftExtend.MoveToPosition(true);
+                }
+                uprb = GUILayout.RepeatButton("Up    as Velocity Mode");
+                downrb = GUILayout.RepeatButton("Down as Velocity Mode");
+                if (EditorApplication.isPlaying) {
+                    if (uprb || epos4Main.stockLeftExtend.oldUpForwardRepeatButton) {
+                        epos4Main.stockLeftExtend.ActivateProfileVelocityMode();
+                        epos4Main.stockLeftExtend.MoveWithVelocity(1);
+                    }
+                    else if (downrb || epos4Main.stockLeftExtend.oldDownBackwardRepeatButton) {
+                        epos4Main.stockLeftExtend.ActivateProfileVelocityMode();
+                        epos4Main.stockLeftExtend.MoveWithVelocity(-1);
+                    }
+                    else {
+                        if (epos4Main.stockLeftExtend.whichMode == Epos4Node.WhichMode.Velocity) {
+                            epos4Main.stockLeftExtend.QuickStop();
+                            epos4Main.stockLeftExtend.ActivateProfilePositionMode();
+                        }
+                    }
+                    epos4Main.stockLeftExtend.oldUpForwardRepeatButton = uprb;
+                    epos4Main.stockLeftExtend.oldDownBackwardRepeatButton = downrb;
+                }
+                if (GUILayout.RepeatButton("Quick Stop")) {
+                    epos4Main.leftPedal.QuickStop();
+                }
+                EditorGUILayout.Space(20);
+
+                EditorGUILayout.LabelField("Stock Left Slider");
+                EditorGUILayout.Slider("Current (A)", epos4Main.stockLeftSlider.current, -maxCurrent, maxCurrent);
+                EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.stockLeftSlider.actualPosition, -maxActualPosition, maxActualPosition);
+                if (GUILayout.Button("Set Home")) {
+                    epos4Main.stockLeftSlider.definePosition();
+                }
+                EditorGUILayout.TextArea(
+                    epos4Main.stockLeftSlider.status,
+                    GUILayout.Width(EditorGUIUtility.currentViewWidth/2 - 30)
+                );
+                if (GUILayout.Button("Clear Error")) {
+                    epos4Main.stockLeftSlider.MotorInit();
+                }
+                // if (GUILayout.Button("Activate PPM")) {
+                //     epos4Main.stockLeftSlider.ActivateProfilePositionMode();
+                // }
+                epos4Main.stockLeftSlider.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.stockLeftSlider.profile.absolute);
+                epos4Main.stockLeftSlider.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.stockLeftSlider.profile.position, -maxPosition, maxPosition);
+                epos4Main.stockLeftSlider.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockLeftSlider.profile.velocity, 0, maxVel);
+                epos4Main.stockLeftSlider.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockLeftSlider.profile.acceleration, 0, maxAcceleration);
+                epos4Main.stockLeftSlider.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockLeftSlider.profile.deceleration, 0, maxAcceleration);
+                if (GUILayout.Button("Move to Position")) {
+                    epos4Main.stockLeftSlider.ActivateProfilePositionMode();
+                    epos4Main.stockLeftSlider.SetPositionProfile();
+                    epos4Main.stockLeftSlider.MoveToPosition(true);
+                }
+                uprb = GUILayout.RepeatButton("Forward as Velocity Mode");
+                downrb = GUILayout.RepeatButton("Backward as Velocity Mode");
+                if (EditorApplication.isPlaying) {
+                    if (uprb || epos4Main.stockLeftSlider.oldUpForwardRepeatButton) {
+                        epos4Main.stockLeftSlider.ActivateProfileVelocityMode();
+                        epos4Main.stockLeftSlider.MoveWithVelocity(1);
+                    }
+                    else if (downrb || epos4Main.stockLeftSlider.oldDownBackwardRepeatButton) {
+                        epos4Main.stockLeftSlider.ActivateProfileVelocityMode();
+                        epos4Main.stockLeftSlider.MoveWithVelocity(-1);
+                    }
+                    else {
+                        if (epos4Main.stockLeftSlider.whichMode == Epos4Node.WhichMode.Velocity) {
+                            epos4Main.stockLeftSlider.QuickStop();
+                            epos4Main.stockLeftSlider.ActivateProfilePositionMode();
+                        }
+                    }
+                    epos4Main.stockLeftSlider.oldUpForwardRepeatButton = uprb;
+                    epos4Main.stockLeftSlider.oldDownBackwardRepeatButton = downrb;
+                }
+                if (GUILayout.RepeatButton("Quick Stop")) {
+                    epos4Main.stockLeftSlider.QuickStop();
+                }
+            }
+
+            using (new EditorGUILayout.VerticalScope()) {
+                EditorGUILayout.LabelField("Stock Right Extend");
+                EditorGUILayout.Slider("Current (A)", epos4Main.stockRightExtend.current, -maxCurrent, maxCurrent);
+                EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.stockRightExtend.actualPosition, -maxActualPosition, maxActualPosition);
+                if (GUILayout.Button("Set Home")) {
+                    epos4Main.stockRightExtend.definePosition();
+                }
+                EditorGUILayout.TextArea(
+                    epos4Main.stockRightExtend.status,
+                    GUILayout.Width(EditorGUIUtility.currentViewWidth/2 - 30)
+                );
+                if (GUILayout.Button("Clear Error")) {
+                    epos4Main.stockRightExtend.MotorInit();
+                }
+                // if (GUILayout.Button("Activate PPM")) {
+                //     epos4Main.stockRightExtend.ActivateProfilePositionMode();
+                // }
+                epos4Main.stockRightExtend.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.stockRightExtend.profile.absolute);
+                epos4Main.stockRightExtend.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.stockRightExtend.profile.position, -maxPosition, maxPosition);
+                epos4Main.stockRightExtend.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockRightExtend.profile.velocity, 0, maxVel);
+                epos4Main.stockRightExtend.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockRightExtend.profile.acceleration, 0, maxAcceleration);
+                epos4Main.stockRightExtend.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockRightExtend.profile.deceleration, 0, maxAcceleration);
+                if (GUILayout.Button("Move to Position")) {
+                    epos4Main.stockRightExtend.ActivateProfilePositionMode();
+                    epos4Main.stockRightExtend.SetPositionProfile();
+                    epos4Main.stockRightExtend.MoveToPosition(true);
+                }
+                uprb = GUILayout.RepeatButton("Up    as Velocity Mode");
+                downrb = GUILayout.RepeatButton("Down as Velocity Mode");
+                if (EditorApplication.isPlaying) {
+                    if (uprb || epos4Main.stockRightExtend.oldUpForwardRepeatButton) {
+                        epos4Main.stockRightExtend.ActivateProfileVelocityMode();
+                        epos4Main.stockRightExtend.MoveWithVelocity(1);
+                    }
+                    else if (downrb || epos4Main.stockRightExtend.oldDownBackwardRepeatButton) {
+                        epos4Main.stockRightExtend.ActivateProfileVelocityMode();
+                        epos4Main.stockRightExtend.MoveWithVelocity(-1);
+                    }
+                    else {
+                        if (epos4Main.stockRightExtend.whichMode == Epos4Node.WhichMode.Velocity) {
+                            epos4Main.stockRightExtend.QuickStop();
+                            epos4Main.stockRightExtend.ActivateProfilePositionMode();
+                        }
+                    }
+                    epos4Main.stockRightExtend.oldUpForwardRepeatButton = uprb;
+                    epos4Main.stockRightExtend.oldDownBackwardRepeatButton = downrb;
+                }
+                if (GUILayout.RepeatButton("Quick Stop")) {
+                    epos4Main.stockRightExtend.QuickStop();
+                }
+                EditorGUILayout.Space(20);
+
+                EditorGUILayout.LabelField("Stock Right Slider");
+                EditorGUILayout.Slider("Current (A)", epos4Main.stockRightSlider.current, -maxCurrent, maxCurrent);
+                EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.stockRightSlider.actualPosition, -maxActualPosition, maxActualPosition);
+                if (GUILayout.Button("Set Home")) {
+                    epos4Main.stockRightSlider.definePosition();
+                }
+                EditorGUILayout.TextArea(
+                    epos4Main.stockRightSlider.status,
+                    GUILayout.Width(EditorGUIUtility.currentViewWidth/2 - 30)
+                );
+                if (GUILayout.Button("Clear Error")) {
+                    epos4Main.stockRightSlider.MotorInit();
+                }
+                // if (GUILayout.Button("Activate PPM")) {
+                //     epos4Main.stockRightSlider.ActivateProfilePositionMode();
+                // }
+                epos4Main.stockRightSlider.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.stockRightSlider.profile.absolute);
+                epos4Main.stockRightSlider.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.stockRightSlider.profile.position, -maxPosition, maxPosition);
+                epos4Main.stockRightSlider.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockRightSlider.profile.velocity, 0, maxVel);
+                epos4Main.stockRightSlider.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockRightSlider.profile.acceleration, 0, maxAcceleration);
+                epos4Main.stockRightSlider.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockRightSlider.profile.deceleration, 0, maxAcceleration);
+                if (GUILayout.Button("Move to Position")) {
+                    epos4Main.stockRightSlider.SetPositionProfile();
+                    epos4Main.stockRightSlider.MoveToPosition(true);
+                }
+                uprb = GUILayout.RepeatButton("Foward    as Velocity Mode");
+                downrb = GUILayout.RepeatButton("Backward as Velocity Mode");
+                if (EditorApplication.isPlaying) {
+                    if (uprb || epos4Main.stockRightSlider.oldUpForwardRepeatButton) {
+                        epos4Main.stockRightSlider.ActivateProfileVelocityMode();
+                        epos4Main.stockRightSlider.MoveWithVelocity(1);
+                    }
+                    else if (downrb || epos4Main.stockRightSlider.oldDownBackwardRepeatButton) {
+                        epos4Main.stockRightSlider.ActivateProfileVelocityMode();
+                        epos4Main.stockRightSlider.MoveWithVelocity(-1);
+                    }
+                    else {
+                        if (epos4Main.stockRightSlider.whichMode == Epos4Node.WhichMode.Velocity) {
+                            epos4Main.stockRightSlider.QuickStop();
+                            epos4Main.stockRightSlider.ActivateProfilePositionMode();
+                        }
+                    }
+                    epos4Main.stockRightSlider.oldUpForwardRepeatButton = uprb;
+                    epos4Main.stockRightSlider.oldDownBackwardRepeatButton = downrb;
+                }
+                if (GUILayout.RepeatButton("Quick Stop")) {
+                    epos4Main.stockRightSlider.QuickStop();
                 }
             }
         }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
-    [UnityEngine.SerializeField, Range(0.3f, 10f)] public float period = 5f;
+    [UnityEngine.SerializeField, Range(0.3f, 3f)] public float period = 3f;
     [UnityEngine.HideInInspector, UnityEngine.SerializeField, Range(1, 10)] public int forwardRate = 5;
     [UnityEngine.HideInInspector, UnityEngine.SerializeField, Range(1, 10)] public int backwardRate = 5;
     // [UnityEngine.SerializeField] private UnityEngine.AddressableAssets.AssetReference csvFile;
@@ -13,25 +13,34 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     [System.Serializable]
     public class Activate {
         // Unit mm
-        [UnityEngine.SerializeField] public bool lifter      = false;
-        [UnityEngine.SerializeField] public bool leftPedal   = false;
-        [UnityEngine.SerializeField] public bool leftSlider  = false;
-        [UnityEngine.SerializeField] public bool rightPedal  = false;
-        [UnityEngine.SerializeField] public bool rightSlider = false;
+        [UnityEngine.SerializeField] public bool lifter           = false;
+        [UnityEngine.SerializeField] public bool leftPedal        = false;
+        [UnityEngine.SerializeField] public bool leftSlider       = false;
+        [UnityEngine.SerializeField] public bool rightPedal       = false;
+        [UnityEngine.SerializeField] public bool rightSlider      = false;
+        [UnityEngine.SerializeField] public bool stockLeftExtend  = false;
+        [UnityEngine.SerializeField] public bool stockLeftSlider  = false;
+        [UnityEngine.SerializeField] public bool stockRightExtend = false;
+        [UnityEngine.SerializeField] public bool stockRightSlider = false;
     }
     [UnityEngine.Header("Unit ms"), UnityEngine.SerializeField, Range(700, 1000), UnityEngine.HideInInspector] public float oneSec = 1000f;
     [UnityEngine.Header("Unit mm")]
     [UnityEngine.SerializeField] public Amptitude amptitude;
+    // [UnityEngine.SerializeField, Range(0.3f, 10f)] public float drop = 3;
 
     [System.Serializable]
     public class Amptitude {
         // Unit mm
-        [UnityEngine.SerializeField, Range(0, 1000)] public double lift = 1;
+        [UnityEngine.SerializeField, Range(0, 30)] public double lift = 1;
         [UnityEngine.SerializeField, Range(0, 68)] public double leftPedal = 1;
         [UnityEngine.SerializeField, Range(0, 68)] public double rightPedal = 1;
         [UnityEngine.SerializeField, Range(0, 190)] public double leftSlider = 1;
         [UnityEngine.SerializeField, Range(0, 190)] public double rightSlider = 1;
+        [UnityEngine.SerializeField, Range(0, 100)] public double stockExtend = 1;
+        [UnityEngine.SerializeField, Range(0, 400)] public double stockSlider = 1;
     }
+
+    [UnityEngine.SerializeField, Range(0.1f, 20)] public double stiffness = 1;
 
     [UnityEngine.SerializeField] private Epos4Main epos4Main;
     public enum Status {
@@ -158,9 +167,11 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
 
     private System.Timers.Timer timer;
     public int phase = 0;
+    public float time = 0;
 
     public void WalkStraight(float incdec_time)
     {
+        if (this.status == Status.walking) return;
         this.walkstop = false;
         this.period = this.period + incdec_time;
         // this.epos4Main.AllNodeActivateProfilePositionMode();
@@ -188,6 +199,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
 
         this.timer.Elapsed += (sender, e) => {
             this.setPeriod();
+            this.time += 0.25f*this.period;
             if (this.walkstop) {
                 this.timer.Stop();
                 // return;
@@ -196,8 +208,13 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
                 this.phase++;
                 this.status = Status.walking;
                 // スライダ前進 1/4*Period (秒)
-                this.epos4Main.lifter.SetPositionProfileInTime(this.amptitude.lift, this.period*0.25f, 2f, 1f/2f);
-                this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
+                this.epos4Main.stockRightSlider.SetPositionProfileInTime(this.amptitude.stockSlider, this.period*0.25f, 4, 1);
+                this.epos4Main.stockRightSlider.MoveToPosition(this.activate.stockRightSlider);
+                this.epos4Main.stockRightExtend.SetPositionProfileInTime(this.amptitude.stockExtend, this.period*0.25f*0.5f, 1, 1);
+                this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
+                System.Threading.Thread.Sleep((int)(1000f*this.period*0.25f*0.5f));
+                this.epos4Main.stockRightExtend.SetPositionProfileInTime(this.amptitude.stockExtend*0.5f, this.period*0.25f*0.5f, 1, this.stiffness);
+                this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
                 
                 //次のphaseをあらかじめ SetPositionProfileInTime
                 // this.epos4Main.lifter.SetPositionProfileInTime(0, this.period*0.75f);
@@ -206,8 +223,10 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
                 this.phase++;
                 this.status = Status.walking;
                 // スライダ後退 3/4*period (秒), 左踵下降 1/4*period (秒)
-                this.epos4Main.lifter.SetPositionProfileInTime(0, this.period*0.75f, 1f/1f, 1f);
-                this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
+                this.epos4Main.stockRightSlider.SetPositionProfileInTime(0, this.period*0.75f, 1, 1);
+                this.epos4Main.stockRightSlider.MoveToPosition(this.activate.stockRightSlider);
+                this.epos4Main.stockRightExtend.SetPositionProfileInTime(0, this.period*0.75f, 1, 1);
+                this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
             }
             else if (this.phase == 2) {
                 this.phase++;
@@ -226,17 +245,14 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             else if (this.phase == 4) {
                 this.phase = 1;
                 this.status = Status.walking;
-                this.epos4Main.lifter.SetPositionProfileInTime(this.amptitude.lift, this.period*0.25f, 2f, 1f/2f);
-                // 椅子上昇 1/4*Period (秒), 左踵下降 1/2*period (秒), 左足前進 1/2*period (秒), 右踵上昇 1/2*period (秒), 右足後退 1/2*period (秒)
-                this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
-                this.epos4Main.leftPedal.MoveToPosition(this.activate.leftPedal);
-                this.epos4Main.leftSlider.MoveToPosition(this.activate.leftSlider);
-                this.epos4Main.rightPedal.MoveToPosition(this.activate.rightPedal);
-                this.epos4Main.rightSlider.MoveToPosition(this.activate.rightSlider);
-
-                //次のphaseをあらかじめ SetPositionProfileInTime
-                // this.epos4Main.lifter.SetPositionProfileInTime(0, this.period*0.75f);
-                // this.epos4Main.leftPedal.SetPositionProfileInTime(0, this.period*0.25f);                
+                // スライダ前進 1/4*Period (秒)
+                this.epos4Main.stockRightSlider.SetPositionProfileInTime(this.amptitude.stockSlider, this.period*0.25f, 4, 1);
+                this.epos4Main.stockRightSlider.MoveToPosition(this.activate.stockRightSlider);
+                this.epos4Main.stockRightExtend.SetPositionProfileInTime(this.amptitude.stockExtend, this.period*0.25f*0.5f, 1, 1);
+                this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
+                System.Threading.Thread.Sleep((int)(1000f*this.period*0.25f*0.5f));
+                this.epos4Main.stockRightExtend.SetPositionProfileInTime(this.amptitude.stockExtend*0.5f, this.period*0.25f*0.5f, 1, this.stiffness);
+                this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
             }
         };
 
@@ -585,21 +601,4 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.walkstop = true;
         this.WalkStop();
     }
-
-    public async void DelaySample()
-    {
-        for (int i = 0; i < 5; i++)
-        {
-            if (this.walkstop) {
-                return;
-            }
-            UnityEngine.Debug.Log(i);
-            await System.Threading.Tasks.Task.Delay(1000);
-        }
-    }
-
-    // public void sample() {
-    //     DelaySample
-    //     UnityEngine.Debug.Log("hello");
-    // }
 }

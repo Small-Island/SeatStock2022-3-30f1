@@ -21,8 +21,6 @@ public class Epos4Node {
     private double direction = 1;
     private float incPerRotation = 2000;
 
-    private string name = "";
-
     public enum ConnectionStatus {
         success = 1,
         failed = 0
@@ -50,14 +48,12 @@ public class Epos4Node {
     public Epos4Node(
         EposCmd.Net.DeviceManager arg_connector, 
         int arg_idx,
-        string arg_name,
         double arg_milliPerRotation,
         double arg_direction,
         double arg_maxVelocityTimeRate,
         double arg_speedRate
     )
     {
-        this.name = arg_name;
         this.nodeId = (ushort)arg_idx;
         this.connector = arg_connector;
         this.milliPerRotation = arg_milliPerRotation;
@@ -128,7 +124,7 @@ public class Epos4Node {
         return;
     }
 
-    public int getPositionIs() {
+    public int getPositionMM() {
         if (this.cs == ConnectionStatus.failed) return 0;
         int value = 0;
         try {
@@ -137,10 +133,10 @@ public class Epos4Node {
         catch (System.Exception) {
             // this.status = e.ToString();
         }
-        return value;
+        return (int)(this.direction*value/this.incPerRotation*this.milliPerRotation);
     }
 
-    public int getCurrentIs() {
+    public float getCurrentA() {
         if (this.cs == ConnectionStatus.failed) return 0;
         int value = 0;
         try {
@@ -149,7 +145,7 @@ public class Epos4Node {
         catch (System.Exception) {
             // this.status = e.ToString();
         }
-        return value;
+        return value/1000f;
     }
 
     public void getError() {
@@ -272,8 +268,8 @@ public class Epos4Node {
         this.profile.absolute     = true;
         this.profile.position     = (int)arg_pos_milli;
         this.profile.velocity     = (int)System.Math.Abs(this.speedRate * 2.0 * x_r / (arg_sec_time*(1 + this.maxVelocityTimeRate)) * 60.0);
-        this.profile.acceleration = (int)System.Math.Abs(arg_arate*this.speedRate * 4.0 * x_r / (arg_sec_time * arg_sec_time *(1 - this.maxVelocityTimeRate*this.maxVelocityTimeRate)) * 60.0);
-        this.profile.deceleration = (int)System.Math.Abs(arg_drate*this.speedRate * 4.0 * x_r / (arg_sec_time * arg_sec_time *(1 - this.maxVelocityTimeRate*this.maxVelocityTimeRate)) * 60.0);
+        this.profile.acceleration = (int)System.Math.Abs((arg_arate + arg_drate) / (2.0 * arg_drate) *this.speedRate * 4.0 * x_r / (arg_sec_time * arg_sec_time *(1 - this.maxVelocityTimeRate*this.maxVelocityTimeRate)) * 60.0);
+        this.profile.deceleration = (int)System.Math.Abs((arg_arate + arg_drate) / (2.0 * arg_arate)*this.speedRate * 4.0 * x_r / (arg_sec_time * arg_sec_time *(1 - this.maxVelocityTimeRate*this.maxVelocityTimeRate)) * 60.0);
 
         this.SetPositionProfile();
     }
@@ -314,8 +310,8 @@ public class Epos4Node {
         this.profile.absolute = true;
         try {
             this.deviceOperation.SetPositionProfile(
-                this.profile.velocity,
-                this.profile.acceleration,
+                720,
+                (int)(this.profile.acceleration*0.4),
                 this.profile.deceleration
             );
             this.deviceOperation.MoveToPosition(

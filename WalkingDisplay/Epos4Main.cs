@@ -8,7 +8,7 @@
 
 public class Epos4Main : UnityEngine.MonoBehaviour {
     [UnityEngine.SerializeField]
-    public Epos4Node lifter, leftPedal, leftSlider, rightPedal, rightSlider;
+    public Epos4Node lifter, leftPedal, leftSlider, rightPedal, rightSlider, stockLeftExtend, stockLeftSlider, stockRightExtend, stockRightSlider;
 
     // private UnityEngine.Coroutine coroutineActualPosition = null;
 
@@ -35,16 +35,25 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
         }
         catch (EposCmd.Net.DeviceException) {
         }
-        this.lifter      = new Epos4Node(connector, 1, "Lifter",        20, -1, 0.5, 1);
-        this.lifter.MotorInit();
-        this.leftPedal   = new Epos4Node(connector, 2, "Left Pedal",    6,  1, 0.2, 1);
-        this.leftPedal.MotorInit();
-        this.leftSlider  = new Epos4Node(connector, 3, "Left Slider",  12, -1, 0.2, 1);
-        this.leftSlider.MotorInit();
-        this.rightPedal  = new Epos4Node(connector, 4, "Right Pedal",   6,  1, 0.2, 1);
-        this.rightPedal.MotorInit();
-        this.rightSlider = new Epos4Node(connector, 5, "Right Slider", 12, -1, 0.2, 1);
-        this.rightSlider.MotorInit();
+        // this.lifter      = new Epos4Node(connector, 1,        20, -1, 0.5, 1);
+        // this.lifter.MotorInit();
+        // this.leftPedal   = new Epos4Node(connector, 2,    6,  1, 0.2, 1);
+        // this.leftPedal.MotorInit();
+        // this.leftSlider  = new Epos4Node(connector, 3,  12, -1, 0.2, 1);
+        // this.leftSlider.MotorInit();
+        // this.rightPedal  = new Epos4Node(connector, 4,   6,  1, 0.2, 1);
+        // this.rightPedal.MotorInit();
+        // this.rightSlider = new Epos4Node(connector, 5, 12, -1, 0.2, 1);
+        // this.rightSlider.MotorInit();
+
+        // this.stockLeftExtend   = new Epos4Node(connector, 1,    20,  -1, 0.2, 1);
+        // this.stockLeftExtend.MotorInit();
+        // this.stockLeftSlider  = new Epos4Node(connector, 2,  20, -1, 0.2, 1);
+        // this.stockLeftSlider.MotorInit();
+        this.stockRightExtend  = new Epos4Node(connector, 2, 20, -1, 0.2, 1);
+        this.stockRightExtend.MotorInit();
+        this.stockRightSlider = new Epos4Node(connector, 1, 20, -1, 0.2, 1);
+        this.stockRightSlider.MotorInit();
     }
 
     // void Update() {
@@ -52,17 +61,25 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
 
     private void getActualPositionAsync() {
         while (!this.Destroied) {
-            this.lifter.actualPosition      = (int)(-(float) this.lifter.getPositionIs()/2000f*this.lifter.milliPerRotation);
-            this.leftPedal.actualPosition   = (int)((float) this.leftPedal.getPositionIs()/2000f*this.leftPedal.milliPerRotation);
-            this.leftSlider.actualPosition  = (int)(-(float) this.leftSlider.getPositionIs()/2000f*this.leftSlider.milliPerRotation);
-            this.rightPedal.actualPosition  = (int)((float) this.rightPedal.getPositionIs()/2000f*this.rightPedal.milliPerRotation);
-            this.rightSlider.actualPosition = (int)(-(float) this.rightSlider.getPositionIs()/2000f*this.rightSlider.milliPerRotation);
+            this.lifter.actualPosition           = this.lifter.getPositionMM();
+            this.leftPedal.actualPosition        = this.leftPedal.getPositionMM();
+            this.leftSlider.actualPosition       = this.leftSlider.getPositionMM();
+            this.rightPedal.actualPosition       = this.rightPedal.getPositionMM();
+            this.rightSlider.actualPosition      = this.rightSlider.getPositionMM();
+            this.stockLeftExtend.actualPosition  = this.stockLeftExtend.getPositionMM();
+            this.stockLeftSlider.actualPosition  = this.stockLeftSlider.getPositionMM();
+            this.stockRightExtend.actualPosition = this.stockRightExtend.getPositionMM();
+            this.stockRightSlider.actualPosition = this.stockRightSlider.getPositionMM();
 
-            this.lifter.current      = this.lifter.getCurrentIs()/1000f;
-            this.leftPedal.current   = this.leftPedal.getCurrentIs()/1000f;
-            this.leftSlider.current  = this.leftSlider.getCurrentIs()/1000f;
-            this.rightPedal.current  = this.rightPedal.getCurrentIs()/1000f;
-            this.rightSlider.current = this.rightSlider.getCurrentIs()/1000f;
+            this.lifter.current           = this.lifter.getCurrentA();
+            this.leftPedal.current        = this.leftPedal.getCurrentA();
+            this.leftSlider.current       = this.leftSlider.getCurrentA();
+            this.rightPedal.current       = this.rightPedal.getCurrentA();
+            this.rightSlider.current      = this.rightSlider.getCurrentA();
+            this.stockLeftExtend.current  = this.stockLeftExtend.getCurrentA();
+            this.stockLeftSlider.current  = this.stockLeftSlider.getCurrentA();
+            this.stockRightExtend.current = this.stockRightExtend.getCurrentA();
+            this.stockRightSlider.current = this.stockRightSlider.getCurrentA();
 
             // this.lifter.getError();
             System.Threading.Thread.Sleep(20);
@@ -86,6 +103,10 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
         this.leftSlider.MoveToHome();
         this.rightPedal.MoveToHome();
         this.rightSlider.MoveToHome();
+        this.stockLeftExtend.MoveToHome();
+        this.stockLeftSlider.MoveToHome();
+        this.stockRightExtend.MoveToHome();
+        this.stockRightSlider.MoveToHome();
     }
 
     public void AllNodeDefinePosition()
@@ -95,6 +116,10 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
         this.leftSlider.definePosition();
         this.rightPedal.definePosition();
         this.rightSlider.definePosition();
+        this.stockLeftExtend.definePosition();
+        this.stockLeftSlider.definePosition();
+        this.stockRightExtend.definePosition();
+        this.stockRightSlider.definePosition();
     }
 
     private void OnDestroy()
