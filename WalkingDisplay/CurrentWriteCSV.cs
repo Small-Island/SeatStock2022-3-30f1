@@ -23,7 +23,7 @@ public class CurrentWriteCSV : UnityEngine.MonoBehaviour {
 
     private void getActualPositionAsync() {
         int N = 1000;
-        float[,] data = new float[N,10];
+        float[,] data = new float[N,18];
         int i = 0;
         while (!this.Destroied && i < N) {
             data[i,0] = this.epos4Main.lifter.actualPosition / 100f; // Unit 10cm
