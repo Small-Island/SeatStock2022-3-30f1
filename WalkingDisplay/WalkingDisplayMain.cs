@@ -204,21 +204,6 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
                 this.timer.Stop();
                 // return;
             }
-            // else if (this.phase == 0) {
-            //     this.phase++;
-            //     this.status = Status.walking;
-            //     // スライダ前進 1/4*Period (秒)
-            //     this.epos4Main.stockRightSlider.SetPositionProfileInTime(this.amptitude.stockSlider, this.period*0.25f, 4, 1);
-            //     this.epos4Main.stockRightSlider.MoveToPosition(this.activate.stockRightSlider);
-            //     this.epos4Main.stockRightExtend.SetPositionProfileInTime(this.amptitude.stockExtend, this.period*0.25f*0.5f, 1, 1);
-            //     this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
-            //     System.Threading.Thread.Sleep((int)(1000f*this.period*0.25f*0.5f));
-            //     this.epos4Main.stockRightExtend.SetPositionProfileInTime(this.amptitude.stockExtend*0.5f, this.period*0.25f*0.3f, 1, this.stiffness);
-            //     this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
-                
-            //     次のphaseをあらかじめ SetPositionProfileInTime
-            //     this.epos4Main.lifter.SetPositionProfileInTime(0, this.period*0.75f);
-            // }
             else if (this.phase == 1) {
                 this.phase++;
                 this.status = Status.walking;
