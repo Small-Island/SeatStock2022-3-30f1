@@ -10,7 +10,7 @@ public class Epos4MainEditor : Editor
         EditorGUIUtility.labelWidth = 200;
         base.OnInspectorGUI();
         
-        EditorGUIUtility.labelWidth = 120;
+        EditorGUIUtility.labelWidth = 125;
 
         int maxCurrent = 20;
         int maxActualPosition = 500;
@@ -26,6 +26,7 @@ public class Epos4MainEditor : Editor
         EditorGUILayout.LabelField("Lifter");
         EditorGUILayout.Slider("Current (A)", epos4Main.lifter.current, -maxCurrent, maxCurrent);
         EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.lifter.actualPosition, -maxActualPosition, maxActualPosition);
+        EditorGUILayout.Slider("Actual Velocity (rpm)", epos4Main.lifter.actualVelocity, -maxVel, maxVel);
         if (GUILayout.Button("Set Home")) {
             epos4Main.lifter.definePosition();
         }
@@ -84,6 +85,7 @@ public class Epos4MainEditor : Editor
                 EditorGUILayout.LabelField("Left Pedal");
                 EditorGUILayout.Slider("Current (A)", epos4Main.leftPedal.current, -maxCurrent, maxCurrent);
                 EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.leftPedal.actualPosition, -maxActualPosition, maxActualPosition);
+                EditorGUILayout.Slider("Actual Velocity (rpm)", epos4Main.leftPedal.actualVelocity, -maxVel, maxVel);
                 if (GUILayout.Button("Set Home")) {
                     epos4Main.leftPedal.definePosition();
                 }
@@ -135,6 +137,7 @@ public class Epos4MainEditor : Editor
                 EditorGUILayout.LabelField("Left Slider");
                 EditorGUILayout.Slider("Current (A)", epos4Main.leftSlider.current, -maxCurrent, maxCurrent);
                 EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.leftSlider.actualPosition, -maxActualPosition, maxActualPosition);
+                EditorGUILayout.Slider("Actual Velocity (rpm)", epos4Main.leftSlider.actualVelocity, -maxVel, maxVel);
                 if (GUILayout.Button("Set Home")) {
                     epos4Main.leftSlider.definePosition();
                 }
@@ -187,6 +190,7 @@ public class Epos4MainEditor : Editor
                 EditorGUILayout.LabelField("Right Pedal");
                 EditorGUILayout.Slider("Current (A)", epos4Main.rightPedal.current, -maxCurrent, maxCurrent);
                 EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.rightPedal.actualPosition, -maxActualPosition, maxActualPosition);
+                EditorGUILayout.Slider("Actual Velocity (rpm)", epos4Main.rightPedal.actualVelocity, -maxVel, maxVel);
                 if (GUILayout.Button("Set Home")) {
                     epos4Main.rightPedal.definePosition();
                 }
@@ -238,6 +242,7 @@ public class Epos4MainEditor : Editor
                 EditorGUILayout.LabelField("Right Slider");
                 EditorGUILayout.Slider("Current (A)", epos4Main.rightSlider.current, -maxCurrent, maxCurrent);
                 EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.rightSlider.actualPosition, -maxActualPosition, maxActualPosition);
+                EditorGUILayout.Slider("Actual Velocity (rpm)", epos4Main.rightSlider.actualVelocity, -maxVel, maxVel);
                 if (GUILayout.Button("Set Home")) {
                     epos4Main.rightSlider.definePosition();
                 }
@@ -292,6 +297,7 @@ public class Epos4MainEditor : Editor
                 EditorGUILayout.LabelField("Stock Left Extend");
                 EditorGUILayout.Slider("Current (A)", epos4Main.stockLeftExtend.current, -maxCurrent, maxCurrent);
                 EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.stockLeftExtend.actualPosition, -maxActualPosition, maxActualPosition);
+                EditorGUILayout.Slider("Actual Velocity (rpm)", epos4Main.stockLeftExtend.actualVelocity, -maxVel, maxVel);
                 if (GUILayout.Button("Set Home")) {
                     epos4Main.stockLeftExtend.definePosition();
                 }
@@ -343,6 +349,7 @@ public class Epos4MainEditor : Editor
                 EditorGUILayout.LabelField("Stock Left Slider");
                 EditorGUILayout.Slider("Current (A)", epos4Main.stockLeftSlider.current, -maxCurrent, maxCurrent);
                 EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.stockLeftSlider.actualPosition, -maxActualPosition, maxActualPosition);
+                EditorGUILayout.Slider("Actual Velocity (rpm)", epos4Main.stockLeftSlider.actualVelocity, -maxVel, maxVel);
                 if (GUILayout.Button("Set Home")) {
                     epos4Main.stockLeftSlider.definePosition();
                 }
@@ -395,6 +402,7 @@ public class Epos4MainEditor : Editor
                 EditorGUILayout.LabelField("Stock Right Extend");
                 EditorGUILayout.Slider("Current (A)", epos4Main.stockRightExtend.current, -maxCurrent, maxCurrent);
                 EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.stockRightExtend.actualPosition, -maxActualPosition, maxActualPosition);
+                EditorGUILayout.Slider("Actual Velocity (rpm)", epos4Main.stockRightExtend.actualVelocity, -maxVel, maxVel);
                 if (GUILayout.Button("Set Home")) {
                     epos4Main.stockRightExtend.definePosition();
                 }
@@ -446,6 +454,7 @@ public class Epos4MainEditor : Editor
                 EditorGUILayout.LabelField("Stock Right Slider");
                 EditorGUILayout.Slider("Current (A)", epos4Main.stockRightSlider.current, -maxCurrent, maxCurrent);
                 EditorGUILayout.Slider("Actual Pos (mm)", epos4Main.stockRightSlider.actualPosition, -maxActualPosition, maxActualPosition);
+                EditorGUILayout.Slider("Actual Velocity (rpm)", epos4Main.stockRightSlider.actualVelocity, -maxVel, maxVel);
                 if (GUILayout.Button("Set Home")) {
                     epos4Main.stockRightSlider.definePosition();
                 }

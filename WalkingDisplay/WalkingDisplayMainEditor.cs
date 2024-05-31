@@ -7,7 +7,12 @@ public class WalkingDisplayMainEditor : Editor
     {
         WalkingDisplayMain walkingDisplayMain = target as WalkingDisplayMain;
 
+        EditorGUIUtility.labelWidth = 200;
         base.OnInspectorGUI();
+
+        if (GUILayout.Button("CSV Load, Init")) {
+            walkingDisplayMain.init();
+        }
 
         if (GUILayout.Button("Walk Straight"))
         {

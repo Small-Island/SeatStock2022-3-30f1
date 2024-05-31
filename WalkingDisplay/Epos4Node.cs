@@ -42,6 +42,7 @@ public class Epos4Node {
     [UnityEngine.HideInInspector] public Profile profile;
     [UnityEngine.HideInInspector] public int actualPosition = 0;
     [UnityEngine.HideInInspector] public float current = 0;
+    [UnityEngine.HideInInspector] public float actualVelocity = 0;
 
     public int keyHandle = 0;
 
@@ -148,6 +149,18 @@ public class Epos4Node {
         return value/1000f;
     }
 
+    public float getVelocityIs() {
+        if (this.cs == ConnectionStatus.failed) return 0;
+        int value = 0;
+        try {
+            value = this.deviceOperation.GetVelocityIs();
+        }
+        catch (System.Exception) {
+            // this.status = e.ToString();
+        }
+        return value;
+    }
+
     public void getError() {
         if (this.cs == ConnectionStatus.failed) return;
         // uint ecode = 2000;
@@ -211,22 +224,18 @@ public class Epos4Node {
         }
     }
 
-    private double old_arg_pos_inc = 0;
-
     public void MoveToPositionInTime(double arg_pos_milli, double arg_sec_time, bool arg_activate) {
         if (this.cs == ConnectionStatus.failed) return;
         if (this.status != "") return;
         double arg_pos_r = arg_pos_milli / this.milliPerRotation;
         double arg_pos_inc = this.incPerRotation * arg_pos_r;
 
-        double x_in = arg_pos_inc - this.old_arg_pos_inc;
+        double x_in = arg_pos_inc - this.deviceOperation.GetPositionIs() * this.direction;
         double x_r  = x_in / this.incPerRotation;
 
         if (System.Math.Abs(x_r) < 0.0001) {
             return;
         }
-
-        this.old_arg_pos_inc = arg_pos_inc;
 
         // this.profile.absolute     = true;
         // this.profile.position     = (int)arg_pos_milli;
@@ -250,14 +259,12 @@ public class Epos4Node {
         double arg_pos_r = arg_pos_milli / this.milliPerRotation;
         double arg_pos_inc = this.incPerRotation * arg_pos_r;
 
-        double x_in = arg_pos_inc - this.old_arg_pos_inc;
+        double x_in = arg_pos_inc - this.deviceOperation.GetPositionIs() * this.direction;
         double x_r  = x_in / this.incPerRotation;
 
         if (System.Math.Abs(x_r) < 0.0001) {
             return;
         }
-
-        this.old_arg_pos_inc = arg_pos_inc;
 
         // this.profile.absolute     = true;
         // this.profile.position     = (int)arg_pos_milli;
@@ -270,6 +277,17 @@ public class Epos4Node {
         this.profile.velocity     = (int)System.Math.Abs(this.speedRate * 2.0 * x_r / (arg_sec_time*(1 + this.maxVelocityTimeRate)) * 60.0);
         this.profile.acceleration = (int)System.Math.Abs((arg_arate + arg_drate) / (2.0 * arg_drate) *this.speedRate * 4.0 * x_r / (arg_sec_time * arg_sec_time *(1 - this.maxVelocityTimeRate*this.maxVelocityTimeRate)) * 60.0);
         this.profile.deceleration = (int)System.Math.Abs((arg_arate + arg_drate) / (2.0 * arg_arate)*this.speedRate * 4.0 * x_r / (arg_sec_time * arg_sec_time *(1 - this.maxVelocityTimeRate*this.maxVelocityTimeRate)) * 60.0);
+
+        if (this.profile.velocity < 1) {
+            this.profile.velocity = 120;
+        }
+
+        if (this.profile.acceleration < 1) {
+            this.profile.acceleration = 1000;
+        }
+        if (this.profile.deceleration < 1) {
+            this.profile.deceleration = 1000;
+        }
 
         this.SetPositionProfile();
     }
@@ -303,31 +321,76 @@ public class Epos4Node {
         }
     }
 
-    public void MoveToHome() {
+    public void MoveStop() {
         if (this.cs == ConnectionStatus.failed) return;
-        this.old_arg_pos_inc = 0;
-        this.profile.position = 0;
-        this.profile.absolute = true;
+        this.profile.velocity     = 0;
+        this.profile.acceleration = (int)(System.Math.Abs(this.actualVelocity * 5));
+        this.profile.deceleration = (int)(System.Math.Abs(this.actualVelocity * 2));
+        if (this.profile.acceleration < 1000) {
+            this.profile.acceleration = 1000;
+        }
+        if (this.profile.deceleration < 1000) {
+            this.profile.deceleration = 1000;
+        }
+        this.ActivateProfileVelocityMode();
         try {
-            this.deviceOperation.SetPositionProfile(
-                720,
-                (int)(this.profile.acceleration*0.4),
+            this.deviceOperation.SetVelocityProfile(
+                this.profile.acceleration,
                 this.profile.deceleration
             );
-            this.deviceOperation.MoveToPosition(
-                this.profile.position,
-                this.profile.absolute,
-                true
-            );
+            this.deviceOperation.MoveWithVelocity(0);
         }
         catch (System.Exception e) {
             this.status = e.ToString();
         }
-        this.profile.absolute     = false;
-        this.profile.position     = 0;
-        this.profile.velocity     = 120;
-        this.profile.acceleration = 240;
-        this.profile.deceleration = 240;
+    }
+
+    private System.Timers.Timer timerMoveToHome;
+
+    public void MoveToHome() {
+        if (this.cs == ConnectionStatus.failed) return;
+        this.timerMoveToHome = new System.Timers.Timer(100);
+        this.timerMoveToHome.AutoReset = true;
+        this.timerMoveToHome.Elapsed += (sender, e) => {
+            if (System.Math.Abs(this.actualVelocity) > 60) {
+                UnityEngine.Debug.Log("still moving..");
+                return;
+            }
+            this.ActivateProfilePositionMode();
+            this.profile.position     = 0;
+            this.profile.velocity     = 720;
+            this.profile.acceleration = (int)(System.Math.Abs(this.actualVelocity * 5));
+            this.profile.deceleration = (int)(System.Math.Abs(this.actualVelocity * 2));
+            if (this.profile.acceleration < 1000) {
+                this.profile.acceleration = 1000;
+            }
+            if (this.profile.deceleration < 1000) {
+                this.profile.deceleration = 1000;
+            }
+            this.profile.absolute = true;
+            try {
+                this.deviceOperation.SetPositionProfile(
+                    this.profile.velocity,
+                    this.profile.acceleration,
+                    this.profile.deceleration
+                );
+                this.deviceOperation.MoveToPosition(
+                    this.profile.position,
+                    this.profile.absolute,
+                    true
+                );
+            }
+            catch (System.Exception exc) {
+                this.status = exc.ToString();
+            }
+            this.profile.absolute     = false;
+            this.profile.position     = 0;
+            this.profile.velocity     = 120;
+            this.profile.acceleration = 240;
+            this.profile.deceleration = 240;
+            this.timerMoveToHome.Stop();
+        };
+        this.timerMoveToHome.Start();
         // this.deviceOperation.SetQuickStopState();
     }
 
@@ -518,6 +581,17 @@ public class Epos4Node {
             int value = 0;
             try {
                 value = (int)(this.mi.GetCurrentIs());
+            }
+            catch (System.Exception) {
+                // UnityEngine.MonoBehaviour.print(e);
+            }
+            return value;
+        }
+
+        public int GetVelocityIs() {
+             int value = 0;
+            try {
+                value = (int)(this.mi.GetVelocityIs());
             }
             catch (System.Exception) {
                 // UnityEngine.MonoBehaviour.print(e);

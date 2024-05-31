@@ -31,28 +31,28 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
     public void clearError() {
         try {
             this.connector = new EposCmd.Net.DeviceManager("EPOS4", "MAXON SERIAL V2", "USB", "USB0");
-            this.connector.Baudrate = 1000000;
+            // this.connector.Baudrate = 1000000;
         }
         catch (EposCmd.Net.DeviceException) {
         }
-        // this.lifter      = new Epos4Node(connector, 1,        20, -1, 0.5, 1);
-        // this.lifter.MotorInit();
-        // this.leftPedal   = new Epos4Node(connector, 2,    6,  1, 0.2, 1);
-        // this.leftPedal.MotorInit();
-        // this.leftSlider  = new Epos4Node(connector, 3,  12, -1, 0.2, 1);
-        // this.leftSlider.MotorInit();
-        // this.rightPedal  = new Epos4Node(connector, 4,   6,  1, 0.2, 1);
-        // this.rightPedal.MotorInit();
-        // this.rightSlider = new Epos4Node(connector, 5, 12, -1, 0.2, 1);
-        // this.rightSlider.MotorInit();
+        this.lifter      = new Epos4Node(connector, 8,  2, -1, 0.2, 1);
+        this.lifter.MotorInit();
+        this.leftPedal   = new Epos4Node(connector, 1,  6,  1, 0.2, 1);
+        this.leftPedal.MotorInit();
+        this.leftSlider  = new Epos4Node(connector, 2, 12, -1, 0.2, 1);
+        this.leftSlider.MotorInit();
+        this.rightPedal  = new Epos4Node(connector, 3,  6,  1, 0.2, 1);
+        this.rightPedal.MotorInit();
+        this.rightSlider = new Epos4Node(connector, 4, 12, -1, 0.2, 1);
+        this.rightSlider.MotorInit();
 
-        // this.stockLeftExtend   = new Epos4Node(connector, 1,    20,  -1, 0.2, 1);
-        // this.stockLeftExtend.MotorInit();
-        // this.stockLeftSlider  = new Epos4Node(connector, 2,  20, -1, 0.2, 1);
-        // this.stockLeftSlider.MotorInit();
-        this.stockRightExtend  = new Epos4Node(connector, 2, 20, -1, 0.2, 1);
+        this.stockLeftExtend   = new Epos4Node(this.connector, 9, 20,  -1, 0.2, 1);
+        this.stockLeftExtend.MotorInit();
+        this.stockLeftSlider  =  new Epos4Node(this.connector, 7, 20, -1, 0.2, 1);
+        this.stockLeftSlider.MotorInit();
+        this.stockRightExtend  = new Epos4Node(this.connector, 6, 20, -1, 0.2, 1);
         this.stockRightExtend.MotorInit();
-        this.stockRightSlider = new Epos4Node(connector, 1, 20, -1, 0.2, 1);
+        this.stockRightSlider =  new Epos4Node(this.connector, 5, 20, -1, 0.2, 1);
         this.stockRightSlider.MotorInit();
     }
 
@@ -81,6 +81,16 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
             this.stockRightExtend.current = this.stockRightExtend.getCurrentA();
             this.stockRightSlider.current = this.stockRightSlider.getCurrentA();
 
+            this.lifter.actualVelocity           = this.lifter.getVelocityIs();
+            this.leftPedal.actualVelocity        = this.leftPedal.getVelocityIs();
+            this.leftSlider.actualVelocity       = this.leftSlider.getVelocityIs();
+            this.rightPedal.actualVelocity       = this.rightPedal.getVelocityIs();
+            this.rightSlider.actualVelocity      = this.rightSlider.getVelocityIs();
+            this.stockLeftExtend.actualVelocity  = this.stockLeftExtend.getVelocityIs();
+            this.stockLeftSlider.actualVelocity  = this.stockLeftSlider.getVelocityIs();
+            this.stockRightExtend.actualVelocity = this.stockRightExtend.getVelocityIs();
+            this.stockRightSlider.actualVelocity = this.stockRightSlider.getVelocityIs();
+
             // this.lifter.getError();
             System.Threading.Thread.Sleep(20);
         }
@@ -94,6 +104,19 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
         this.leftSlider.ActivateProfilePositionMode();
         this.rightPedal.ActivateProfilePositionMode();
         this.rightSlider.ActivateProfilePositionMode();
+    }
+
+    public void AllNodeMoveStop()
+    {
+        this.lifter.MoveStop();
+        this.leftPedal.MoveStop();
+        this.leftSlider.MoveStop();
+        this.rightPedal.MoveStop();
+        this.rightSlider.MoveStop();
+        this.stockLeftExtend.MoveStop();
+        this.stockLeftSlider.MoveStop();
+        this.stockRightExtend.MoveStop();
+        this.stockRightSlider.MoveStop();
     }
 
     public void AllNodeMoveToHome()
