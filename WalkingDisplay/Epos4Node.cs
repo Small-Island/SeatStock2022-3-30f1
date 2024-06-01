@@ -158,7 +158,7 @@ public class Epos4Node {
         catch (System.Exception) {
             // this.status = e.ToString();
         }
-        return value;
+        return (float) this.direction * value;
     }
 
     public void getError() {
@@ -253,14 +253,19 @@ public class Epos4Node {
         this.MoveToPosition(arg_activate);
     }
 
+    private double old_arg_pos_inc = 0;
+
     public void SetPositionProfileInTime(double arg_pos_milli, double arg_sec_time, double arg_arate, double arg_drate) {
         // if (this.cs == ConnectionStatus.failed) return;
         // if (this.status != "") return;
         double arg_pos_r = arg_pos_milli / this.milliPerRotation;
         double arg_pos_inc = this.incPerRotation * arg_pos_r;
 
-        double x_in = arg_pos_inc - this.deviceOperation.GetPositionIs() * this.direction;
-        double x_r  = x_in / this.incPerRotation;
+        // double x_in = arg_pos_inc - this.deviceOperation.GetPositionIs() * this.direction;
+        double x_inc = arg_pos_inc - this.old_arg_pos_inc;
+        double x_r  = x_inc / this.incPerRotation;
+
+        this.old_arg_pos_inc = arg_pos_inc;
 
         if (System.Math.Abs(x_r) < 0.0001) {
             return;
@@ -324,15 +329,15 @@ public class Epos4Node {
     public void MoveStop() {
         if (this.cs == ConnectionStatus.failed) return;
         this.profile.velocity     = 0;
-        this.profile.acceleration = (int)(System.Math.Abs(this.actualVelocity * 5));
-        this.profile.deceleration = (int)(System.Math.Abs(this.actualVelocity * 2));
-        if (this.profile.acceleration < 1000) {
-            this.profile.acceleration = 1000;
+        this.profile.acceleration = (int)(System.Math.Abs(this.actualVelocity * 0.4));
+        this.profile.deceleration = (int)(System.Math.Abs(this.actualVelocity * 0.4));
+        if (this.profile.acceleration < 500) {
+            this.profile.acceleration = 500;
         }
-        if (this.profile.deceleration < 1000) {
-            this.profile.deceleration = 1000;
+        if (this.profile.deceleration < 500) {
+            this.profile.deceleration = 500;
         }
-        this.ActivateProfileVelocityMode();
+        // this.ActivateProfileVelocityMode();
         try {
             this.deviceOperation.SetVelocityProfile(
                 this.profile.acceleration,
@@ -343,30 +348,32 @@ public class Epos4Node {
         catch (System.Exception e) {
             this.status = e.ToString();
         }
+        // this.ActivateProfilePositionMode();
     }
 
     private System.Timers.Timer timerMoveToHome;
 
     public void MoveToHome() {
         if (this.cs == ConnectionStatus.failed) return;
-        this.timerMoveToHome = new System.Timers.Timer(100);
+        this.timerMoveToHome = new System.Timers.Timer(200);
         this.timerMoveToHome.AutoReset = true;
         this.timerMoveToHome.Elapsed += (sender, e) => {
             if (System.Math.Abs(this.actualVelocity) > 60) {
                 UnityEngine.Debug.Log("still moving..");
                 return;
             }
-            this.ActivateProfilePositionMode();
             this.profile.position     = 0;
             this.profile.velocity     = 720;
-            this.profile.acceleration = (int)(System.Math.Abs(this.actualVelocity * 5));
-            this.profile.deceleration = (int)(System.Math.Abs(this.actualVelocity * 2));
-            if (this.profile.acceleration < 1000) {
-                this.profile.acceleration = 1000;
-            }
-            if (this.profile.deceleration < 1000) {
-                this.profile.deceleration = 1000;
-            }
+            // this.profile.acceleration = (int)(System.Math.Abs(this.actualVelocity * 5));
+            // this.profile.deceleration = (int)(System.Math.Abs(this.actualVelocity * 2));
+            // if (this.profile.acceleration < 1000) {
+            //     this.profile.acceleration = 1000;
+            // }
+            // if (this.profile.deceleration < 1000) {
+            //     this.profile.deceleration = 1000;
+            // }
+            this.profile.acceleration = 1000;
+            this.profile.deceleration = 1000;
             this.profile.absolute = true;
             try {
                 this.deviceOperation.SetPositionProfile(

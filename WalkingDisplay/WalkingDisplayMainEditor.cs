@@ -10,9 +10,9 @@ public class WalkingDisplayMainEditor : Editor
         EditorGUIUtility.labelWidth = 200;
         base.OnInspectorGUI();
 
-        if (GUILayout.Button("CSV Load, Init")) {
-            walkingDisplayMain.init();
-        }
+        // if (GUILayout.Button("CSV Load, Init")) {
+        //     walkingDisplayMain.init();
+        // }
 
         if (GUILayout.Button("Walk Straight"))
         {

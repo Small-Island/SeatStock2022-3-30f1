@@ -3,11 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
-    // [UnityEngine.SerializeField, UnityEngine.Header("歩行周期 (s)"), Range(2f, 10f)] public float period = 10f;
-    // [UnityEngine.HideInInspector, UnityEngine.SerializeField, Range(1, 10)] public int forwardRate = 5;
-    // [UnityEngine.HideInInspector, UnityEngine.SerializeField, Range(1, 10)] public int backwardRate = 5;
-    // [UnityEngine.SerializeField] private UnityEngine.AddressableAssets.AssetReference csvFile;
-
     [UnityEngine.SerializeField] public Activate activate;
 
     [System.Serializable]
@@ -23,9 +18,6 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField] public bool stockRightExtend = false;
         [UnityEngine.SerializeField] public bool stockRightSlider = false;
     }
-    [UnityEngine.Header("Unit mm")]
-    private Length length;
-    // [UnityEngine.SerializeField, Range(0.3f, 10f)] public float drop = 3;
 
     [System.Serializable]
     public class Length {
@@ -46,16 +38,18 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     [UnityEngine.SerializeField, ReadOnly] public Status status;
 
     private void Start() {
-        // this.trajectories = new trajectories()
+        this.lifter.AddressableLoad();
+        this.leftPedal.AddressableLoad();
+        this.rightPedal.AddressableLoad();
+        this.leftSlider.AddressableLoad();
+        this.rightSlider.AddressableLoad();
+        this.stockLeftExtend.AddressableLoad();
+        this.stockLeftSlider.AddressableLoad();
+        this.stockRightExtend.AddressableLoad();
+        this.stockRightSlider.AddressableLoad();
     }
 
     private bool walkstop = false;
-    private System.Timers.Timer timer_walk, timer_walkstop;
-    private System.Timers.Timer timer_clock;
-    // [UnityEngine.Header("時刻 (s)")] public double clockTime;
-    // [UnityEngine.Header("体験時間 (s)")] public double LimitClockTime = 30;
-    private System.Timers.Timer timer_seat, timer_leftPedal, timer_leftSlider, timer_rightPedal, timer_rightSlider, timer_stockLeftExtend, timer_stockLeftSlider, timer_stockRightExtend, timer_stockRightSlider;
-
     public MotorTrajectory lifter, leftPedal, leftSlider, rightPedal, rightSlider, stockLeftExtend, stockLeftSlider, stockRightExtend, stockRightSlider;
 
     [System.Serializable]
@@ -63,10 +57,17 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField, UnityEngine.Header("指令時刻 (s)")] public double clockTime;
         [UnityEngine.SerializeField, UnityEngine.Header("動作時間 (s)")] public double deltaTime;
         [UnityEngine.SerializeField, UnityEngine.Header("目標位置 (mm)")] public double position;
+        // public Trajectory(double arg_clockTime, double arg_deltaTime, double arg_position, double arg_accel, double arg_decel) {
+        //     this.clockTime = arg_clockTime;
+        //     this.deltaTime = arg_deltaTime;
+        //     this.position  = arg_position;
+        //     this.accel     = arg_accel;
+        //     this.decel     = arg_decel;
+        // }
         public Trajectory(double arg_clockTime, double arg_deltaTime, double arg_position) {
             this.clockTime = arg_clockTime;
             this.deltaTime = arg_deltaTime;
-            this.position = arg_position;
+            this.position  = arg_position;
         }
     }
 
@@ -74,8 +75,8 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     public class MotorTrajectory {
         [UnityEngine.SerializeField] public UnityEngine.AddressableAssets.AssetReference csvFile;
         [UnityEngine.SerializeField] public List<Trajectory> trajectories;
-        [UnityEngine.SerializeField] public int index = 0;
-
+        
+        private int index = 0;
         private System.Timers.Timer[] timers;
         private Epos4Node epos4Node;
         private bool activate = false;
@@ -107,14 +108,15 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         
         private void timerCallback(object source, System.Timers.ElapsedEventArgs e) {
             if (this.walkingDisplayMain.walkstop) {
-                UnityEngine.Debug.Log("stop timercallback");
+                this.stop();
                 return;
             }
+            if (this.index + 1 < this.trajectories.Count) this.timers[this.index + 1].Start();
             this.epos4Node.SetPositionProfileInTime(this.trajectories[this.index].position, this.trajectories[this.index].deltaTime, 1, 1);
             this.epos4Node.MoveToPosition(this.activate);
+            this.timers[this.index].Stop();
+            this.timers[this.index].Dispose();
             this.index++;
-            if (this.index == this.trajectories.Count) return;
-            this.timers[this.index].Start();
         }
 
         public void AddressableLoad() {
@@ -159,6 +161,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             for (int i = 0; i < 0; i++) {
                 if (i > 0 || !this.zeroClockStart) {
                     this.timers[i].Stop();
+                    this.timers[i].Dispose();
                 }
             }
         }
@@ -168,217 +171,101 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         }
     }
 
-    public void init() {
-        this.lifter.AddressableLoad();
-        this.leftPedal.AddressableLoad();
-        this.stockLeftSlider.AddressableLoad();
-    }
+    private System.Threading.Thread th = null;
 
-    public void WalkStraight(float incdec_time)
-    {
+    public void WalkStraight(float incdec_time) {
         if (this.status == Status.walking) return;
         this.status = Status.walking;
         this.walkstop = false;
         this.epos4Main.AllNodeDefinePosition();
-        // this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.activate.stockLeftExtend, this);
         this.lifter.init(this.epos4Main.lifter, this);
         this.leftPedal.init(this.epos4Main.leftPedal, this);
+        this.leftSlider.init(this.epos4Main.leftSlider, this);
+        this.rightPedal.init(this.epos4Main.rightPedal, this);
+        this.rightSlider.init(this.epos4Main.rightSlider, this);
+        this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this);
         this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this);
+        this.stockRightExtend.init(this.epos4Main.stockRightExtend, this);
+        this.stockRightSlider.init(this.epos4Main.stockRightSlider, this);
         this.lifter.start(this.activate.lifter);
         this.leftPedal.start(this.activate.leftPedal);
+        this.leftSlider.start(this.activate.leftSlider);
+        this.rightPedal.start(this.activate.rightPedal);
+        this.rightSlider.start(this.activate.rightSlider);
         this.stockLeftSlider.start(this.activate.stockLeftSlider);
-        // this.stockLeftExtend.start();
-        // this.clockTime = 0;
-        // this.lifter.index = 0; this.leftPedal.index = 0; this.rightPedal.index = 0; this.rightSlider.index = 0; this.stockLeftExtend.index = 0; this.stockLeftSlider.index = 0; this.stockRightExtend.index = 0; this.stockRightSlider.index = 0;
-        // this.trajectories = new Trajectory[] {seat, leftPedal, leftSlider, rightPedal, rightSlider, stockLeftExtend, stockLeftSlider, stockRightExtend, stockRightSlider};
-
-        // this.stockLeftSlider.timer = new System.Timers.Timer(this.stockLeftSlider.getTrajectory().deltaTime);
-        // this.stockLeftSlider.timer.Elapsed += (sender, e) => {
-        //     this.epos4Main.stockLeftSlider.SetPositionProfileInTime(this.stockLeftSlider.getTrajectory().position, this.stockLeftSlider, this.getTrajectory().deltaTime);
-        //     this.epos4Main.stockLeftSlider.MoveToPosition(this.activate.stockLeftSlider);
-        //     this.stockLeftSlider.index++;
-        //     this.stockLeftSlider.timer.Stop();
-        // };
-        // this.stockLeftSlider.timer.Start();
-
-        // this.timer_clock = new System.Timers.Timer(10);
-        // this.timer_clock.Elapsed += (sender, e) => {
-        //     this.clockTime += 0.010;
-        //     if (this.walkstop) {
-        //         this.timer_clock.Stop();
-        //         return;
-        //     }
-        //     if (this.clockTime > this.LimitClockTime && this.walkstop == false) {
-        //         this.WalkStop();
-        //         return;
-        //     }
-
-        //     if (this.seat.trajectory.Length > 0) {
-        //         if (this.seat.index < this.seat.trajectory.Length - 1) {
-        //             if (this.seat.getTrajectory().clockTime < this.clockTime) {
-        //                 this.epos4Main.lifter.SetPositionProfileInTime(this.seat.getTrajectory().position, this.seat.getTrajectory().deltaTime, 1, 1);
-        //                 this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
-        //                 this.seat.index++;
-        //             }
-        //         }
-        //     }
-        //     if (this.leftPedal.trajectory.Length > 0) {
-        //         if (this.seat.index < this.leftPedal.trajectory.Length - 1) {
-        //             if (leftPedal.getTrajectory().clockTime < this.clockTime) {
-        //                 this.epos4Main.leftPedal.SetPositionProfileInTime(leftPedal.getTrajectory().position, leftPedal.getTrajectory().deltaTime, 1, 1);
-        //                 this.epos4Main.leftPedal.MoveToPosition(this.activate.leftPedal);
-        //                 this.leftPedal.index++;
-        //             }
-        //         }
-        //     }
-        //     if (leftSlider.getTrajectory().clockTime < this.clockTime) {
-        //         this.epos4Main.leftSlider.SetPositionProfileInTime(leftSlider.getTrajectory().position, leftSlider.getTrajectory().deltaTime, 1, 1);
-        //         this.epos4Main.leftSlider.MoveToPosition(this.activate.leftSlider);
-        //         this.leftSlider.index++;
-        //     }
-        //     if (rightPedal.getTrajectory().clockTime < this.clockTime) {
-        //         this.epos4Main.rightPedal.SetPositionProfileInTime(rightPedal.getTrajectory().position, rightPedal.getTrajectory().deltaTime, 1, 1);
-        //         this.epos4Main.rightPedal.MoveToPosition(this.activate.rightPedal);
-        //         this.rightPedal.index++;
-        //     }
-        //     if (rightSlider.getTrajectory().clockTime < this.clockTime) {
-        //         this.epos4Main.rightSlider.SetPositionProfileInTime(rightSlider.getTrajectory().position, rightSlider.getTrajectory().deltaTime, 1, 1);
-        //         this.epos4Main.rightSlider.MoveToPosition(this.activate.rightSlider);
-        //         this.rightSlider.index++;
-        //     }
-        //     if (stockLeftExtend.getTrajectory().clockTime < this.clockTime) {
-        //         this.epos4Main.stockLeftExtend.SetPositionProfileInTime(stockLeftExtend.getTrajectory().position, stockLeftExtend.getTrajectory().deltaTime, 1, 1);
-        //         this.epos4Main.stockLeftExtend.MoveToPosition(this.activate.stockLeftExtend);
-        //         this.stockLeftExtend.index++;
-        //     }
-        //     if (this.stockLeftSlider.getTrajectory().clockTime < this.clockTime) {
-        //         this.epos4Main.stockLeftSlider.SetPositionProfileInTime(this.stockLeftSlider.getTrajectory().position, this.stockLeftSlider.getTrajectory().deltaTime, 1, 1);
-        //         this.epos4Main.stockLeftSlider.MoveToPosition(this.activate.stockLeftSlider);
-        //         this.stockLeftSlider.index++;
-        //     }
-        //     if (this.stockRightExtend.getTrajectory().clockTime < this.clockTime) {
-        //         this.epos4Main.stockRightExtend.SetPositionProfileInTime(this.stockRightExtend.getTrajectory().position, this.stockRightExtend.getTrajectory().deltaTime, 1, 1);
-        //         this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
-        //         this.stockRightExtend.index++;
-        //     }
-        //     if (this.stockRightSlider.getTrajectory().clockTime < this.clockTime) {
-        //         this.epos4Main.stockRightSlider.SetPositionProfileInTime(stockRightSlider.getTrajectory().position, stockRightSlider.getTrajectory().deltaTime, 1, 1);
-        //         this.epos4Main.stockRightSlider.MoveToPosition(this.activate.stockRightSlider);
-        //         this.stockRightSlider.index++;
-        //     }
-        // };
-
-        // this.timer_clock.Start();
-
-        // UnityEngine.Debug.Log("clockTime: " + stockLeftSlider.getTrajectory().clockTime);
-
-        // this.timer_walk = new System.Timers.Timer(0.25f*this.period*1000f);
-        // this.timer_walk.Elapsed += (sender, e) => {
-        //     this.time += 0.25f*this.period;
-        //     if (this.time > 30 && this.walkstop == false) {
-        //         this.WalkStop();
-        //     }
-        //     if (this.walkstop) {
-        //         this.timer_walk.Stop();
-        //     }
-        //     else if (this.phase == 1) {
-        //         this.phase++;
-        //         this.status = Status.walking;
-        //         // スライダ後退 3/4*period (秒), 左踵下降 1/4*period (秒)
-        //         this.epos4Main.leftPedal.SetPositionProfileInTime(this.length.pedal, this.period*0.75f, 1, 1);
-        //         this.epos4Main.leftPedal.MoveToPosition(this.activate.leftPedal);
-        //         this.epos4Main.leftSlider.SetPositionProfileInTime(-this.length.legSlider*0.5, this.period*0.75f, 1, 1);
-        //         this.epos4Main.leftSlider.MoveToPosition(this.activate.leftSlider);
-        //         this.epos4Main.stockRightSlider.SetPositionProfileInTime(-this.length.stockSlider*0.5, this.period*0.75f, 1, 1);
-        //         this.epos4Main.stockRightSlider.MoveToPosition(this.activate.stockRightSlider);
-        //         this.epos4Main.stockRightExtend.SetPositionProfileInTime(0, this.period*0.75f, 1, 1);
-        //         this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
-        //     }
-        //     else if (this.phase == 2) {
-        //         this.phase++;
-        //         this.status = Status.walking;
-        //         this.epos4Main.rightPedal.SetPositionProfileInTime(0, this.period*0.25f, 4, 1);
-        //         this.epos4Main.rightPedal.MoveToPosition(this.activate.rightPedal);
-        //         this.epos4Main.rightSlider.SetPositionProfileInTime(this.length.legSlider*0.5, this.period*0.25f, 4, 1);
-        //         this.epos4Main.rightSlider.MoveToPosition(this.activate.rightSlider);
-        //         this.epos4Main.stockLeftSlider.SetPositionProfileInTime(this.length.stockSlider*0.5, this.period*0.25f, 4, 1);
-        //         this.epos4Main.stockLeftSlider.MoveToPosition(this.activate.stockLeftSlider);
-        //         this.epos4Main.stockLeftExtend.SetPositionProfileInTime(this.length.stockExtend, this.period*0.25f*0.4f, 1, 1);
-        //         this.epos4Main.stockLeftExtend.MoveToPosition(this.activate.stockLeftExtend);
-        //         System.Threading.Thread.Sleep((int)(1000f*this.period*0.25f*0.4f));
-        //         this.epos4Main.stockLeftExtend.SetPositionProfileInTime(this.length.stockExtend*0.5f, this.period*0.25f*0.3f, 1, this.stiffness);
-        //         this.epos4Main.stockLeftExtend.MoveToPosition(this.activate.stockLeftExtend);
-
-        //         //次のphaseをあらかじめ SetPositionProfileInTime
-        //         // this.epos4Main.lifter.SetPositionProfileInTime(0, this.period*0.25f);
-        //     }
-        //     else if (this.phase == 3) {
-        //         this.phase++;
-        //         this.status = Status.walking;
-        //         this.epos4Main.rightPedal.SetPositionProfileInTime(this.length.pedal, this.period*0.75f, 4, 1);
-        //         this.epos4Main.rightPedal.MoveToPosition(this.activate.rightPedal);
-        //         this.epos4Main.rightSlider.SetPositionProfileInTime(-this.length.legSlider*0.5, this.period*0.75f, 1, 1);
-        //         this.epos4Main.rightSlider.MoveToPosition(this.activate.rightSlider);
-        //         this.epos4Main.stockLeftSlider.SetPositionProfileInTime(-this.length.stockSlider*0.5, this.period*0.75f, 1, 1);
-        //         this.epos4Main.stockLeftSlider.MoveToPosition(this.activate.stockLeftSlider);
-        //         this.epos4Main.stockLeftExtend.SetPositionProfileInTime(0, this.period*0.75f, 1, 1);
-        //         this.epos4Main.stockLeftExtend.MoveToPosition(this.activate.stockLeftExtend);
-
-        //         //次のphaseをあらかじめ SetPositionProfileInTime
-        //         // this.epos4Main.lifter.SetPositionProfileInTime(this.length.lift, this.period*0.25f);
-        //     }
-        //     else if (this.phase == 4) {
-        //         this.phase = 1;
-        //         this.status = Status.walking;
-        //         // スライダ前進 1/4*Period (秒)
-        //         this.epos4Main.leftPedal.SetPositionProfileInTime(0, this.period*0.25f, 4, 1);
-        //         this.epos4Main.leftPedal.MoveToPosition(this.activate.leftPedal);
-        //         this.epos4Main.leftSlider.SetPositionProfileInTime(this.length.legSlider, this.period*0.25f, 4, 1);
-        //         this.epos4Main.leftSlider.MoveToPosition(this.activate.leftSlider);
-        //         this.epos4Main.stockRightSlider.SetPositionProfileInTime(this.length.stockSlider*0.5, this.period*0.25f, 4, 1);
-        //         this.epos4Main.stockRightSlider.MoveToPosition(this.activate.stockRightSlider);
-        //         this.epos4Main.stockRightExtend.SetPositionProfileInTime(this.length.stockExtend, this.period*0.25f*0.4f, 1, 1);
-        //         this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
-        //         System.Threading.Thread.Sleep((int)(1000f*this.period*0.25f*0.4f));
-        //         this.epos4Main.stockRightExtend.SetPositionProfileInTime(this.length.stockExtend*0.5f, this.period*0.25f*0.3f, 1, this.stiffness);
-        //         this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
-        //     }
-        // };
-
-        // // System.Threading.Thread.Sleep((int)(5000));
-        // this.phase = 0;
-        // this.time = 0;
-        // this.timer_walk.Start();
-        // this.phase++;
-        // this.status = Status.walking;
-        // // スライダ前進 1/4*Period (秒)
-        // this.epos4Main.leftPedal.SetPositionProfileInTime(0, this.period*0.25f, 4, 1);
-        // this.epos4Main.leftPedal.MoveToPosition(this.activate.leftPedal);
-        // this.epos4Main.leftSlider.SetPositionProfileInTime(this.length.legSlider*0.5, this.period*0.25f, 4, 1);
-        // this.epos4Main.leftSlider.MoveToPosition(this.activate.leftSlider);
-        // this.epos4Main.stockRightSlider.SetPositionProfileInTime(this.length.stockSlider*0.5, this.period*0.25f, 4, 1);
-        // this.epos4Main.stockRightSlider.MoveToPosition(this.activate.stockRightSlider);
-        // this.epos4Main.stockRightExtend.SetPositionProfileInTime(this.length.stockExtend, this.period*0.25f*0.4f, 1, 1);
-        // this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
-        // System.Threading.Thread.Sleep((int)(1000f*this.period*0.25f*0.4f));
-        // this.epos4Main.stockRightExtend.SetPositionProfileInTime(this.length.stockExtend*0.5f, this.period*0.25f*0.3f, 1, this.stiffness);
-        // this.epos4Main.stockRightExtend.MoveToPosition(this.activate.stockRightExtend);
+        this.stockLeftExtend.start(this.activate.stockLeftExtend);
+        this.stockRightExtend.start(this.activate.stockRightExtend);
+        this.stockRightSlider.start(this.activate.stockRightSlider);
+        this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
+        this.th.Start();
     }
 
-    public void WalkStop()
-    {
-        // UnityEngine.Debug.Log("Walk stop");
-        // LegCoroutines.stop(this);
-        // LegThreads.stop();
+    public void WalkStop() {
         this.status = Status.stop;
         this.walkstop = true;
-        this.epos4Main.AllNodeMoveStop();    
+        // this.epos4Main.AllNodeMoveStop();    
         this.epos4Main.AllNodeMoveToHome();
     }
 
-    private void OnDestroy()
-    {
+    private void getActualPositionAsync() {
+        int N = 1000;
+        float[,] data = new float[N,18];
+        int i = 0;
+        while (!this.Destroied && i < N) {
+            data[i,0] = this.epos4Main.lifter.actualPosition / 100f; // Unit 10cm
+            data[i,1] = this.epos4Main.leftPedal.actualPosition / 100f;
+            data[i,2] = this.epos4Main.leftSlider.actualPosition / 100f;
+            data[i,3] = this.epos4Main.rightPedal.actualPosition / 100f;
+            data[i,4] = this.epos4Main.rightSlider.actualPosition / 100f;
+            data[i,5] = this.epos4Main.stockLeftExtend.actualPosition / 100f;
+            data[i,6] = this.epos4Main.stockLeftSlider.actualPosition / 100f;
+            data[i,7] = this.epos4Main.stockRightExtend.actualPosition / 100f;
+            data[i,8] = this.epos4Main.stockRightSlider.actualPosition / 100f;
+
+            data[i,9] = this.epos4Main.lifter.current;
+            data[i,10] = this.epos4Main.leftPedal.current;
+            data[i,11] = this.epos4Main.leftSlider.current;
+            data[i,12] = this.epos4Main.rightPedal.current;
+            data[i,13] = this.epos4Main.rightSlider.current;
+            data[i,14] = this.epos4Main.stockLeftExtend.current;
+            data[i,15] = this.epos4Main.stockLeftSlider.current;
+            data[i,16] = this.epos4Main.stockRightExtend.current;
+            data[i,17] = this.epos4Main.stockRightSlider.current;
+
+            i++;
+
+            System.Threading.Thread.Sleep(10);
+        }
+
+        N = i;
+
+        System.IO.StreamWriter sw; // これがキモらしい
+        System.IO.FileInfo fi;
+        　　// Aplication.dataPath で プロジェクトファイルがある絶対パスが取り込める
+        System.DateTime dt = System.DateTime.Now;
+        string result = dt.ToString("yyyyMMddHHmmss");
+        fi = new System.IO.FileInfo(UnityEngine.Application.dataPath + "/Scripts/log/current" + result + ".csv");
+        sw = fi.AppendText();
+        sw.WriteLine("time (s), lifter (10cm), left pedal pos (10cm), left slider pos (10cm), right pedal pos (10cm), right slider pos (10cm), stock left extend pos (10cm), stock left slider pos (10cm), stock right extend pos (10cm), stock right slider pos (10cm), lifter current (A), left pedal current (A), left slider current (A), right pedal current (A), right slider current (A), stock left extend current (A), stock left slider current (A), stock right extend current (A), stock right slider current (A)");
+        for (i = 0; i < N; i++)
+        {
+            float time = i*0.01f;
+            string a = time.ToString() + ",";
+            for (int j = 0; j < 18; j++) {
+                a += data[i,j].ToString() + ",";
+            }
+            sw.WriteLine(a);
+        }
+        sw.Flush();
+        sw.Close();
+        return;
+    }
+
+    private bool Destroied = false;
+
+    private void OnDestroy() {
         this.walkstop = true;
         this.WalkStop();
+        this.Destroied = true;
     }
 }
