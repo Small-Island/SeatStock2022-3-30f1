@@ -92,7 +92,7 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
             this.stockRightSlider.actualVelocity = this.stockRightSlider.getVelocityIs();
 
             // this.lifter.getError();
-            System.Threading.Thread.Sleep(20);
+            System.Threading.Thread.Sleep(2);
         }
         return;
     }
