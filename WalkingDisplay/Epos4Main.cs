@@ -35,24 +35,24 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
         }
         catch (EposCmd.Net.DeviceException) {
         }
-        this.lifter      = new Epos4Node(connector, 8,  2, -1, 0.2, 1);
+        this.lifter      = new Epos4Node(connector, 8,  2, -1, 0.2, 1.1);
         this.lifter.MotorInit();
-        this.leftPedal   = new Epos4Node(connector, 1,  6,  1, 0.2, 1);
+        this.leftPedal   = new Epos4Node(connector, 1,  6,  1, 0.2, 1.1);
         this.leftPedal.MotorInit();
-        this.leftSlider  = new Epos4Node(connector, 2, 12, -1, 0.2, 1);
+        this.leftSlider  = new Epos4Node(connector, 2, 12, -1, 0.2, 1.1);
         this.leftSlider.MotorInit();
-        this.rightPedal  = new Epos4Node(connector, 3,  6,  1, 0.2, 1);
+        this.rightPedal  = new Epos4Node(connector, 3,  6,  1, 0.2, 1.1);
         this.rightPedal.MotorInit();
-        this.rightSlider = new Epos4Node(connector, 4, 12, -1, 0.2, 1);
+        this.rightSlider = new Epos4Node(connector, 4, 12, -1, 0.2, 1.1);
         this.rightSlider.MotorInit();
 
-        this.stockLeftExtend   = new Epos4Node(this.connector, 9, 20,  -1, 0.2, 1);
+        this.stockLeftExtend   = new Epos4Node(this.connector, 9, 20,  -1, 0.2, 1.1);
         this.stockLeftExtend.MotorInit();
-        this.stockLeftSlider  =  new Epos4Node(this.connector, 7, 20, -1, 0.2, 1);
+        this.stockLeftSlider  =  new Epos4Node(this.connector, 7, 20, -1, 0.2, 1.1);
         this.stockLeftSlider.MotorInit();
-        this.stockRightExtend  = new Epos4Node(this.connector, 6, 20, -1, 0.2, 1);
+        this.stockRightExtend  = new Epos4Node(this.connector, 6, 20, -1, 0.2, 1.1);
         this.stockRightExtend.MotorInit();
-        this.stockRightSlider =  new Epos4Node(this.connector, 5, 20, -1, 0.2, 1);
+        this.stockRightSlider =  new Epos4Node(this.connector, 5, 20, -1, 0.2, 1.1);
         this.stockRightSlider.MotorInit();
     }
 
@@ -104,6 +104,10 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
         this.leftSlider.ActivateProfilePositionMode();
         this.rightPedal.ActivateProfilePositionMode();
         this.rightSlider.ActivateProfilePositionMode();
+        this.stockLeftExtend.ActivateProfilePositionMode();
+        this.stockLeftSlider.ActivateProfilePositionMode();
+        this.stockRightExtend.ActivateProfilePositionMode();
+        this.stockRightSlider.ActivateProfilePositionMode();
     }
 
     public void AllNodeMoveStop()

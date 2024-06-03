@@ -57,6 +57,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField, UnityEngine.Header("指令時刻 (s)")] public double clockTime;
         [UnityEngine.SerializeField, UnityEngine.Header("動作時間 (s)")] public double deltaTime;
         [UnityEngine.SerializeField, UnityEngine.Header("目標位置 (mm)")] public double position;
+        [UnityEngine.SerializeField, UnityEngine.Header("硬度使用")] public double useStiffness;
         // public Trajectory(double arg_clockTime, double arg_deltaTime, double arg_position, double arg_accel, double arg_decel) {
         //     this.clockTime = arg_clockTime;
         //     this.deltaTime = arg_deltaTime;
@@ -64,10 +65,11 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         //     this.accel     = arg_accel;
         //     this.decel     = arg_decel;
         // }
-        public Trajectory(double arg_clockTime, double arg_deltaTime, double arg_position) {
+        public Trajectory(double arg_clockTime, double arg_deltaTime, double arg_position, double arg_useStiffness) {
             this.clockTime = arg_clockTime;
             this.deltaTime = arg_deltaTime;
             this.position  = arg_position;
+            this.useStiffness = arg_useStiffness;
         }
     }
 
@@ -76,6 +78,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField] public UnityEngine.AddressableAssets.AssetReference csvFile;
         [UnityEngine.SerializeField] public List<Trajectory> trajectories;
         
+        private string name = "";
         private int index = 0;
         private System.Timers.Timer[] timers;
         private Epos4Node epos4Node;
@@ -83,9 +86,10 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         private bool zeroClockStart = false;
         private WalkingDisplayMain walkingDisplayMain;
 
-        public void init(Epos4Node arg_epos4Node, WalkingDisplayMain arg_walkingDisplayMain) {
+        public void init(Epos4Node arg_epos4Node, WalkingDisplayMain arg_walkingDisplayMain, string arg_name) {
             this.epos4Node = arg_epos4Node;
             this.walkingDisplayMain = arg_walkingDisplayMain;
+            this.name = arg_name;
             this.zeroClockStart = false;
             this.index = 0;
             this.timers = new System.Timers.Timer[this.trajectories.Count];
@@ -112,7 +116,12 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
                 return;
             }
             if (this.index + 1 < this.trajectories.Count) this.timers[this.index + 1].Start();
-            this.epos4Node.SetPositionProfileInTime(this.trajectories[this.index].position, this.trajectories[this.index].deltaTime, 1, 1);
+            if (this.name == "stockSlider") {
+                this.epos4Node.SetPositionProfileInTime(this.trajectories[this.index].position, this.trajectories[this.index].deltaTime, 5, 1);
+            }
+            else {
+                this.epos4Node.SetPositionProfileInTime(this.trajectories[this.index].position, this.trajectories[this.index].deltaTime, 1, 1 + this.trajectories[this.index].useStiffness*this.walkingDisplayMain.stiffness);
+            }
             this.epos4Node.MoveToPosition(this.activate);
             this.timers[this.index].Stop();
             this.timers[this.index].Dispose();
@@ -135,7 +144,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
                     string line = reader.ReadLine(); // 一行ずつ読み込み
                     string[] splitedLine = line.Split(','); // , で分割
                     if (count > 0) {
-                        this.trajectories.Add(new Trajectory(System.Convert.ToDouble(splitedLine[0]), System.Convert.ToDouble(splitedLine[1]), System.Convert.ToDouble(splitedLine[2])));
+                        this.trajectories.Add(new Trajectory(System.Convert.ToDouble(splitedLine[0]), System.Convert.ToDouble(splitedLine[1]), System.Convert.ToDouble(splitedLine[2]), System.Convert.ToDouble(splitedLine[3])));
                     }
                     count++;
                 }
@@ -147,7 +156,12 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             this.activate = arg_activate;
             if (this.timers.Length > 0) {
                 if (this.zeroClockStart) {
-                    this.epos4Node.SetPositionProfileInTime(this.trajectories[0].position, this.trajectories[0].deltaTime, 1, 1);
+                    if (this.name == "stockSlider") {
+                        this.epos4Node.SetPositionProfileInTime(this.trajectories[0].position, this.trajectories[0].deltaTime, 5, 1);
+                    }
+                    else {
+                        this.epos4Node.SetPositionProfileInTime(this.trajectories[0].position, this.trajectories[0].deltaTime, 1, 1 + this.trajectories[0].useStiffness*this.walkingDisplayMain.stiffness);
+                    }
                     this.epos4Node.MoveToPosition(this.activate);
                     this.index++;   
                 }
@@ -173,31 +187,45 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
 
     private System.Threading.Thread th = null;
 
+    private System.Timers.Timer walkStraightTimer;
+
     public void WalkStraight(float incdec_time) {
         if (this.status == Status.walking) return;
         this.status = Status.walking;
         this.walkstop = false;
         this.epos4Main.AllNodeDefinePosition();
-        this.lifter.init(this.epos4Main.lifter, this);
-        this.leftPedal.init(this.epos4Main.leftPedal, this);
-        this.leftSlider.init(this.epos4Main.leftSlider, this);
-        this.rightPedal.init(this.epos4Main.rightPedal, this);
-        this.rightSlider.init(this.epos4Main.rightSlider, this);
-        this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this);
-        this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this);
-        this.stockRightExtend.init(this.epos4Main.stockRightExtend, this);
-        this.stockRightSlider.init(this.epos4Main.stockRightSlider, this);
-        this.lifter.start(this.activate.lifter);
-        this.leftPedal.start(this.activate.leftPedal);
-        this.leftSlider.start(this.activate.leftSlider);
-        this.rightPedal.start(this.activate.rightPedal);
-        this.rightSlider.start(this.activate.rightSlider);
-        this.stockLeftSlider.start(this.activate.stockLeftSlider);
-        this.stockLeftExtend.start(this.activate.stockLeftExtend);
-        this.stockRightExtend.start(this.activate.stockRightExtend);
-        this.stockRightSlider.start(this.activate.stockRightSlider);
-        this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
-        this.th.Start();
+        this.lifter.init(this.epos4Main.lifter, this, "seat");
+        this.leftPedal.init(this.epos4Main.leftPedal, this, "seat");
+        this.leftSlider.init(this.epos4Main.leftSlider, this, "seat");
+        this.rightPedal.init(this.epos4Main.rightPedal, this, "seat");
+        this.rightSlider.init(this.epos4Main.rightSlider, this, "seat");
+        this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this, "seat");
+        this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this, "stockSlider");
+        this.stockRightExtend.init(this.epos4Main.stockRightExtend, this, "stockExtend");
+        this.stockRightSlider.init(this.epos4Main.stockRightSlider, this, "stockSlider");
+        this.epos4Main.AllNodeActivateProfilePositionMode();
+        if (this.walkStraightTimer != null) {
+            this.walkStraightTimer.Stop();
+            this.walkStraightTimer.Dispose();
+        }
+        this.walkStraightTimer = new System.Timers.Timer(5000);
+        this.walkStraightTimer.AutoReset = false;
+        this.walkStraightTimer.Elapsed += (sender, e) => {
+            this.lifter.start(this.activate.lifter);
+            this.leftPedal.start(this.activate.leftPedal);
+            this.leftSlider.start(this.activate.leftSlider);
+            this.rightPedal.start(this.activate.rightPedal);
+            this.rightSlider.start(this.activate.rightSlider);
+            this.stockLeftSlider.start(this.activate.stockLeftSlider);
+            this.stockLeftExtend.start(this.activate.stockLeftExtend);
+            this.stockRightExtend.start(this.activate.stockRightExtend);
+            this.stockRightSlider.start(this.activate.stockRightSlider);
+            this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
+            this.th.Start();
+            this.walkStraightTimer.Stop();
+            this.walkStraightTimer.Dispose();
+        };
+        this.walkStraightTimer.Start();
     }
 
     public void WalkStop() {
