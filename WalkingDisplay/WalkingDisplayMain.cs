@@ -207,12 +207,24 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     void targetCalculate()//振幅値（mm）→出力パルス変換
     {
         //目標パルスを整数型で格納
-        this.targetPulseUp1[0] = (int)(-this.tiltBackward / this.degreePerPulse);
-        this.targetPulseDown1[0] = (int)(-this.tiltForward / this.degreePerPulse);
+        if (this.activate.stockLeftTilt) {
+            this.targetPulseUp1[0] = (int)(-this.tiltBackward / this.degreePerPulse);
+            this.targetPulseDown1[0] = (int)(-this.tiltForward / this.degreePerPulse);
+        }
+        else {
+            this.targetPulseUp1[0] = 0;
+            this.targetPulseDown1[0] = 0;
+        }
         this.targetPulseUp1[1] = 0;
         this.targetPulseDown1[1] = 0;
-        this.targetPulseUp1[2] = (int)(this.tiltBackward / this.degreePerPulse);
-        this.targetPulseDown1[2] = (int)(this.tiltForward / this.degreePerPulse);
+        if (this.activate.stockRightTilt) {
+            this.targetPulseUp1[2] = (int)(this.tiltBackward / this.degreePerPulse);
+            this.targetPulseDown1[2] = (int)(this.tiltForward / this.degreePerPulse);
+        }
+        else {
+            this.targetPulseUp1[2] = 0;
+            this.targetPulseDown1[2] = 0;
+        }
         this.targetPulseUp1[3] = 0;
         this.targetPulseDown1[3] = 0;
         this.targetPulseUp1[4] = 0;
