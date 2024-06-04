@@ -17,6 +17,8 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField] public bool stockLeftSlider  = false;
         [UnityEngine.SerializeField] public bool stockRightExtend = false;
         [UnityEngine.SerializeField] public bool stockRightSlider = false;
+        [UnityEngine.SerializeField] public bool stockLeftTilt    = false;
+        [UnityEngine.SerializeField] public bool stockRightTilt   = false;
     }
 
     [System.Serializable]
@@ -47,6 +49,8 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.stockLeftSlider.AddressableLoad();
         this.stockRightExtend.AddressableLoad();
         this.stockRightSlider.AddressableLoad();
+        this.client = new System.IO.Ports.SerialPort(portName, baudRate, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One);
+        this.client.Open();
     }
 
     private bool walkstop = false;
@@ -58,13 +62,6 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField, UnityEngine.Header("動作時間 (s)")] public double deltaTime;
         [UnityEngine.SerializeField, UnityEngine.Header("目標位置 (mm)")] public double position;
         [UnityEngine.SerializeField, UnityEngine.Header("硬度使用")] public double useStiffness;
-        // public Trajectory(double arg_clockTime, double arg_deltaTime, double arg_position, double arg_accel, double arg_decel) {
-        //     this.clockTime = arg_clockTime;
-        //     this.deltaTime = arg_deltaTime;
-        //     this.position  = arg_position;
-        //     this.accel     = arg_accel;
-        //     this.decel     = arg_decel;
-        // }
         public Trajectory(double arg_clockTime, double arg_deltaTime, double arg_position, double arg_useStiffness) {
             this.clockTime = arg_clockTime;
             this.deltaTime = arg_deltaTime;
@@ -185,12 +182,62 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         }
     }
 
-    private System.Threading.Thread th = null;
+    [UnityEngine.Header("Stock Tilt Conf")]
+    public string portName = "COM7";    
+    public int baudRate = 9600;
+    private System.IO.Ports.SerialPort client;
+    private float degreePerPulse = 0.0072f; //[degrees/pulse]
+    public string sendText;
+    [UnityEngine.SerializeField, UnityEngine.Header("Unit (deg), Absolute, Backward Positive, Forward Negative"), UnityEngine.Range(0, 10)] public float tiltBackward = 0;
+    [UnityEngine.SerializeField, UnityEngine.Range(-20, 0)] public float tiltForward = 0;
+    [UnityEngine.SerializeField, UnityEngine.Header("Unit (s)"), UnityEngine.Range(2f, 10f)] public float period = 5;
+    [UnityEngine.SerializeField, UnityEngine.Header("Tilt Backward Time Ratio"), UnityEngine.Range(1f, 5f)] public float tiltBackwardTimeRatio = 1;
+    [UnityEngine.SerializeField, UnityEngine.Header("Tilt Forward  Time Ratio"), UnityEngine.Range(1f, 5f)] public float tiltForwardTimeRatio = 1;
+    //出力パルス（送信）
+    private int[] targetPulseUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
+    private int[] targetPulseDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
+    //駆動時間（送信）
+    private int[] driveTimeUp1 = new int[6] { 5000, 0, 5000, 0, 0, 0 };//上昇／前進時の駆動時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+    private int[] driveTimeDown1 = new int[6] {5000, 0, 5000, 0, 0, 0 };//下降／後退時の駆動時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+    //待機時間（送信）
+    private int[] delayTimeUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進始めモータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+    private int[] delayTimeDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退始めモータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+    private int[] delayTimeFirst = new int[6] { 2500, 0, 0, 0, 0, 0 };//一歩目モータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+    private int seatRotationPulse;
+    void targetCalculate()//振幅値（mm）→出力パルス変換
+    {
+        //目標パルスを整数型で格納
+        this.targetPulseUp1[0] = (int)(-this.tiltBackward / this.degreePerPulse);
+        this.targetPulseDown1[0] = (int)(-this.tiltForward / this.degreePerPulse);
+        this.targetPulseUp1[1] = 0;
+        this.targetPulseDown1[1] = 0;
+        this.targetPulseUp1[2] = (int)(this.tiltBackward / this.degreePerPulse);
+        this.targetPulseDown1[2] = (int)(this.tiltForward / this.degreePerPulse);
+        this.targetPulseUp1[3] = 0;
+        this.targetPulseDown1[3] = 0;
+        this.targetPulseUp1[4] = 0;
+        this.targetPulseDown1[4] = 0;
+        this.targetPulseUp1[5] = 0;
+        this.targetPulseDown1[5] = 0;
+        this.seatRotationPulse = 0;
+        this.driveTimeUp1[0] = (int)(this.period*this.tiltBackwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
+        this.driveTimeUp1[2] = (int)(this.period*this.tiltBackwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
+        this.driveTimeDown1[0] = (int)(this.period*this.tiltForwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
+        this.driveTimeDown1[2] = (int)(this.period*this.tiltForwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
+        this.delayTimeFirst[0] = (int)(this.period*0.5f * 1000f);
+    }
 
+    private System.Threading.Thread th = null;
     private System.Timers.Timer walkStraightTimer;
+    private System.Timers.Timer coolingTimer;
+    public enum CoolingStatus {
+        Readied, NowCooling
+    }
+    [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
 
     public void WalkStraight(float incdec_time) {
         if (this.status == Status.walking) return;
+        if (this.coolingStatus == CoolingStatus.NowCooling) return;
         this.status = Status.walking;
         this.walkstop = false;
         this.epos4Main.AllNodeDefinePosition();
@@ -211,6 +258,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.walkStraightTimer = new System.Timers.Timer(5000);
         this.walkStraightTimer.AutoReset = false;
         this.walkStraightTimer.Elapsed += (sender, e) => {
+            if (this.coolingStatus == CoolingStatus.NowCooling) return;
             this.lifter.start(this.activate.lifter);
             this.leftPedal.start(this.activate.leftPedal);
             this.leftSlider.start(this.activate.leftSlider);
@@ -224,6 +272,24 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             this.th.Start();
             this.walkStraightTimer.Stop();
             this.walkStraightTimer.Dispose();
+
+            this.targetCalculate();//目標値計算
+            //送信するデータを文字列でまとめる
+            this.sendText = "start" + ",";
+            for (int i = 0; i < 6; i++) {
+                this.sendText += this.targetPulseUp1[i].ToString() + "," + this.targetPulseDown1[i].ToString() + ",";
+                this.sendText += this.driveTimeUp1[i].ToString() + "," + this.driveTimeDown1[i].ToString() + ",";
+                this.sendText += this.delayTimeUp1[i].ToString() + "," + this.delayTimeDown1[i].ToString() + ",";
+                this.sendText += this.delayTimeFirst[i].ToString() + ",";
+            }
+            this.sendText += this.seatRotationPulse.ToString() + ",";
+            this.sendText += "/";//終わりの目印
+            byte[] sendByte = System.Text.Encoding.ASCII.GetBytes(sendText);//送信する文字列をbyteに変換
+            if (this.client != null)
+            {
+                this.client.Write(sendByte, 0, sendByte.Length);//送信
+            }
+            UnityEngine.Debug.Log(this.sendText);
         };
         this.walkStraightTimer.Start();
     }
@@ -233,6 +299,28 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.walkstop = true;
         // this.epos4Main.AllNodeMoveStop();    
         this.epos4Main.AllNodeMoveToHome();
+
+        if (this.coolingStatus == CoolingStatus.Readied) {
+            this.sendText = "stop" + "," + "/";
+            byte[] sendByte = System.Text.Encoding.ASCII.GetBytes(sendText);//送信する文字列をbyteに変換
+            if (client != null)
+            {
+                this.client.Write(sendByte, 0, sendByte.Length);//送信
+            }
+            UnityEngine.Debug.Log(sendText);
+
+            this.coolingStatus = CoolingStatus.NowCooling;
+            if (this.coolingTimer != null) {
+                this.coolingTimer.Stop();
+                this.coolingTimer.Dispose();
+            }
+            this.coolingTimer = new System.Timers.Timer(2*this.period*1000f);
+            this.coolingTimer.AutoReset = false;
+            this.coolingTimer.Elapsed += (sender, e) => {
+                this.coolingStatus = CoolingStatus.Readied;
+            };
+            this.coolingTimer.Start();
+        }
     }
 
     private void getActualPositionAsync() {
