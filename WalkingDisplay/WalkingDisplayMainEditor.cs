@@ -16,7 +16,7 @@ public class WalkingDisplayMainEditor : Editor
 
         if (GUILayout.Button("Walk Straight"))
         {
-            walkingDisplayMain.WalkStraight(0);
+            walkingDisplayMain.WalkStraight();
             // walkingDisplayMain.DelaySample();
             // UnityEngine.Debug.Log("hello");
         }

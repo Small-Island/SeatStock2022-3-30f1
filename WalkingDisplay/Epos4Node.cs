@@ -354,6 +354,7 @@ public class Epos4Node {
     private System.Timers.Timer timerMoveToHome;
 
     public void MoveToHome() {
+        this.old_arg_pos_inc = 0;
         if (this.cs == ConnectionStatus.failed) return;
         this.timerMoveToHome = new System.Timers.Timer(200);
         this.timerMoveToHome.AutoReset = true;

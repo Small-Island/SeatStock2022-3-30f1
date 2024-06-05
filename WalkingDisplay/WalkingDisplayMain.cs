@@ -53,7 +53,6 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.client.Open();
     }
 
-    private bool walkstop = false;
     public MotorTrajectory lifter, leftPedal, leftSlider, rightPedal, rightSlider, stockLeftExtend, stockLeftSlider, stockRightExtend, stockRightSlider;
 
     [System.Serializable]
@@ -108,7 +107,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         }
         
         private void timerCallback(object source, System.Timers.ElapsedEventArgs e) {
-            if (this.walkingDisplayMain.walkstop) {
+            if (this.walkingDisplayMain.status == Status.stop) {
                 this.stop();
                 return;
             }
@@ -247,11 +246,11 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     }
     [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
 
-    public void WalkStraight(float incdec_time) {
+    public void WalkStraight() {
         if (this.status == Status.walking) return;
         if (this.coolingStatus == CoolingStatus.NowCooling) return;
+        UnityEngine.Debug.Log("WalkStraight");
         this.status = Status.walking;
-        this.walkstop = false;
         this.epos4Main.AllNodeDefinePosition();
         this.lifter.init(this.epos4Main.lifter, this, "seat");
         this.leftPedal.init(this.epos4Main.leftPedal, this, "seat");
@@ -267,7 +266,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             this.walkStraightTimer.Stop();
             this.walkStraightTimer.Dispose();
         }
-        this.walkStraightTimer = new System.Timers.Timer(5000);
+        this.walkStraightTimer = new System.Timers.Timer(100);
         this.walkStraightTimer.AutoReset = false;
         this.walkStraightTimer.Elapsed += (sender, e) => {
             if (this.coolingStatus == CoolingStatus.NowCooling) return;
@@ -307,8 +306,9 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     }
 
     public void WalkStop() {
+        if (this.status == Status.stop) return;
         this.status = Status.stop;
-        this.walkstop = true;
+        UnityEngine.Debug.Log("WalkStop");
         // this.epos4Main.AllNodeMoveStop();    
         this.epos4Main.AllNodeMoveToHome();
 
@@ -339,7 +339,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         int N = 1000;
         float[,] data = new float[N,18];
         int i = 0;
-        while (!this.Destroied && i < N && !this.walkstop) {
+        while (!this.Destroied && i < N && this.status == Status.walking) {
             data[i,0] = this.epos4Main.lifter.actualPosition / 100f; // Unit 10cm
             data[i,1] = this.epos4Main.leftPedal.actualPosition / 100f;
             data[i,2] = this.epos4Main.leftSlider.actualPosition / 100f;
@@ -388,11 +388,29 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         sw.Close();
         return;
     }
+    
+    [UnityEngine.SerializeField, ReadOnly] private UnityEngine.Vector2 thumbStickR;
+    [UnityEngine.SerializeField, ReadOnly] private UnityEngine.Vector2 thumbStickL;
+    private bool thumbStickRFlag = false;
+    private bool thumbStickLFlag = false;
+
+
+    private void Update() {
+        this.thumbStickR = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.RTouch);
+        this.thumbStickL = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.LTouch);
+        if (System.Math.Abs(this.thumbStickR.y) > 0.5 && System.Math.Abs(this.thumbStickL.y) > 0.5) {
+        }
+        else if (this.thumbStickR.y > 0.5 || this.thumbStickL.y > 0.5) {
+            this.WalkStraight();
+        }
+        else if (this.thumbStickR.y < -0.5 || this.thumbStickL.y < -0.5) {
+            this.WalkStop();
+        }
+    }
 
     private bool Destroied = false;
 
     private void OnDestroy() {
-        this.walkstop = true;
         this.WalkStop();
         this.Destroied = true;
     }

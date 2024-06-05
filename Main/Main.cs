@@ -67,7 +67,7 @@ public class Main : MonoBehaviour
         // yield return new UnityEngine.WaitForSeconds(1.0f);
         await System.Threading.Tasks.Task.Delay((int)(1000*this.walkDelayTime[(int)this.robotSpeed]));
         // if (walkingDisplayMain) {
-            walkingDisplayMain.WalkStraight(this.incdec_time);
+            // walkingDisplayMain.WalkStraight(this.incdec_time);
         // }
         // yield return new UnityEngine.WaitForSeconds(0.1f);
         // if (epos4Seat) {
