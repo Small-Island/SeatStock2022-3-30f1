@@ -192,6 +192,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     [UnityEngine.SerializeField, UnityEngine.Header("Unit (s)"), UnityEngine.Range(2f, 10f)] public float period = 5;
     [UnityEngine.SerializeField, UnityEngine.Header("Tilt Backward Time Ratio"), UnityEngine.Range(1f, 5f)] public float tiltBackwardTimeRatio = 1;
     [UnityEngine.SerializeField, UnityEngine.Header("Tilt Forward  Time Ratio"), UnityEngine.Range(1f, 5f)] public float tiltForwardTimeRatio = 1;
+    public bool doubleStock = false;
     //出力パルス（送信）
     private int[] targetPulseUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
     private int[] targetPulseDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
@@ -235,7 +236,12 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.driveTimeUp1[2] = (int)(this.period*this.tiltBackwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
         this.driveTimeDown1[0] = (int)(this.period*this.tiltForwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
         this.driveTimeDown1[2] = (int)(this.period*this.tiltForwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
-        this.delayTimeFirst[0] = (int)(this.period*0.5f * 1000f);
+        if (this.doubleStock) {
+            this.delayTimeFirst[0] = 0;
+        }
+        else {
+            this.delayTimeFirst[0] = (int)(this.period*0.5f * 1000f);
+        }
     }
 
     private System.Threading.Thread th = null;
