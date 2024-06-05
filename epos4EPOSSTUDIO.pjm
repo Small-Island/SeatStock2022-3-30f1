@@ -147,7 +147,7 @@
 						<Interface>USB</Interface>
 						<Port>USB0</Port>
 						<Baudrate>1000000</Baudrate>
-						<Timeout>215</Timeout>
+						<Timeout>64</Timeout>
 					</Parameters>
 					<NetworkScanning>
 						<ScanningSetting>

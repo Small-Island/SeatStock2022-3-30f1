@@ -232,10 +232,22 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.targetPulseUp1[5] = 0;
         this.targetPulseDown1[5] = 0;
         this.seatRotationPulse = 0;
-        this.driveTimeUp1[0] = (int)(this.period*this.tiltBackwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
-        this.driveTimeUp1[2] = (int)(this.period*this.tiltBackwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
-        this.driveTimeDown1[0] = (int)(this.period*this.tiltForwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
-        this.driveTimeDown1[2] = (int)(this.period*this.tiltForwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
+        if (this.activate.stockLeftTilt) {
+            this.driveTimeUp1[0] = (int)(this.period*this.tiltBackwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
+            this.driveTimeDown1[0] = (int)(this.period*this.tiltForwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
+        }
+        else {
+            this.driveTimeUp1[0] = 0;
+            this.driveTimeDown1[0] = 0;
+        }
+        if (this.activate.stockRightTilt) {
+            this.driveTimeUp1[2] = (int)(this.period*this.tiltBackwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
+            this.driveTimeDown1[2] = (int)(this.period*this.tiltForwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
+        }
+        else {
+            this.driveTimeUp1[2] = 0;
+            this.driveTimeDown1[2] = 0;
+        }
         if (this.doubleStock) {
             this.delayTimeFirst[0] = 0;
         }
