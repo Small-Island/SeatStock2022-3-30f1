@@ -382,7 +382,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     }
 
     private void getActualPositionAsync() {
-        int N = 1000;
+        int N = 10000;
         float[,] data = new float[N,18];
         int i = 0;
         while (!this.Destroied && i < N && this.status == Status.walking) {
