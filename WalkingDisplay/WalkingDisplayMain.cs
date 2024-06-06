@@ -230,7 +230,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
                     this.tiltBackwardTimeRatio = System.Convert.ToSingle(splitedLine[3]);
                     this.tiltForwardTimeRatio = System.Convert.ToSingle(splitedLine[4]);
                     this.startClockTimeLeftTilt = System.Convert.ToDouble(splitedLine[5]);
-                    this.startClockTimeLeftTilt = System.Convert.ToDouble(splitedLine[6]);
+                    this.startClockTimeRightTilt = System.Convert.ToDouble(splitedLine[6]);
                 }
                 count++;
             }
@@ -280,13 +280,8 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             this.driveTimeUp1[2] = 0;
             this.driveTimeDown1[2] = 0;
         }
-        if (this.doubleStock) {
-            this.delayTimeFirst[0] = 0;
-        }
-        else {
-            this.delayTimeFirst[0] = (int)(startClockTimeLeftTilt * 1000.0);
-            this.delayTimeFirst[2] = (int)(startClockTimeRightTilt * 1000.0);
-        }
+        
+        this.delayTimeFirst[0] = (int)(startClockTimeLeftTilt * 1000.0);
     }
 
     private System.Threading.Thread th = null;

@@ -43,16 +43,16 @@ public class Epos4MainEditor : Editor
         // if (GUILayout.Button("Activate PPM")) {
         //     epos4Main.lifter.ActivateProfilePositionMode();
         // }
-        // epos4Main.lifter.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.lifter.profile.absolute);
-        // epos4Main.lifter.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.lifter.profile.position, -maxPosition, maxPosition);
-        // epos4Main.lifter.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.lifter.profile.velocity, 0, maxVel);
-        // epos4Main.lifter.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.lifter.profile.acceleration, 0, maxAcceleration);
-        // epos4Main.lifter.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.lifter.profile.deceleration, 0, maxAcceleration);
-        EditorGUILayout.Toggle("Absolute", epos4Main.lifter.profile.absolute);
-        EditorGUILayout.Slider("Position (mm)", epos4Main.lifter.profile.position, -maxPosition, maxPosition);
-        EditorGUILayout.Slider("Velocity (rpm)", epos4Main.lifter.profile.velocity, 0, maxVel);
-        EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.lifter.profile.acceleration, 0, maxAcceleration);
-        EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.lifter.profile.deceleration, 0, maxAcceleration);
+        epos4Main.lifter.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.lifter.profile.absolute);
+        epos4Main.lifter.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.lifter.profile.position, -maxPosition, maxPosition);
+        epos4Main.lifter.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.lifter.profile.velocity, 0, maxVel);
+        epos4Main.lifter.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.lifter.profile.acceleration, 0, maxAcceleration);
+        epos4Main.lifter.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.lifter.profile.deceleration, 0, maxAcceleration);
+        // EditorGUILayout.Toggle("Absolute", epos4Main.lifter.profile.absolute);
+        // EditorGUILayout.Slider("Position (mm)", epos4Main.lifter.profile.position, -maxPosition, maxPosition);
+        // EditorGUILayout.Slider("Velocity (rpm)", epos4Main.lifter.profile.velocity, 0, maxVel);
+        // EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.lifter.profile.acceleration, 0, maxAcceleration);
+        // EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.lifter.profile.deceleration, 0, maxAcceleration);
         if (GUILayout.Button("Move to Position")) {
             epos4Main.lifter.ActivateProfilePositionMode();
             epos4Main.lifter.SetPositionProfile();
