@@ -49,6 +49,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.stockLeftSlider.AddressableLoad();
         this.stockRightExtend.AddressableLoad();
         this.stockRightSlider.AddressableLoad();
+        this.tiltCSVLoad();
         this.client = new System.IO.Ports.SerialPort(portName, baudRate, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One);
         this.client.Open();
     }
@@ -129,7 +130,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             dataFile = null;
             string str = "";
             //Assetのロード
-            UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<UnityEngine.TextAsset>(csvFile).Completed += op => {
+            UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<UnityEngine.TextAsset>(this.csvFile).Completed += op => {
                 //ロードに成功
                 this.trajectories = new List<Trajectory>();
                 str = op.Result.text;
@@ -182,17 +183,20 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     }
 
     [UnityEngine.Header("Stock Tilt Conf")]
-    public string portName = "COM7";    
+    [UnityEngine.SerializeField] public UnityEngine.AddressableAssets.AssetReference csvFileTilt;
+    public string portName = "COM3";    
     public int baudRate = 9600;
     private System.IO.Ports.SerialPort client;
     private float degreePerPulse = 0.0072f; //[degrees/pulse]
     public string sendText;
     [UnityEngine.SerializeField, UnityEngine.Header("Unit (deg), Absolute, Backward Positive, Forward Negative"), UnityEngine.Range(0, 10)] public float tiltBackward = 0;
-    [UnityEngine.SerializeField, UnityEngine.Range(-20, 0)] public float tiltForward = 0;
+    [UnityEngine.SerializeField, UnityEngine.Range(-30, 0)] public float tiltForward = 0;
     [UnityEngine.SerializeField, UnityEngine.Header("Unit (s)"), UnityEngine.Range(2f, 10f)] public float period = 5;
     [UnityEngine.SerializeField, UnityEngine.Header("Tilt Backward Time Ratio"), UnityEngine.Range(1f, 5f)] public float tiltBackwardTimeRatio = 1;
     [UnityEngine.SerializeField, UnityEngine.Header("Tilt Forward  Time Ratio"), UnityEngine.Range(1f, 5f)] public float tiltForwardTimeRatio = 1;
     public bool doubleStock = false;
+    public double startClockTimeLeftTilt = 0;
+    public double startClockTimeRightTilt = 0;
     //出力パルス（送信）
     private int[] targetPulseUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
     private int[] targetPulseDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
@@ -204,7 +208,35 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     private int[] delayTimeDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退始めモータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
     private int[] delayTimeFirst = new int[6] { 2500, 0, 0, 0, 0, 0 };//一歩目モータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
     private int seatRotationPulse;
-    void targetCalculate()//振幅値（mm）→出力パルス変換
+
+    private void tiltCSVLoad() {
+        UnityEngine.TextAsset dataFile = new UnityEngine.TextAsset(); //テキストファイルの保持
+        dataFile = null;
+        string str = "";
+        //Assetのロード
+        UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<UnityEngine.TextAsset>(this.csvFileTilt).Completed += op => {
+            //ロードに成功
+            str = op.Result.text;
+            System.IO.StringReader reader = new System.IO.StringReader(str);
+            int count = 0;
+            while (reader.Peek() != -1) // reader.Peaekが-1になるまで
+            {
+                string line = reader.ReadLine(); // 一行ずつ読み込み
+                string[] splitedLine = line.Split(','); // , で分割
+                if (count > 0) {
+                    this.period = System.Convert.ToSingle(splitedLine[0]);
+                    this.tiltBackward = System.Convert.ToSingle(splitedLine[1]);
+                    this.tiltForward = System.Convert.ToSingle(splitedLine[2]);
+                    this.tiltBackwardTimeRatio = System.Convert.ToSingle(splitedLine[3]);
+                    this.tiltForwardTimeRatio = System.Convert.ToSingle(splitedLine[4]);
+                    this.startClockTimeLeftTilt = System.Convert.ToDouble(splitedLine[5]);
+                    this.startClockTimeLeftTilt = System.Convert.ToDouble(splitedLine[6]);
+                }
+                count++;
+            }
+        };
+    }
+    private void targetCalculate()//振幅値（mm）→出力パルス変換
     {
         //目標パルスを整数型で格納
         if (this.activate.stockLeftTilt) {
@@ -252,7 +284,8 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             this.delayTimeFirst[0] = 0;
         }
         else {
-            this.delayTimeFirst[0] = (int)(this.period*0.5f * 1000f);
+            this.delayTimeFirst[0] = (int)(startClockTimeLeftTilt * 1000.0);
+            this.delayTimeFirst[2] = (int)(startClockTimeRightTilt * 1000.0);
         }
     }
 
@@ -409,9 +442,6 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     
     [UnityEngine.SerializeField, ReadOnly] private UnityEngine.Vector2 thumbStickR;
     [UnityEngine.SerializeField, ReadOnly] private UnityEngine.Vector2 thumbStickL;
-    private bool thumbStickRFlag = false;
-    private bool thumbStickLFlag = false;
-
 
     private void Update() {
         this.thumbStickR = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.RTouch);
