@@ -1,5 +1,5 @@
 classdef Profile
    enumeration
-      walk, ski, doubleStock
+      walk, ski, doubleStock, doubleStockOnly
    end
 end
