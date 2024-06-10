@@ -1,0 +1,10 @@
+time (s), lifter (10cm), left pedal pos (10cm), left slider pos (10cm), right pedal pos (10cm), right slider pos (10cm), stock left extend pos (10cm), stock left slider pos (10cm), stock right extend pos (10cm), stock right slider pos (10cm), lifter current (A), left pedal current (A), left slider current (A), right pedal current (A), right slider current (A), stock left extend current (A), stock left slider current (A), stock right extend current (A), stock right slider current (A)
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0.01,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0.02,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0.03,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0.04,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0.05,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0.06,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0.07,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0.08,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
