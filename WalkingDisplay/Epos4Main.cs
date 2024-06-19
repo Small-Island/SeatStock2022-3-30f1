@@ -91,6 +91,8 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
             this.stockRightExtend.actualVelocity = this.stockRightExtend.getVelocityIs();
             this.stockRightSlider.actualVelocity = this.stockRightSlider.getVelocityIs();
 
+            // this.lifter.powerSupplyVoltage = this.lifter.GetPowerSupplyVoltage();
+
             // this.lifter.getError();
             System.Threading.Thread.Sleep(2);
         }

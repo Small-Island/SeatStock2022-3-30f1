@@ -12,6 +12,7 @@ public class Epos4Node {
     private DeviceOperation deviceOperation;
     private ushort nodeId;
     private EposCmd.Net.DeviceManager connector;
+    private EposCmd.Net.DeviceCmdSet.DataRecorder.Data data;
     [UnityEngine.HideInInspector] public float targetTime = 2;
     [UnityEngine.HideInInspector] public float targetPosMilli = 0;
 
@@ -45,6 +46,8 @@ public class Epos4Node {
     [UnityEngine.HideInInspector] public float actualVelocity = 0;
 
     public int keyHandle = 0;
+
+    public uint powerSupplyVoltage = 0;
 
     public Epos4Node(
         EposCmd.Net.DeviceManager arg_connector, 
@@ -110,7 +113,16 @@ public class Epos4Node {
         this.ActivateProfilePositionMode();
         this.cs = ConnectionStatus.success;
         EposCmd.Net.VcsWrapper.Device.VcsGetKeyHandle("EPOS4", "MAXON SERIAL V2", "USB", "USB0", ref this.keyHandle, ref errorCode);
+        this.data = new EposCmd.Net.DeviceCmdSet.DataRecorder.Data(this.keyHandle, (ushort)this.nodeId);
         return;
+    }
+
+    public uint GetPowerSupplyVoltage() {
+        byte[] dataVectorBuffer = new byte[500];
+        // this.data.ReadChannelDataVector(0x22, ref dataVectorBuffer[]);
+        uint vectorSize = 0;
+        this.data.ReadChannelVectorSize(ref vectorSize);
+        return vectorSize;
     }
 
     public void ActivateProfilePositionMode() {
