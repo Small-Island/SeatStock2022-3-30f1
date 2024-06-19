@@ -35,7 +35,7 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
         }
         catch (EposCmd.Net.DeviceException) {
         }
-        this.lifter      = new Epos4Node(connector, 8,  2, -1, 0.2, 1.1);
+        this.lifter      = new Epos4Node(connector, 8,  5, -1, 0.2, 1.1);
         this.lifter.MotorInit();
         this.leftPedal   = new Epos4Node(connector, 1,  6,  1, 0.2, 1.1);
         this.leftPedal.MotorInit();
