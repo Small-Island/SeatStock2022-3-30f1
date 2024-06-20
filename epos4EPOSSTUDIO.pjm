@@ -969,31 +969,31 @@
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderVariable1Idx"/>
 									<valueEntry>
-										<value>0x00000000</value>
+										<value/>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderVariable2Idx"/>
 									<valueEntry>
-										<value>0x00000000</value>
+										<value/>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderVariable3Idx"/>
 									<valueEntry>
-										<value>0x00000000</value>
+										<value/>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderVariable4Idx"/>
 									<valueEntry>
-										<value>0x00000000</value>
+										<value/>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderTriggerVariableIdx"/>
 									<valueEntry>
-										<value>0x60410000</value>
+										<value/>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
@@ -1003,37 +1003,37 @@
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderTriggerHighValue"/>
 									<valueEntry>
-										<value>0x00000000</value>
+										<value/>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderTriggerLowValue"/>
 									<valueEntry>
-										<value>0x00000000</value>
+										<value/>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderTriggerMask"/>
 									<valueEntry>
-										<value>0xFFFFFFFF</value>
+										<value/>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderSamplingPeriod"/>
 									<valueEntry>
-										<value>120</value>
+										<value/>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderPrecedingSamples"/>
 									<valueEntry>
-										<value>0</value>
+										<value/>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecoderMaxNrOfSamples"/>
 									<valueEntry>
-										<value>500</value>
+										<value/>
 									</valueEntry>
 								</configurationValue>
 								<acquisitionMode>singleTrigger</acquisitionMode>
@@ -1278,31 +1278,31 @@
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderVariable1Idx"/>
 									<valueEntry>
-										<value/>
+										<value>0x00000000</value>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderVariable2Idx"/>
 									<valueEntry>
-										<value/>
+										<value>0x00000000</value>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderVariable3Idx"/>
 									<valueEntry>
-										<value/>
+										<value>0x00000000</value>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderVariable4Idx"/>
 									<valueEntry>
-										<value/>
+										<value>0x00000000</value>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderTriggerVariableIdx"/>
 									<valueEntry>
-										<value/>
+										<value>0x60410000</value>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
@@ -1312,37 +1312,37 @@
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderTriggerHighValue"/>
 									<valueEntry>
-										<value/>
+										<value>0x00000000</value>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderTriggerLowValue"/>
 									<valueEntry>
-										<value/>
+										<value>0x00000000</value>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderTriggerMask"/>
 									<valueEntry>
-										<value/>
+										<value>0xFFFFFFFF</value>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderSamplingPeriod"/>
 									<valueEntry>
-										<value/>
+										<value>120</value>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecorderPrecedingSamples"/>
 									<valueEntry>
-										<value/>
+										<value>0</value>
 									</valueEntry>
 								</configurationValue>
 								<configurationValue>
 									<paramIDRef uniqueIDRef="PARAM_InternalRecoderMaxNrOfSamples"/>
 									<valueEntry>
-										<value/>
+										<value>500</value>
 									</valueEntry>
 								</configurationValue>
 								<acquisitionMode>singleTrigger</acquisitionMode>
