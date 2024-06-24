@@ -282,6 +282,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         }
         
         this.delayTimeFirst[0] = (int)(startClockTimeLeftTilt * 1000.0);
+        this.delayTimeFirst[2] = (int)(startClockTimeRightTilt * 1000.0);
     }
 
     private System.Threading.Thread th = null;
