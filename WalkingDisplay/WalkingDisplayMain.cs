@@ -197,6 +197,10 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     public bool doubleStock = false;
     public double startClockTimeLeftTilt = 0;
     public double startClockTimeRightTilt = 0;
+    public double leftTiltDriveTimeBackward = 0;
+    public double leftTiltDriveTimeForward = 0;
+    public double rightTiltDriveTimeBackward = 0;
+    public double rightTiltDriveTimeForward = 0;
     //出力パルス（送信）
     private int[] targetPulseUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
     private int[] targetPulseDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
@@ -231,6 +235,10 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
                     this.tiltForwardTimeRatio = System.Convert.ToSingle(splitedLine[4]);
                     this.startClockTimeLeftTilt = System.Convert.ToDouble(splitedLine[5]);
                     this.startClockTimeRightTilt = System.Convert.ToDouble(splitedLine[6]);
+                    this.leftTiltDriveTimeBackward = System.Convert.ToDouble(splitedLine[7]);
+                    this.leftTiltDriveTimeForward = System.Convert.ToDouble(splitedLine[8]);
+                    this.rightTiltDriveTimeBackward = System.Convert.ToDouble(splitedLine[7]);
+                    this.rightTiltDriveTimeForward = System.Convert.ToDouble(splitedLine[8]);
                 }
                 count++;
             }
@@ -265,16 +273,16 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.targetPulseDown1[5] = 0;
         this.seatRotationPulse = 0;
         if (this.activate.stockLeftTilt) {
-            this.driveTimeUp1[0] = (int)(this.period*this.tiltBackwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
-            this.driveTimeDown1[0] = (int)(this.period*this.tiltForwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
+            this.driveTimeUp1[0] = (int)(this.leftTiltDriveTimeBackward * 1000f);
+            this.driveTimeDown1[0] = (int)(this.leftTiltDriveTimeForward * 1000f);
         }
         else {
             this.driveTimeUp1[0] = 0;
             this.driveTimeDown1[0] = 0;
         }
         if (this.activate.stockRightTilt) {
-            this.driveTimeUp1[2] = (int)(this.period*this.tiltBackwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
-            this.driveTimeDown1[2] = (int)(this.period*this.tiltForwardTimeRatio/(this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio) * 1000f);
+            this.driveTimeUp1[2] = (int)(this.rightTiltDriveTimeBackward * 1000f);
+            this.driveTimeDown1[2] = (int)(this.rightTiltDriveTimeForward * 1000f);
         }
         else {
             this.driveTimeUp1[2] = 0;

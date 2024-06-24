@@ -1,2 +1,2 @@
-period,tiltBackwardDeg,tiltForwardDeg,tiltBackwardTimeRate,tiltForwardTimeRate,startClockTimeLeftTilt,startClockTimeRightTilt
-4,1,-15,3,4,2.33333333333333,2.33333333333333
+period,tiltBackwardDeg,tiltForwardDeg,tiltBackwardTimeRate,tiltForwardTimeRate,startClockTimeLeftTilt,startClockTimeRightTilt,leftTiltDeltaTimeB,leftTiltDeltaTimeF,rightTiltDeltaTimeB,rightTiltDeltaTimeF
+4,1,-15,3,4,2.33333333333333,2.33333333333333,1.71428571428571,2.28571428571429,1.71428571428571,2.28571428571429
