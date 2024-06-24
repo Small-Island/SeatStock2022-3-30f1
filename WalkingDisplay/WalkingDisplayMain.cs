@@ -200,7 +200,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     public double leftTiltDriveTimeBackward = 0;
     public double leftTiltDriveTimeForward = 0;
     public double rightTiltDriveTimeBackward = 0;
-    public double rightTiltDelayTimeForward = 0;
+    public double rightTiltDriveTimeForward = 0;
     public double leftTiltDelayTimeBackward = 0;
     public double leftTiltDelayTimeForward = 0;
     public double rightTiltDelayTimeBackward = 0;
