@@ -200,7 +200,11 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     public double leftTiltDriveTimeBackward = 0;
     public double leftTiltDriveTimeForward = 0;
     public double rightTiltDriveTimeBackward = 0;
-    public double rightTiltDriveTimeForward = 0;
+    public double rightTiltDelayTimeForward = 0;
+    public double leftTiltDelayTimeBackward = 0;
+    public double leftTiltDelayTimeForward = 0;
+    public double rightTiltDelayTimeBackward = 0;
+    public double rightTiltDelayTimeForward = 0;
     //出力パルス（送信）
     private int[] targetPulseUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
     private int[] targetPulseDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
@@ -237,8 +241,12 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
                     this.startClockTimeRightTilt = System.Convert.ToDouble(splitedLine[6]);
                     this.leftTiltDriveTimeBackward = System.Convert.ToDouble(splitedLine[7]);
                     this.leftTiltDriveTimeForward = System.Convert.ToDouble(splitedLine[8]);
-                    this.rightTiltDriveTimeBackward = System.Convert.ToDouble(splitedLine[7]);
-                    this.rightTiltDriveTimeForward = System.Convert.ToDouble(splitedLine[8]);
+                    this.rightTiltDriveTimeBackward = System.Convert.ToDouble(splitedLine[9]);
+                    this.rightTiltDriveTimeForward = System.Convert.ToDouble(splitedLine[10]);
+                    this.leftTiltDelayTimeBackward = System.Convert.ToDouble(splitedLine[11]);
+                    this.leftTiltDelayTimeForward = System.Convert.ToDouble(splitedLine[12]);
+                    this.rightTiltDelayTimeBackward = System.Convert.ToDouble(splitedLine[13]);
+                    this.rightTiltDelayTimeForward = System.Convert.ToDouble(splitedLine[14]);
                 }
                 count++;
             }
@@ -275,6 +283,8 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         if (this.activate.stockLeftTilt) {
             this.driveTimeUp1[0] = (int)(this.leftTiltDriveTimeBackward * 1000f);
             this.driveTimeDown1[0] = (int)(this.leftTiltDriveTimeForward * 1000f);
+            this.delayTimeUp1[0] = (int)(this.leftTiltDelayTimeBackward * 1000f);
+            this.delayTimeDown1[0] = (int)(this.leftTiltDelayTimeForward * 1000f);
         }
         else {
             this.driveTimeUp1[0] = 0;
@@ -283,6 +293,8 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         if (this.activate.stockRightTilt) {
             this.driveTimeUp1[2] = (int)(this.rightTiltDriveTimeBackward * 1000f);
             this.driveTimeDown1[2] = (int)(this.rightTiltDriveTimeForward * 1000f);
+            this.delayTimeUp1[2] = (int)(this.rightTiltDelayTimeBackward * 1000f);
+            this.delayTimeDown1[2] = (int)(this.rightTiltDelayTimeForward * 1000f);
         }
         else {
             this.driveTimeUp1[2] = 0;
