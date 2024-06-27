@@ -48,11 +48,11 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
 
         this.stockLeftExtend   = new Epos4Node(this.connector, 9, 20,  -1, 0.2, 1.1);
         this.stockLeftExtend.MotorInit();
-        this.stockLeftSlider  =  new Epos4Node(this.connector, 7, 20, -1, 0.2, 1.1);
+        this.stockLeftSlider  =  new Epos4Node(this.connector, 7, 20, -1, 0.1, 1.1);
         this.stockLeftSlider.MotorInit();
         this.stockRightExtend  = new Epos4Node(this.connector, 6, 20, -1, 0.2, 1.1);
         this.stockRightExtend.MotorInit();
-        this.stockRightSlider =  new Epos4Node(this.connector, 5, 20, -1, 0.2, 1.1);
+        this.stockRightSlider =  new Epos4Node(this.connector, 5, 20, -1, 0.1, 1.1);
         this.stockRightSlider.MotorInit();
     }
 

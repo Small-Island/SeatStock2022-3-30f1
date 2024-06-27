@@ -154,7 +154,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             if (this.timers.Length > 0) {
                 if (this.zeroClockStart) {
                     if (this.name == "stockSlider") {
-                        this.epos4Node.SetPositionProfileInTime(this.trajectories[0].position, this.trajectories[0].deltaTime, 10, 1);
+                        this.epos4Node.SetPositionProfileInTime(this.trajectories[0].position, this.trajectories[0].deltaTime, 25, 1);
                     }
                     else {
                         this.epos4Node.SetPositionProfileInTime(this.trajectories[0].position, this.trajectories[0].deltaTime, 1, 1 + this.trajectories[0].useStiffness*this.walkingDisplayMain.stiffness);
