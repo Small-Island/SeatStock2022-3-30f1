@@ -7,8 +7,8 @@ public class WalkingDisplayMainEditor : Editor
     {
         WalkingDisplayMain walkingDisplayMain = target as WalkingDisplayMain;
 
-        EditorGUIUtility.labelWidth = 200;
-        base.OnInspectorGUI();
+        // EditorGUIUtility.labelWidth = 200;
+        // base.OnInspectorGUI();
 
         // if (GUILayout.Button("CSV Load, Init")) {
         //     walkingDisplayMain.init();
@@ -16,6 +16,7 @@ public class WalkingDisplayMainEditor : Editor
 
         if (GUILayout.Button("Walk Straight"))
         {
+            walkingDisplayMain.video.Play();
             walkingDisplayMain.WalkStraight();
             // walkingDisplayMain.DelaySample();
             // UnityEngine.Debug.Log("hello");
@@ -23,7 +24,14 @@ public class WalkingDisplayMainEditor : Editor
 
         if (GUILayout.Button("Walk Stop"))
         {
+            walkingDisplayMain.video.Pause();
             walkingDisplayMain.WalkStop();
         }
+
+        if (GUILayout.Button("Exit")) {
+            walkingDisplayMain.video.Exit();
+        }
+        EditorGUIUtility.labelWidth = 200;
+        base.OnInspectorGUI();
     }
 }

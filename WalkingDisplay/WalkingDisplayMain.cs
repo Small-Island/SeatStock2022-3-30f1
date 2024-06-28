@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
+    public Video video;
+    // public UnityEngine.Video.VideoPlayer videoPlayer;
+
+    public UnityEngine.AudioSource audioSource;
     [UnityEngine.SerializeField] public Activate activate;
 
     [System.Serializable]
@@ -38,6 +42,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         stop, walking
     }
     [UnityEngine.SerializeField, ReadOnly] public Status status;
+    [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
 
     private void Start() {
         this.lifter.AddressableLoad();
@@ -50,11 +55,12 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.stockRightExtend.AddressableLoad();
         this.stockRightSlider.AddressableLoad();
         this.tiltCSVLoad();
-        this.client = new System.IO.Ports.SerialPort(portName, baudRate, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One);
-        this.client.Open();
+        this.stopCSVLoad();
+        // this.client = new System.IO.Ports.SerialPort(portName, baudRate, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One);
+        // this.client.Open();
     }
 
-    public MotorTrajectory lifter, leftPedal, leftSlider, rightPedal, rightSlider, stockLeftExtend, stockLeftSlider, stockRightExtend, stockRightSlider;
+    // public MotorTrajectory lifter, leftPedal, leftSlider, rightPedal, rightSlider, stockLeftExtend, stockLeftSlider, stockRightExtend, stockRightSlider;
 
     [System.Serializable]
     public class Trajectory {
@@ -115,6 +121,9 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             if (this.index + 1 < this.trajectories.Count) this.timers[this.index + 1].Start();
             if (this.name == "stockSlider") {
                 this.epos4Node.SetPositionProfileInTime(this.trajectories[this.index].position, this.trajectories[this.index].deltaTime, 5, 1);
+                if (this.trajectories[this.index].position < 0) {
+                    this.walkingDisplayMain.audioFlag = true;
+                }
             }
             else {
                 this.epos4Node.SetPositionProfileInTime(this.trajectories[this.index].position, this.trajectories[this.index].deltaTime, 1, 1 + this.trajectories[this.index].useStiffness*this.walkingDisplayMain.stiffness);
@@ -184,9 +193,10 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
 
     [UnityEngine.Header("Stock Tilt Conf")]
     [UnityEngine.SerializeField] public UnityEngine.AddressableAssets.AssetReference csvFileTilt;
-    public string portName = "COM3";    
-    public int baudRate = 9600;
-    private System.IO.Ports.SerialPort client;
+    // public string portName = "COM3";    
+    // public int baudRate = 9600;
+    // private System.IO.Ports.SerialPort client;
+    public ESP32Main esp32Main;
     private float degreePerPulse = 0.0072f; //[degrees/pulse]
     public string sendText;
     [UnityEngine.SerializeField, UnityEngine.Header("Unit (deg), Absolute, Backward Positive, Forward Negative"), UnityEngine.Range(0, 10)] public float tiltBackward = 0;
@@ -205,6 +215,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     public double leftTiltDelayTimeForward = 0;
     public double rightTiltDelayTimeBackward = 0;
     public double rightTiltDelayTimeForward = 0;
+    public MotorTrajectory lifter, leftPedal, leftSlider, rightPedal, rightSlider, stockLeftExtend, stockLeftSlider, stockRightExtend, stockRightSlider;
     //出力パルス（送信）
     private int[] targetPulseUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
     private int[] targetPulseDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
@@ -216,6 +227,33 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     private int[] delayTimeDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退始めモータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
     private int[] delayTimeFirst = new int[6] { 2500, 0, 0, 0, 0, 0 };//一歩目モータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
     private int seatRotationPulse;
+
+    public System.Timers.Timer walkStopTimer;
+    public UnityEngine.AddressableAssets.AssetReference csvFileStop;
+
+    public float ExperienceTime = 0;
+
+    private void stopCSVLoad() {
+        UnityEngine.TextAsset dataFile = new UnityEngine.TextAsset(); //テキストファイルの保持
+        dataFile = null;
+        string str = "";
+        //Assetのロード
+        UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<UnityEngine.TextAsset>(this.csvFileStop).Completed += op => {
+            //ロードに成功
+            str = op.Result.text;
+            System.IO.StringReader reader = new System.IO.StringReader(str);
+            int count = 0;
+            while (reader.Peek() != -1) // reader.Peaekが-1になるまで
+            {
+                string line = reader.ReadLine(); // 一行ずつ読み込み
+                string[] splitedLine = line.Split(','); // , で分割
+                if (count > 0) {
+                    this.ExperienceTime = System.Convert.ToSingle(splitedLine[0])*1000f;
+                }
+                count++;
+            }
+        };
+    }
 
     private void tiltCSVLoad() {
         UnityEngine.TextAsset dataFile = new UnityEngine.TextAsset(); //テキストファイルの保持
@@ -311,7 +349,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     public enum CoolingStatus {
         Readied, NowCooling
     }
-    [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
+    // [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
 
     public void WalkStraight() {
         if (this.status == Status.walking) return;
@@ -333,7 +371,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             this.walkStraightTimer.Stop();
             this.walkStraightTimer.Dispose();
         }
-        this.walkStraightTimer = new System.Timers.Timer(100);
+        this.walkStraightTimer = new System.Timers.Timer(10);
         this.walkStraightTimer.AutoReset = false;
         this.walkStraightTimer.Elapsed += (sender, e) => {
             if (this.coolingStatus == CoolingStatus.NowCooling) return;
@@ -362,14 +400,24 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             }
             this.sendText += this.seatRotationPulse.ToString() + ",";
             this.sendText += "/";//終わりの目印
-            byte[] sendByte = System.Text.Encoding.ASCII.GetBytes(sendText);//送信する文字列をbyteに変換
-            if (this.client != null)
-            {
-                this.client.Write(sendByte, 0, sendByte.Length);//送信
-            }
-            UnityEngine.Debug.Log(this.sendText);
+            this.esp32Main.SendText(this.sendText);
+            // byte[] sendByte = System.Text.Encoding.ASCII.GetBytes(sendText);//送信する文字列をbyteに変換
+            // if (this.client != null)
+            // {
+            //     this.client.Write(sendByte, 0, sendByte.Length);//送信
+            // }
+            // UnityEngine.Debug.Log(this.sendText);
         };
         this.walkStraightTimer.Start();
+        // this.video.Play();
+        this.walkStopTimer = new System.Timers.Timer(this.ExperienceTime);
+        this.walkStopTimer.AutoReset = false;
+        this.walkStopTimer.Elapsed += (sender, e) => {
+            this.WalkStop();
+        };
+        this.walkStopTimer.Start();
+        this.video.Play();
+        this.video.MuteOff();
     }
 
     public void WalkStop() {
@@ -379,14 +427,17 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         // this.epos4Main.AllNodeMoveStop();    
         this.epos4Main.AllNodeMoveToHome();
 
+        
+
         if (this.coolingStatus == CoolingStatus.Readied) {
             this.sendText = "stop" + "," + "/";
-            byte[] sendByte = System.Text.Encoding.ASCII.GetBytes(sendText);//送信する文字列をbyteに変換
-            if (client != null)
-            {
-                this.client.Write(sendByte, 0, sendByte.Length);//送信
-            }
-            UnityEngine.Debug.Log(sendText);
+            this.esp32Main.SendText(this.sendText);
+            // byte[] sendByte = System.Text.Encoding.ASCII.GetBytes(sendText);//送信する文字列をbyteに変換
+            // if (client != null)
+            // {
+            //     this.client.Write(sendByte, 0, sendByte.Length);//送信
+            // }
+            UnityEngine.Debug.Log("walkmain: " + this.sendText);
 
             this.coolingStatus = CoolingStatus.NowCooling;
             if (this.coolingTimer != null) {
@@ -400,6 +451,9 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             };
             this.coolingTimer.Start();
         }
+        this.walkStopTimer.Stop();
+        this.walkStopTimer.Dispose();
+        this.pauseFlag = true;
     }
 
     private void getActualPositionAsync() {
@@ -459,6 +513,10 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     [UnityEngine.SerializeField, ReadOnly] private UnityEngine.Vector2 thumbStickR;
     [UnityEngine.SerializeField, ReadOnly] private UnityEngine.Vector2 thumbStickL;
 
+
+    private bool pauseFlag = false;
+    private bool audioFlag = false;
+
     private void Update() {
         this.thumbStickR = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.RTouch);
         this.thumbStickL = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.LTouch);
@@ -470,6 +528,15 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         else if (this.thumbStickR.y < -0.5 || this.thumbStickL.y < -0.5) {
             this.WalkStop();
         }
+
+        if (this.status == Status.stop & this.video.videoPlayer.isPlaying & this.pauseFlag) {
+            this.video.Pause();
+            this.pauseFlag = false;
+        }
+        if (this.audioFlag) {
+            this.audioSource.Play();
+            this.audioFlag = false;
+        }
     }
 
     private bool Destroied = false;
@@ -477,5 +544,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     private void OnDestroy() {
         this.WalkStop();
         this.Destroied = true;
+        this.walkStopTimer.Stop();
+        this.walkStopTimer.Dispose();
     }
 }
