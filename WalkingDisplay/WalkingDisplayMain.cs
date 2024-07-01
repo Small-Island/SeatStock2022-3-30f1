@@ -6,7 +6,8 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     public Video video;
     // public UnityEngine.Video.VideoPlayer videoPlayer;
 
-    public UnityEngine.AudioSource audioSource;
+    public UnityEngine.AudioSource audioLeftSource;
+    public UnityEngine.AudioSource audioRightSource;
     [UnityEngine.SerializeField] public Activate activate;
 
     [System.Serializable]
@@ -56,6 +57,8 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.stockRightSlider.AddressableLoad();
         this.tiltCSVLoad();
         this.stopCSVLoad();
+        this.leftFootVibro.AddressableLoad();
+        this.rightFootVibro.AddressableLoad();
         // this.client = new System.IO.Ports.SerialPort(portName, baudRate, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One);
         // this.client.Open();
     }
@@ -73,6 +76,117 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             this.deltaTime = arg_deltaTime;
             this.position  = arg_position;
             this.useStiffness = arg_useStiffness;
+        }
+    }
+
+    [System.Serializable]
+    public enum LR {
+        left,
+        right
+    }
+
+    [System.Serializable]
+    public class Vibro {
+        [UnityEngine.SerializeField] public UnityEngine.AddressableAssets.AssetReference csvFile;
+        [UnityEngine.SerializeField] List<float> clockTime;
+        [UnityEngine.SerializeField] public bool useVibro = false;
+        private string name = "";
+        private int index = 0;
+        private System.Timers.Timer[] timers;
+        private bool zeroClockStart = false;
+        private WalkingDisplayMain walkingDisplayMain;
+
+        public void init(WalkingDisplayMain arg_walkingDisplayMain, string arg_name) {
+            this.walkingDisplayMain = arg_walkingDisplayMain;
+            this.name = arg_name;
+            this.zeroClockStart = false;
+            this.index = 0;
+            this.timers = new System.Timers.Timer[this.clockTime.Count];
+            for (int i = 0; i < this.clockTime.Count; i++) {
+                if (i == 0 && this.clockTime[i] < 0.001) {
+                    this.zeroClockStart = true;
+                    continue;
+                }
+
+                if (i == 0) {
+                    this.timers[i] = new System.Timers.Timer(this.clockTime[i]*1000.0);
+                }
+                else {
+                    this.timers[i] = new System.Timers.Timer((this.clockTime[i] - this.clockTime[i-1])*1000.0);
+                }
+                this.timers[i].AutoReset = false; // 一回のみ．繰り返し無し．
+                this.timers[i].Elapsed += this.timerCallback;
+            }
+        }
+        
+        private void timerCallback(object source, System.Timers.ElapsedEventArgs e) {
+            if (this.walkingDisplayMain.status == Status.stop) {
+                this.stop();
+                return;
+            }
+            if (this.index + 1 < this.clockTime.Count) this.timers[this.index + 1].Start();
+            if (this.name == "leftFootVibro") {
+                this.walkingDisplayMain.audioLeftFlag = true;
+            }
+            if (this.name == "rightFootVibro") {
+                this.walkingDisplayMain.audioRightFlag = true;
+            }
+            this.timers[this.index].Stop();
+            this.timers[this.index].Dispose();
+            this.index++;
+        }
+
+        public void AddressableLoad() {
+            if (!this.useVibro) {
+                return;
+            }
+            UnityEngine.TextAsset dataFile = new UnityEngine.TextAsset(); //テキストファイルの保持
+            dataFile = null;
+            string str = "";
+            //Assetのロード
+            UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<UnityEngine.TextAsset>(this.csvFile).Completed += op => {
+                //ロードに成功
+                this.clockTime = new List<float>();
+                str = op.Result.text;
+                System.IO.StringReader reader = new System.IO.StringReader(str);
+                int count = 0;
+                while (reader.Peek() != -1) // reader.Peaekが-1になるまで
+                {
+                    string line = reader.ReadLine(); // 一行ずつ読み込み
+                    string[] splitedLine = line.Split(','); // , で分割
+                    if (count > 0) {
+                        this.clockTime.Add(System.Convert.ToSingle(splitedLine[0]));
+                    }
+                    count++;
+                }
+            };
+        }
+
+        public void start() {
+            this.index = 0;
+            if (this.timers.Length > 0) {
+                if (this.zeroClockStart) {
+                    if (this.name == "leftFootVibro") {
+                        this.walkingDisplayMain.audioLeftFlag = true;
+                    }
+                    if (this.name == "rightFootVibro") {
+                        this.walkingDisplayMain.audioRightFlag = true;
+                    } 
+                    this.index++;   
+                }
+                if (this.index < this.timers.Length - 1) {
+                    this.timers[this.index].Start();
+                }
+            }
+        }
+
+        public void stop() {
+            for (int i = 0; i < 0; i++) {
+                if (i > 0 || !this.zeroClockStart) {
+                    this.timers[i].Stop();
+                    this.timers[i].Dispose();
+                }
+            }
         }
     }
 
@@ -121,9 +235,6 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             if (this.index + 1 < this.trajectories.Count) this.timers[this.index + 1].Start();
             if (this.name == "stockSlider") {
                 this.epos4Node.SetPositionProfileInTime(this.trajectories[this.index].position, this.trajectories[this.index].deltaTime, 5, 1);
-                if (this.trajectories[this.index].position < 0) {
-                    this.walkingDisplayMain.audioFlag = true;
-                }
             }
             else {
                 this.epos4Node.SetPositionProfileInTime(this.trajectories[this.index].position, this.trajectories[this.index].deltaTime, 1, 1 + this.trajectories[this.index].useStiffness*this.walkingDisplayMain.stiffness);
@@ -216,6 +327,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     public double rightTiltDelayTimeBackward = 0;
     public double rightTiltDelayTimeForward = 0;
     public MotorTrajectory lifter, leftPedal, leftSlider, rightPedal, rightSlider, stockLeftExtend, stockLeftSlider, stockRightExtend, stockRightSlider;
+    public Vibro leftFootVibro, rightFootVibro;
     //出力パルス（送信）
     private int[] targetPulseUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
     private int[] targetPulseDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
@@ -359,13 +471,15 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.epos4Main.AllNodeDefinePosition();
         this.lifter.init(this.epos4Main.lifter, this, "seat");
         this.leftPedal.init(this.epos4Main.leftPedal, this, "seat");
-        this.leftSlider.init(this.epos4Main.leftSlider, this, "seat");
+        this.leftSlider.init(this.epos4Main.leftSlider, this, "seatLeftSlider");
         this.rightPedal.init(this.epos4Main.rightPedal, this, "seat");
-        this.rightSlider.init(this.epos4Main.rightSlider, this, "seat");
+        this.rightSlider.init(this.epos4Main.rightSlider, this, "seatRightSlider");
         this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this, "seat");
         this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this, "stockSlider");
         this.stockRightExtend.init(this.epos4Main.stockRightExtend, this, "stockExtend");
         this.stockRightSlider.init(this.epos4Main.stockRightSlider, this, "stockSlider");
+        this.leftFootVibro.init(this, "leftFootVibro");
+        this.rightFootVibro.init(this, "rightFootVibro");
         this.epos4Main.AllNodeActivateProfilePositionMode();
         if (this.walkStraightTimer != null) {
             this.walkStraightTimer.Stop();
@@ -384,6 +498,8 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             this.stockLeftExtend.start(this.activate.stockLeftExtend);
             this.stockRightExtend.start(this.activate.stockRightExtend);
             this.stockRightSlider.start(this.activate.stockRightSlider);
+            this.leftFootVibro.start();
+            this.rightFootVibro.start();
             this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
             this.th.Start();
             this.walkStraightTimer.Stop();
@@ -451,8 +567,8 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             };
             this.coolingTimer.Start();
         }
-        this.walkStopTimer.Stop();
-        this.walkStopTimer.Dispose();
+        this.walkStopTimer?.Stop();
+        this.walkStopTimer?.Dispose();
         this.pauseFlag = true;
     }
 
@@ -515,7 +631,8 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
 
 
     private bool pauseFlag = false;
-    private bool audioFlag = false;
+    private bool audioLeftFlag = false;
+    private bool audioRightFlag = false;
 
     private void Update() {
         this.thumbStickR = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.RTouch);
@@ -523,19 +640,27 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         if (System.Math.Abs(this.thumbStickR.y) > 0.5 && System.Math.Abs(this.thumbStickL.y) > 0.5) {
         }
         else if (this.thumbStickR.y > 0.5 || this.thumbStickL.y > 0.5) {
-            this.WalkStraight();
+            // this.WalkStraight();
         }
         else if (this.thumbStickR.y < -0.5 || this.thumbStickL.y < -0.5) {
-            this.WalkStop();
+            // this.WalkStop();
         }
 
         if (this.status == Status.stop & this.video.videoPlayer.isPlaying & this.pauseFlag) {
             this.video.Pause();
             this.pauseFlag = false;
         }
-        if (this.audioFlag) {
-            this.audioSource.Play();
-            this.audioFlag = false;
+        if (this.audioLeftFlag) {
+            if (this.audioLeftSource != null) {
+                this.audioLeftSource.Play();
+            }
+            this.audioLeftFlag = false;
+        }
+        if (this.audioRightFlag) {
+            if (this.audioRightSource != null) {
+                this.audioRightSource.Play();
+            }
+            this.audioRightFlag = false;
         }
     }
 
@@ -544,7 +669,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     private void OnDestroy() {
         this.WalkStop();
         this.Destroied = true;
-        this.walkStopTimer.Stop();
-        this.walkStopTimer.Dispose();
+        this.walkStopTimer?.Stop();
+        this.walkStopTimer?.Dispose();
     }
 }
