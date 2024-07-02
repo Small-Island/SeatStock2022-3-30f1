@@ -336,16 +336,16 @@ public class Epos4MainEditor : Editor
                 // if (GUILayout.Button("Activate PPM")) {
                 //     epos4Main.leftPedal.ActivateProfilePositionMode();
                 // }
-                // epos4Main.stockLeftExtend.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.stockLeftExtend.profile.absolute);
-                // epos4Main.stockLeftExtend.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.stockLeftExtend.profile.position, -maxPosition, maxPosition);
-                // epos4Main.stockLeftExtend.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockLeftExtend.profile.velocity, 0, maxVel);
-                // epos4Main.stockLeftExtend.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockLeftExtend.profile.acceleration, 0, maxAcceleration);
-                // epos4Main.stockLeftExtend.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockLeftExtend.profile.deceleration, 0, maxAcceleration);
-                EditorGUILayout.Toggle ("Absolute", epos4Main.stockLeftExtend.profile.absolute);
-                EditorGUILayout.Slider("Position (mm)", epos4Main.stockLeftExtend.profile.position, -maxPosition, maxPosition);
-                EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockLeftExtend.profile.velocity, 0, maxVel);
-                EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockLeftExtend.profile.acceleration, 0, maxAcceleration);
-                EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockLeftExtend.profile.deceleration, 0, maxAcceleration);
+                epos4Main.stockLeftExtend.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.stockLeftExtend.profile.absolute);
+                epos4Main.stockLeftExtend.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.stockLeftExtend.profile.position, -maxPosition, maxPosition);
+                epos4Main.stockLeftExtend.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockLeftExtend.profile.velocity, 0, maxVel);
+                epos4Main.stockLeftExtend.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockLeftExtend.profile.acceleration, 0, maxAcceleration);
+                epos4Main.stockLeftExtend.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockLeftExtend.profile.deceleration, 0, maxAcceleration);
+                // EditorGUILayout.Toggle ("Absolute", epos4Main.stockLeftExtend.profile.absolute);
+                // EditorGUILayout.Slider("Position (mm)", epos4Main.stockLeftExtend.profile.position, -maxPosition, maxPosition);
+                // EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockLeftExtend.profile.velocity, 0, maxVel);
+                // EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockLeftExtend.profile.acceleration, 0, maxAcceleration);
+                // EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockLeftExtend.profile.deceleration, 0, maxAcceleration);
                 if (GUILayout.Button("Move to Position")) {
                     epos4Main.stockLeftExtend.ActivateProfilePositionMode();
                     epos4Main.stockLeftExtend.SetPositionProfile();
@@ -393,16 +393,16 @@ public class Epos4MainEditor : Editor
                 // if (GUILayout.Button("Activate PPM")) {
                 //     epos4Main.stockLeftSlider.ActivateProfilePositionMode();
                 // }
-                // epos4Main.stockLeftSlider.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.stockLeftSlider.profile.absolute);
-                // epos4Main.stockLeftSlider.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.stockLeftSlider.profile.position, -maxPosition, maxPosition);
-                // epos4Main.stockLeftSlider.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockLeftSlider.profile.velocity, 0, maxVel);
-                // epos4Main.stockLeftSlider.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockLeftSlider.profile.acceleration, 0, maxAcceleration);
-                // epos4Main.stockLeftSlider.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockLeftSlider.profile.deceleration, 0, maxAcceleration);
-                EditorGUILayout.Toggle ("Absolute", epos4Main.stockLeftSlider.profile.absolute);
-                EditorGUILayout.Slider("Position (mm)", epos4Main.stockLeftSlider.profile.position, -maxPosition, maxPosition);
-                EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockLeftSlider.profile.velocity, 0, maxVel);
-                EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockLeftSlider.profile.acceleration, 0, maxAcceleration);
-                EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockLeftSlider.profile.deceleration, 0, maxAcceleration);
+                epos4Main.stockLeftSlider.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.stockLeftSlider.profile.absolute);
+                epos4Main.stockLeftSlider.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.stockLeftSlider.profile.position, -maxPosition, maxPosition);
+                epos4Main.stockLeftSlider.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockLeftSlider.profile.velocity, 0, maxVel);
+                epos4Main.stockLeftSlider.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockLeftSlider.profile.acceleration, 0, maxAcceleration);
+                epos4Main.stockLeftSlider.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockLeftSlider.profile.deceleration, 0, maxAcceleration);
+                // EditorGUILayout.Toggle ("Absolute", epos4Main.stockLeftSlider.profile.absolute);
+                // EditorGUILayout.Slider("Position (mm)", epos4Main.stockLeftSlider.profile.position, -maxPosition, maxPosition);
+                // EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockLeftSlider.profile.velocity, 0, maxVel);
+                // EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockLeftSlider.profile.acceleration, 0, maxAcceleration);
+                // EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockLeftSlider.profile.deceleration, 0, maxAcceleration);
                 if (GUILayout.Button("Move to Position")) {
                     epos4Main.stockLeftSlider.ActivateProfilePositionMode();
                     epos4Main.stockLeftSlider.SetPositionProfile();
@@ -451,16 +451,16 @@ public class Epos4MainEditor : Editor
                 // if (GUILayout.Button("Activate PPM")) {
                 //     epos4Main.stockRightExtend.ActivateProfilePositionMode();
                 // }
-                // epos4Main.stockRightExtend.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.stockRightExtend.profile.absolute);
-                // epos4Main.stockRightExtend.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.stockRightExtend.profile.position, -maxPosition, maxPosition);
-                // epos4Main.stockRightExtend.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockRightExtend.profile.velocity, 0, maxVel);
-                // epos4Main.stockRightExtend.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockRightExtend.profile.acceleration, 0, maxAcceleration);
-                // epos4Main.stockRightExtend.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockRightExtend.profile.deceleration, 0, maxAcceleration);
-                EditorGUILayout.Toggle ("Absolute", epos4Main.stockRightExtend.profile.absolute);
-                EditorGUILayout.Slider("Position (mm)", epos4Main.stockRightExtend.profile.position, -maxPosition, maxPosition);
-                EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockRightExtend.profile.velocity, 0, maxVel);
-                EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockRightExtend.profile.acceleration, 0, maxAcceleration);
-                EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockRightExtend.profile.deceleration, 0, maxAcceleration);
+                epos4Main.stockRightExtend.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.stockRightExtend.profile.absolute);
+                epos4Main.stockRightExtend.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.stockRightExtend.profile.position, -maxPosition, maxPosition);
+                epos4Main.stockRightExtend.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockRightExtend.profile.velocity, 0, maxVel);
+                epos4Main.stockRightExtend.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockRightExtend.profile.acceleration, 0, maxAcceleration);
+                epos4Main.stockRightExtend.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockRightExtend.profile.deceleration, 0, maxAcceleration);
+                // EditorGUILayout.Toggle ("Absolute", epos4Main.stockRightExtend.profile.absolute);
+                // EditorGUILayout.Slider("Position (mm)", epos4Main.stockRightExtend.profile.position, -maxPosition, maxPosition);
+                // EditorGUILayout.Slider("Velocity (rpm)", epos4Main.stockRightExtend.profile.velocity, 0, maxVel);
+                // EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.stockRightExtend.profile.acceleration, 0, maxAcceleration);
+                // EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.stockRightExtend.profile.deceleration, 0, maxAcceleration);
                 if (GUILayout.Button("Move to Position")) {
                     epos4Main.stockRightExtend.ActivateProfilePositionMode();
                     epos4Main.stockRightExtend.SetPositionProfile();
