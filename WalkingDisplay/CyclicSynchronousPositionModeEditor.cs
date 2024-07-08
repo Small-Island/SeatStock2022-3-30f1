@@ -14,13 +14,15 @@ public class CyclicSynchronousPositionModeEditor : Editor
         //     walkingDisplayMain.init();
         // }
 
-        // if (GUILayout.Button("Walk Straight"))
-        // {
-        //     walkingDisplayMain.video.Play();
-        //     walkingDisplayMain.WalkStraight();
-        //     // walkingDisplayMain.DelaySample();
-        //     // UnityEngine.Debug.Log("hello");
-        // }
+        if (GUILayout.Button("Start"))
+        {
+            cyclicSynchronousPositionMode.StartCyclicSynchronousPositionMode();
+        }
+
+        if (GUILayout.Button("Stop"))
+        {
+            cyclicSynchronousPositionMode.StopCyclicSynchronousPositionMode();
+        }
 
         // if (GUILayout.Button("Walk Stop"))
         // {

@@ -10,17 +10,19 @@ public class CyclicSynchronousPositionMode : UnityEngine.MonoBehaviour {
 
     }
 
-    private void StartCyclicSynchronousPositionMode() {
+    public void StartCyclicSynchronousPositionMode() {
+        this.epos4Main.stockLeftExtend.ActivatePositionMode();
         this.timer = new System.Timers.Timer(100);
         this.timer.AutoReset = true;
         this.timer.Elapsed += this.timerCallback;
     }
 
     public double positionMust = 0; // Unit mm
+    public double LimitPosition = 10; // Unit mm
     public enum Status {
         stop, upping, dowing
     }
-    public Status status = Status.stop;
+    [ReadOnly] public Status status = Status.stop;
 
     private void timerCallback(object source, System.Timers.ElapsedEventArgs e) {
         if (this.status == Status.stop) {
@@ -28,7 +30,7 @@ public class CyclicSynchronousPositionMode : UnityEngine.MonoBehaviour {
             // return;
         }
         if (this.status == Status.upping) {
-            if (this.positionMust < 10) {
+            if (this.positionMust < this.LimitPosition) {
                 this.epos4Main.stockLeftExtend.SetPositionMust(this.positionMust);
                 this.positionMust = this.positionMust + 0.001;
             }
