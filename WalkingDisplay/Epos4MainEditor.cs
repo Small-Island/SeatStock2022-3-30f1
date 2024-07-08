@@ -61,6 +61,9 @@ public class Epos4MainEditor : Editor
             epos4Main.lifter.SetPositionProfile();
             epos4Main.lifter.MoveToPosition(true);
         }
+        if (GUILayout.Button("Set Position Must")) {
+            epos4Main.lifter.SetPositionMust();
+        }
         // epos4Main.lifter.targetTime  = (int)EditorGUILayout.Slider("target Time (sec)", epos4Main.lifter.targetTime, 1, 10);
         // epos4Main.lifter.targetPosMilli  = (int)EditorGUILayout.Slider("target Position (mm)", epos4Main.lifter.targetPosMilli, -200, 200);
         bool uprb = GUILayout.RepeatButton("Up    as Velocity Mode");

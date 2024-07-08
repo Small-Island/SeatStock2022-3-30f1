@@ -452,6 +452,18 @@ public class Epos4Node {
         this.whichMode = WhichMode.CSP;
     }
 
+    public void SetPositionMust() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.SetPositionMust(
+                (int) (this.profile.position)
+            );
+        }
+        catch (System.Exception e) {
+            this.status = e.ToString();
+        }
+    }
+
     public void MoveWithVelocity(int arg_pm) {
         if (this.cs == ConnectionStatus.failed) return;
         try {
@@ -551,6 +563,16 @@ public class Epos4Node {
             {
                 // arg_position (inc) == 360/2000 (deg)
                 this.pvm.MoveWithVelocity(arg_target_velocity);
+            }
+            catch (System.Exception e) {
+                throw e;
+            }
+            return;
+        }
+
+        public void SetPositionMust(int arg_positionMust) {
+            try {
+                this.pm.SetPositionMust(arg_positionMust);
             }
             catch (System.Exception e) {
                 throw e;
