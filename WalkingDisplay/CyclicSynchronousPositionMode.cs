@@ -15,6 +15,7 @@ public class CyclicSynchronousPositionMode : UnityEngine.MonoBehaviour {
         this.timer = new System.Timers.Timer(100);
         this.timer.AutoReset = true;
         this.timer.Elapsed += this.timerCallback;
+        this.status = Status.upping;
         this.timer.Start();
     }
 
@@ -54,5 +55,9 @@ public class CyclicSynchronousPositionMode : UnityEngine.MonoBehaviour {
         UnityEngine.Debug.Log("WalkStop");
         this.epos4Main.AllNodeActivateProfilePositionMode();
         this.epos4Main.AllNodeMoveToHome();
+    }
+
+    private void OnDestroy() {
+        this.StopCyclicSynchronousPositionMode();
     }
 }
