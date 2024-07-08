@@ -26,10 +26,6 @@ public class CyclicSynchronousPositionMode : UnityEngine.MonoBehaviour {
     [ReadOnly] public Status status = Status.stop;
 
     private void timerCallback(object source, System.Timers.ElapsedEventArgs e) {
-        if (this.status == Status.stop) {
-            // this.stop();
-            // return;
-        }
         if (this.status == Status.upping) {
             if (this.positionMust < this.LimitPosition) {
                 this.epos4Main.stockLeftExtend.SetPositionMust(this.positionMust);
