@@ -13,7 +13,7 @@ public class CyclicSynchronousPositionMode : UnityEngine.MonoBehaviour {
     public void StartCyclicSynchronousPositionMode() {
         this.epos4Main.stockLeftExtend.ActivatePositionMode();
         this.positionMust = 0;
-        this.timer = new System.Timers.Timer(0.1);
+        this.timer = new System.Timers.Timer(1);
         this.timer.AutoReset = true;
         this.timer.Elapsed += this.timerCallback;
         this.status = Status.upping;
