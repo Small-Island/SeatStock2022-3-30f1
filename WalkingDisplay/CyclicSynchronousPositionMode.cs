@@ -15,6 +15,7 @@ public class CyclicSynchronousPositionMode : UnityEngine.MonoBehaviour {
         this.timer = new System.Timers.Timer(100);
         this.timer.AutoReset = true;
         this.timer.Elapsed += this.timerCallback;
+        this.timer.Start();
     }
 
     public double positionMust = 0; // Unit mm
