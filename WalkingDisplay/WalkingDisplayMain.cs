@@ -42,6 +42,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     public enum Status {
         stop, walking
     }
+    
     [UnityEngine.SerializeField, ReadOnly] public Status status;
     [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
 

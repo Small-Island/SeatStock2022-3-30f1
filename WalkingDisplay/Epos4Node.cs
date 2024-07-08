@@ -452,11 +452,16 @@ public class Epos4Node {
         this.whichMode = WhichMode.CSP;
     }
 
-    public void SetPositionMust() {
+    public void SetPositionMust(double arg_positionMust) {
         if (this.cs == ConnectionStatus.failed) return;
+        this.profile.position = (int)arg_positionMust;
+        this.profile.absolute     = true;
+        this.profile.velocity     = 120;
+        this.profile.acceleration = 240;
+        this.profile.deceleration = 240;
         try {
             this.deviceOperation.SetPositionMust(
-                (int) (this.direction * this.profile.position/this.milliPerRotation*this.incPerRotation)
+                (int) (this.direction * arg_positionMust/this.milliPerRotation*this.incPerRotation)
             );
         }
         catch (System.Exception e) {

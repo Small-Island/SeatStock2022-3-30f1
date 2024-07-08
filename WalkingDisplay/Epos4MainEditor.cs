@@ -40,12 +40,12 @@ public class Epos4MainEditor : Editor
         if (GUILayout.Button("Show Error")) {
             epos4Main.lifter.getError();
         }
-        if (GUILayout.Button("Activate Profile Position mode")) {
-            epos4Main.lifter.ActivateProfilePositionMode();
-        }
-        if (GUILayout.Button("Activate Cyclic Synchronous Position mode")) {
-            epos4Main.lifter.ActivatePositionMode();
-        }
+        // if (GUILayout.Button("Activate Profile Position mode")) {
+        //     epos4Main.lifter.ActivateProfilePositionMode();
+        // }
+        // if (GUILayout.Button("Activate Cyclic Synchronous Position mode")) {
+        //     epos4Main.lifter.ActivatePositionMode();
+        // }
         epos4Main.lifter.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.lifter.profile.absolute);
         epos4Main.lifter.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.lifter.profile.position, -maxPosition, maxPosition);
         epos4Main.lifter.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.lifter.profile.velocity, 0, maxVel);
@@ -61,9 +61,9 @@ public class Epos4MainEditor : Editor
             epos4Main.lifter.SetPositionProfile();
             epos4Main.lifter.MoveToPosition(true);
         }
-        if (GUILayout.Button("Set Position Must")) {
-            epos4Main.lifter.SetPositionMust();
-        }
+        // if (GUILayout.Button("Set Position Must")) {
+        //     epos4Main.lifter.SetPositionMust();
+        // }
         // epos4Main.lifter.targetTime  = (int)EditorGUILayout.Slider("target Time (sec)", epos4Main.lifter.targetTime, 1, 10);
         // epos4Main.lifter.targetPosMilli  = (int)EditorGUILayout.Slider("target Position (mm)", epos4Main.lifter.targetPosMilli, -200, 200);
         bool uprb = GUILayout.RepeatButton("Up    as Velocity Mode");
