@@ -12,6 +12,7 @@ public class CyclicSynchronousPositionMode : UnityEngine.MonoBehaviour {
 
     public void StartCyclicSynchronousPositionMode() {
         this.epos4Main.stockLeftExtend.ActivatePositionMode();
+        this.positionMust = 0;
         this.timer = new System.Timers.Timer(0.1);
         this.timer.AutoReset = true;
         this.timer.Elapsed += this.timerCallback;
@@ -30,7 +31,7 @@ public class CyclicSynchronousPositionMode : UnityEngine.MonoBehaviour {
         if (this.status == Status.upping) {
             if (this.positionMust < this.LimitPosition) {
                 this.epos4Main.stockLeftExtend.SetPositionMust(this.positionMust);
-                this.positionMust = this.positionMust + 0.01;
+                this.positionMust = this.positionMust + 0.005;
             }
             else {
                 this.status = Status.dowing;
@@ -39,7 +40,7 @@ public class CyclicSynchronousPositionMode : UnityEngine.MonoBehaviour {
         else if (this.status == Status.dowing) {
             if (this.positionMust > 0) {
                 this.epos4Main.stockLeftExtend.SetPositionMust(this.positionMust);
-                this.positionMust = this.positionMust - 0.01;
+                this.positionMust = this.positionMust - 0.005;
             }
             else {
                 this.status = Status.upping;
