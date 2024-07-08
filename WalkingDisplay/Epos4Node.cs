@@ -30,7 +30,8 @@ public class Epos4Node {
     public enum WhichMode {
         Position,
         Velocity,
-        Homing
+        Homing,
+        CSP
     }
 
     [UnityEngine.SerializeField, ReadOnly] public ConnectionStatus cs;
@@ -440,6 +441,17 @@ public class Epos4Node {
         this.whichMode = WhichMode.Velocity;
     }
 
+    public void ActivatePositionMode() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.ActivatePositionMode();
+        }
+        catch (System.Exception e) {
+            this.status = e.ToString();
+        }
+        this.whichMode = WhichMode.CSP;
+    }
+
     public void MoveWithVelocity(int arg_pm) {
         if (this.cs == ConnectionStatus.failed) return;
         try {
@@ -473,6 +485,7 @@ public class Epos4Node {
         private EposCmd.Net.DeviceCmdSet.Operation.ProfileVelocityMode pvm;
         private EposCmd.Net.DeviceCmdSet.Operation.MotionInfo mi;
         private EposCmd.Net.DeviceCmdSet.Operation.HomingMode hm;
+        private EposCmd.Net.DeviceCmdSet.Operation.PositionMode pm;
         public DeviceOperation(EposCmd.Net.Device arg_device) {
             this.device = arg_device;
             this.sm = this.device.Operation.StateMachine;
@@ -480,6 +493,7 @@ public class Epos4Node {
             this.pvm = this.device.Operation.ProfileVelocityMode;
             this.mi = this.device.Operation.MotionInfo;
             this.hm = this.device.Operation.HomingMode;
+            this.pm = this.device.Operation.PositionMode;
         }
 
         public void SetQuickStopState() {
@@ -496,6 +510,15 @@ public class Epos4Node {
         public void ActivateProfilePositionMode() {
             try {
                 this.ppm.ActivateProfilePositionMode();
+            }
+            catch (System.Exception e) {
+                throw e;
+            }
+        }
+
+        public void ActivatePositionMode() {
+            try {
+                this.pm.ActivatePositionMode();
             }
             catch (System.Exception e) {
                 throw e;

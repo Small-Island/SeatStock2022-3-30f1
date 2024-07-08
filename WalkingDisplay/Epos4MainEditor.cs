@@ -40,9 +40,12 @@ public class Epos4MainEditor : Editor
         if (GUILayout.Button("Show Error")) {
             epos4Main.lifter.getError();
         }
-        // if (GUILayout.Button("Activate PPM")) {
-        //     epos4Main.lifter.ActivateProfilePositionMode();
-        // }
+        if (GUILayout.Button("Activate Profile Position mode")) {
+            epos4Main.lifter.ActivateProfilePositionMode();
+        }
+        if (GUILayout.Button("Activate Cyclic Synchronous Position mode")) {
+            epos4Main.lifter.ActivatePositionMode();
+        }
         epos4Main.lifter.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.lifter.profile.absolute);
         epos4Main.lifter.profile.position     = (int)EditorGUILayout.Slider("Position (mm)", epos4Main.lifter.profile.position, -maxPosition, maxPosition);
         epos4Main.lifter.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.lifter.profile.velocity, 0, maxVel);
