@@ -456,7 +456,7 @@ public class Epos4Node {
         if (this.cs == ConnectionStatus.failed) return;
         try {
             this.deviceOperation.SetPositionMust(
-                (int) (this.profile.position)
+                (int) (this.direction * this.profile.position/this.milliPerRotation*this.incPerRotation)
             );
         }
         catch (System.Exception e) {
