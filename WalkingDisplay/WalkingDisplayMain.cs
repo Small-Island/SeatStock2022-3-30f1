@@ -194,6 +194,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     [System.Serializable]
     public class MotorTrajectory {
         [UnityEngine.SerializeField] public UnityEngine.AddressableAssets.AssetReference csvFile;
+        [UnityEngine.SerializeField] public bool useCsvFile;
         [UnityEngine.SerializeField] public List<Trajectory> trajectories;
         
         private string name = "";
@@ -247,26 +248,34 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         }
 
         public void AddressableLoad() {
+            if (!this.useCsvFile) {
+                return;
+            }
             UnityEngine.TextAsset dataFile = new UnityEngine.TextAsset(); //テキストファイルの保持
             dataFile = null;
             string str = "";
             //Assetのロード
-            UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<UnityEngine.TextAsset>(this.csvFile).Completed += op => {
-                //ロードに成功
-                this.trajectories = new List<Trajectory>();
-                str = op.Result.text;
-                System.IO.StringReader reader = new System.IO.StringReader(str);
-                int count = 0;
-                while (reader.Peek() != -1) // reader.Peaekが-1になるまで
-                {
-                    string line = reader.ReadLine(); // 一行ずつ読み込み
-                    string[] splitedLine = line.Split(','); // , で分割
-                    if (count > 0) {
-                        this.trajectories.Add(new Trajectory(System.Convert.ToDouble(splitedLine[0]), System.Convert.ToDouble(splitedLine[1]), System.Convert.ToDouble(splitedLine[2]), System.Convert.ToDouble(splitedLine[3])));
+            try {
+                UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<UnityEngine.TextAsset>(this.csvFile).Completed += op => {
+                    //ロードに成功
+                    this.trajectories = new List<Trajectory>();
+                    str = op.Result.text;
+                    System.IO.StringReader reader = new System.IO.StringReader(str);
+                    int count = 0;
+                    while (reader.Peek() != -1) // reader.Peaekが-1になるまで
+                    {
+                        string line = reader.ReadLine(); // 一行ずつ読み込み
+                        string[] splitedLine = line.Split(','); // , で分割
+                        if (count > 0) {
+                            this.trajectories.Add(new Trajectory(System.Convert.ToDouble(splitedLine[0]), System.Convert.ToDouble(splitedLine[1]), System.Convert.ToDouble(splitedLine[2]), System.Convert.ToDouble(splitedLine[3])));
+                        }
+                        count++;
                     }
-                    count++;
-                }
-            };
+                };
+            }
+            catch (UnityEngine.AddressableAssets.InvalidKeyException) {
+
+            }
         }
 
         public void start(bool arg_activate) {
@@ -647,9 +656,11 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             // this.WalkStop();
         }
 
-        if (this.status == Status.stop & this.video.videoPlayer.isPlaying & this.pauseFlag) {
-            this.video.Pause();
-            this.pauseFlag = false;
+        if (this.video != null) {
+            if (this.status == Status.stop & this.video.videoPlayer.isPlaying & this.pauseFlag) {
+                this.video?.Pause();
+                this.pauseFlag = false;
+            }
         }
         if (this.audioLeftFlag) {
             if (this.audioLeftSource != null) {
