@@ -14,8 +14,8 @@ public class InterpolatedPositionMode : UnityEngine.MonoBehaviour {
         this.epos4Main.AllNodeDefinePosition();
         this.epos4Main.stockLeftExtend.ActivateInterpolatedPositionMode();
         this.epos4Main.stockLeftExtend.ClearIpmBuffer();
-        for (double i = 0; i < 5; i = i + 0.01) {
-            this.epos4Main.stockLeftExtend.AddPvtValueToIpmBuffer(i, 60, 10);
+        for (int i = 0; i < 50; i++) {
+            this.epos4Main.stockLeftExtend.AddPvtValueToIpmBuffer((double)i/10, 60, (byte)i);
         }
         this.epos4Main.stockLeftExtend.StartIpmTrajectory();
     }
