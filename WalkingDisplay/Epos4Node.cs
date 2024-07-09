@@ -490,9 +490,12 @@ public class Epos4Node {
         try {
             this.deviceOperation.ActivateInterpolatedPositionMode();
         }
-        catch (System.Exception e) {
+        catch (EposCmd.Net.DeviceException e) {
             this.status = e.ToString();
         }
+        // catch (System.Exception e) {
+        //     this.status = e.ToString();
+        // }
     }
 
     public void AddPvtValueToIpmBuffer(double arg_position_milli, int arg_velocity, byte arg_time) {
@@ -750,7 +753,7 @@ public class Epos4Node {
             try {
                 this.ipm.ActivateInterpolatedPositionMode();
             }
-            catch (System.Exception e)
+            catch (EposCmd.Net.DeviceException e)
             {
                 throw e;
             }
