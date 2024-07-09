@@ -17,6 +17,7 @@ public class InterpolatedPositionMode : UnityEngine.MonoBehaviour {
         for (double i = 0; i < 5; i = i + 0.01) {
             this.epos4Main.stockLeftExtend.AddPvtValueToIpmBuffer(i, 60, 10);
         }
+        this.epos4Main.stockLeftExtend.StartIpmTrajectory();
     }
 
     public double position = 0; // Unit mm
