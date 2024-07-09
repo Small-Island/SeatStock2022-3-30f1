@@ -41,7 +41,7 @@ public class Epos4Node {
     [UnityEngine.SerializeField, UnityEngine.Range(0.1f, 2f)] public double speedRate = 1f;
 
     [UnityEngine.HideInInspector] public string status = ""; 
-    [UnityEngine.HideInInspector] public uint ecode = 0; 
+    public uint ecode = 0; 
     [UnityEngine.HideInInspector] public Profile profile;
     [UnityEngine.HideInInspector] public int actualPosition = 0;
     [UnityEngine.HideInInspector] public float current = 0;
@@ -107,8 +107,10 @@ public class Epos4Node {
         try {
             this.deviceOperation.ClearFaultAndSetEnableState();
         }
-        catch (EposCmd.Net.DeviceException) {
-            this.status = "Connection failed";
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
+            // this.status = "Connection failed";
             this.cs = ConnectionStatus.failed;
             return;
         }
@@ -132,8 +134,9 @@ public class Epos4Node {
         try {
             this.deviceOperation.ActivateProfilePositionMode();
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
         this.whichMode = WhichMode.Position;
         return;
@@ -226,15 +229,16 @@ public class Epos4Node {
                 true
             );
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
         try {
             this.deviceOperation.DefinePosition(0);
         }
-        catch (System.Exception e)
-        {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
     }
 
@@ -325,8 +329,9 @@ public class Epos4Node {
                 this.profile.deceleration
             );
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
     }
 
@@ -340,8 +345,9 @@ public class Epos4Node {
                 true
             );
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
     }
 
@@ -364,8 +370,9 @@ public class Epos4Node {
             );
             this.deviceOperation.MoveWithVelocity(0);
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
         // this.ActivateProfilePositionMode();
     }
@@ -407,8 +414,9 @@ public class Epos4Node {
                     true
                 );
             }
-            catch (System.Exception exc) {
-                this.status = exc.ToString();
+            catch (EposCmd.Net.DeviceException exc) {
+                this.status = exc.Message;
+                this.ecode = exc.ErrorCode;
             }
             this.profile.absolute     = false;
             this.profile.position     = 0;
@@ -426,8 +434,9 @@ public class Epos4Node {
         try {
            this.deviceOperation.SetQuickStopState();
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
     }
 
@@ -436,8 +445,9 @@ public class Epos4Node {
         try {
             this.deviceOperation.ActivateProfileVelocityMode();
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
         this.whichMode = WhichMode.Velocity;
     }
@@ -447,8 +457,9 @@ public class Epos4Node {
         try {
             this.deviceOperation.ActivatePositionMode();
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
         this.whichMode = WhichMode.CSP;
     }
@@ -465,8 +476,9 @@ public class Epos4Node {
                 (int) (this.direction * arg_positionMust/this.milliPerRotation*this.incPerRotation)
             );
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
     }
 
@@ -481,8 +493,9 @@ public class Epos4Node {
                 (int) (this.direction * arg_pm * this.profile.velocity)
             );
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
     }
 
@@ -492,11 +505,9 @@ public class Epos4Node {
             this.deviceOperation.ActivateInterpolatedPositionMode();
         }
         catch (EposCmd.Net.DeviceException e) {
-            this.status = e.ToString();
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
-        // catch (System.Exception e) {
-        //     this.status = e.ToString();
-        // }
     }
 
     public void AddPvtValueToIpmBuffer(double arg_position_milli, int arg_velocity, byte arg_time) {
@@ -508,8 +519,9 @@ public class Epos4Node {
                 arg_time
             );
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
     }
 
@@ -518,8 +530,9 @@ public class Epos4Node {
         try {
             this.deviceOperation.ClearIpmBuffer();
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
     }
 
@@ -528,8 +541,9 @@ public class Epos4Node {
         try {
             this.deviceOperation.StartIpmTrajectory();
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
     }
 
@@ -538,8 +552,9 @@ public class Epos4Node {
         try {
             this.deviceOperation.StopIpmTrajectory();
         }
-        catch (System.Exception e) {
-            this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
     }
 
@@ -601,7 +616,7 @@ public class Epos4Node {
             try {
                 this.ppm.ActivateProfilePositionMode();
             }
-            catch (System.Exception e) {
+            catch (EposCmd.Net.DeviceException e) {
                 throw e;
             }
         }
@@ -610,7 +625,7 @@ public class Epos4Node {
             try {
                 this.pm.ActivatePositionMode();
             }
-            catch (System.Exception e) {
+            catch (EposCmd.Net.DeviceException e) {
                 throw e;
             }
         }
@@ -619,7 +634,7 @@ public class Epos4Node {
             try {
                 this.pvm.ActivateProfileVelocityMode();
             }
-            catch (System.Exception e) {
+            catch (EposCmd.Net.DeviceException e) {
                 throw e;
             }
         }
@@ -630,7 +645,7 @@ public class Epos4Node {
                 // arg_position (inc) == 360/2000 (deg)
                 this.ppm.MoveToPosition(arg_position, arg_absolute, arg_immediately);
             }
-            catch (System.Exception e) {
+            catch (EposCmd.Net.DeviceException e) {
                 throw e;
             }
             return;
@@ -642,7 +657,7 @@ public class Epos4Node {
                 // arg_position (inc) == 360/2000 (deg)
                 this.pvm.MoveWithVelocity(arg_target_velocity);
             }
-            catch (System.Exception e) {
+            catch (EposCmd.Net.DeviceException e) {
                 throw e;
             }
             return;
@@ -652,7 +667,7 @@ public class Epos4Node {
             try {
                 this.pm.SetPositionMust(arg_positionMust);
             }
-            catch (System.Exception e) {
+            catch (EposCmd.Net.DeviceException e) {
                 throw e;
             }
             return;
@@ -671,7 +686,7 @@ public class Epos4Node {
                     (uint)System.Math.Abs(arg_ProfileDeceleration)
                 );
             }
-            catch (System.Exception e) {
+            catch (EposCmd.Net.DeviceException e) {
                 throw e;
                 // UnityEngine.MonoBehaviour.print(e);
             }
@@ -688,7 +703,7 @@ public class Epos4Node {
                     (uint)System.Math.Abs(arg_ProfileDeceleration)
                 );
             }
-            catch (System.Exception e) {
+            catch (EposCmd.Net.DeviceException e) {
                 throw e;
                 // UnityEngine.MonoBehaviour.print(e);
             }
@@ -698,7 +713,7 @@ public class Epos4Node {
             try {
                 this.hm.ActivateHomingMode();
             }
-            catch (System.Exception e)
+            catch (EposCmd.Net.DeviceException e)
             {
                 throw e;
             }
@@ -708,7 +723,7 @@ public class Epos4Node {
             try {
                 this.hm.DefinePosition(arg_offsetPosition);
             }
-            catch (System.Exception e)
+            catch (EposCmd.Net.DeviceException e)
             {
                 throw e;
             }
@@ -777,7 +792,7 @@ public class Epos4Node {
             try {
                 this.ipm.AddPvtValueToIpmBuffer(arg_position, arg_velocity, arg_time);
             }
-            catch (System.Exception e)
+            catch (EposCmd.Net.DeviceException e)
             {
                 throw e;
             }
@@ -787,7 +802,7 @@ public class Epos4Node {
             try {
                 this.ipm.ClearIpmBuffer();
             }
-            catch (System.Exception e)
+            catch (EposCmd.Net.DeviceException e)
             {
                 throw e;
             }
@@ -797,7 +812,7 @@ public class Epos4Node {
             try {
                 this.ipm.StartIpmTrajectory();
             }
-            catch (System.Exception e)
+            catch (EposCmd.Net.DeviceException e)
             {
                 throw e;
             }
@@ -807,7 +822,7 @@ public class Epos4Node {
             try {
                 this.ipm.StopIpmTrajectory();
             }
-            catch (System.Exception e)
+            catch (EposCmd.Net.DeviceException e)
             {
                 throw e;
             }
