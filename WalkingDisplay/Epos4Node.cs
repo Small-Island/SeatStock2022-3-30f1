@@ -485,6 +485,60 @@ public class Epos4Node {
         }
     }
 
+    public void ActivateInterpolatedPositionMode() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.ActivateInterpolatedPositionMode();
+        }
+        catch (System.Exception e) {
+            this.status = e.ToString();
+        }
+    }
+
+    public void AddPvtValueToIpmBuffer(double arg_position_milli, int arg_velocity, byte arg_time) {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.AddPvtValueToIpmBuffer(
+                (int)(this.direction * arg_position_milli/this.milliPerRotation*this.incPerRotation),
+                arg_velocity,
+                arg_time
+            );
+        }
+        catch (System.Exception e) {
+            this.status = e.ToString();
+        }
+    }
+
+    public void ClearIpmBuffer() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.ClearIpmBuffer();
+        }
+        catch (System.Exception e) {
+            this.status = e.ToString();
+        }
+    }
+
+    public void StartIpmTrajectory() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.StartIpmTrajectory();
+        }
+        catch (System.Exception e) {
+            this.status = e.ToString();
+        }
+    }
+
+    public void StopIpmTrajectory() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.StopIpmTrajectory();
+        }
+        catch (System.Exception e) {
+            this.status = e.ToString();
+        }
+    }
+
     // Unit inc   2000 inc == 1 rotation == 2 mm
     private void OnDestroy()
     {
@@ -503,6 +557,7 @@ public class Epos4Node {
         private EposCmd.Net.DeviceCmdSet.Operation.MotionInfo mi;
         private EposCmd.Net.DeviceCmdSet.Operation.HomingMode hm;
         private EposCmd.Net.DeviceCmdSet.Operation.PositionMode pm;
+        private EposCmd.Net.DeviceCmdSet.Operation.InterpolatedPositionMode ipm;
         public DeviceOperation(EposCmd.Net.Device arg_device) {
             this.device = arg_device;
             this.sm = this.device.Operation.StateMachine;
@@ -511,6 +566,7 @@ public class Epos4Node {
             this.mi = this.device.Operation.MotionInfo;
             this.hm = this.device.Operation.HomingMode;
             this.pm = this.device.Operation.PositionMode;
+            this.ipm = this.device.Operation.InterpolatedPositionMode;
         }
 
         public void SetQuickStopState() {
@@ -687,6 +743,56 @@ public class Epos4Node {
             }
             if (this.pvm != null) {
                 this.pvm.Advanced.Dispose();
+            }
+        }
+
+        public void ActivateInterpolatedPositionMode() {
+            try {
+                this.ipm.ActivateInterpolatedPositionMode();
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void AddPvtValueToIpmBuffer(int arg_position, int arg_velocity, byte arg_time) {
+            try {
+                this.ipm.AddPvtValueToIpmBuffer(arg_position, arg_velocity, arg_time);
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void ClearIpmBuffer() {
+            try {
+                this.ipm.ClearIpmBuffer();
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void StartIpmTrajectory() {
+            try {
+                this.ipm.StartIpmTrajectory();
+            }
+            catch (System.Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public void StopIpmTrajectory() {
+            try {
+                this.ipm.StopIpmTrajectory();
+            }
+            catch (System.Exception e)
+            {
+                throw e;
             }
         }
     }
