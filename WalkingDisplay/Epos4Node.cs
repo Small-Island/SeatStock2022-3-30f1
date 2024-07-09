@@ -561,7 +561,7 @@ public class Epos4Node {
     public void SetOperationMode(EposCmd.Net.EOperationMode arg_EOperationMode) {
         if (this.cs == ConnectionStatus.failed) return;
         try {
-            this.deviceOperation.StopIpmTrajectory();
+            this.deviceOperation.SetOperationMode(arg_EOperationMode);
         }
         catch (EposCmd.Net.DeviceException e) {
             this.status = e.Message;
