@@ -11,13 +11,13 @@ public class InterpolatedPositionMode : UnityEngine.MonoBehaviour {
 
     public void StartInterpolatedPositionMode() {
         this.status = Status.upping;
-        this.epos4Main.AllNodeDefinePosition();
+        // this.epos4Main.AllNodeDefinePosition();
         this.epos4Main.stockLeftExtend.ActivateInterpolatedPositionMode();
-        this.epos4Main.stockLeftExtend.ClearIpmBuffer();
-        for (int i = 0; i < 50; i++) {
-            this.epos4Main.stockLeftExtend.AddPvtValueToIpmBuffer((double)i/10, 60, (byte)i);
-        }
-        this.epos4Main.stockLeftExtend.StartIpmTrajectory();
+        // this.epos4Main.stockLeftExtend.ClearIpmBuffer();
+        // for (int i = 0; i < 50; i++) {
+        //     this.epos4Main.stockLeftExtend.AddPvtValueToIpmBuffer((double)i/10, 60, (byte)i);
+        // }
+        // this.epos4Main.stockLeftExtend.StartIpmTrajectory();
     }
 
     public double position = 0; // Unit mm
