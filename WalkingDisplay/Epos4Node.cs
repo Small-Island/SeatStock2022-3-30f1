@@ -101,7 +101,7 @@ public class Epos4Node {
         }
         this.deviceOperation = new DeviceOperation(this.device);
 
-        this.getError();
+        // this.getError();
 
         try {
             this.deviceOperation.ClearFaultAndSetEnableState();
@@ -113,8 +113,8 @@ public class Epos4Node {
         }
         this.ActivateProfilePositionMode();
         this.cs = ConnectionStatus.success;
-        EposCmd.Net.VcsWrapper.Device.VcsGetKeyHandle("EPOS4", "MAXON SERIAL V2", "USB", "USB0", ref this.keyHandle, ref errorCode);
-        this.data = new EposCmd.Net.DeviceCmdSet.DataRecorder.Data(this.keyHandle, (ushort)this.nodeId);
+        // EposCmd.Net.VcsWrapper.Device.VcsGetKeyHandle("EPOS4", "MAXON SERIAL V2", "USB", "USB0", ref this.keyHandle, ref errorCode);
+        // this.data = new EposCmd.Net.DeviceCmdSet.DataRecorder.Data(this.keyHandle, (ushort)this.nodeId);
         return;
     }
 
