@@ -41,6 +41,7 @@ public class Epos4Node {
     [UnityEngine.SerializeField, UnityEngine.Range(0.1f, 2f)] public double speedRate = 1f;
 
     [UnityEngine.HideInInspector] public string status = ""; 
+    [UnityEngine.HideInInspector] public uint ecode = 0; 
     [UnityEngine.HideInInspector] public Profile profile;
     [UnityEngine.HideInInspector] public int actualPosition = 0;
     [UnityEngine.HideInInspector] public float current = 0;
@@ -542,6 +543,17 @@ public class Epos4Node {
         }
     }
 
+    public void SetOperationMode(EposCmd.Net.EOperationMode arg_EOperationMode) {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.StopIpmTrajectory();
+        }
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
+        }
+    }
+
     // Unit inc   2000 inc == 1 rotation == 2 mm
     private void OnDestroy()
     {
@@ -561,6 +573,7 @@ public class Epos4Node {
         private EposCmd.Net.DeviceCmdSet.Operation.HomingMode hm;
         private EposCmd.Net.DeviceCmdSet.Operation.PositionMode pm;
         private EposCmd.Net.DeviceCmdSet.Operation.InterpolatedPositionMode ipm;
+        private EposCmd.Net.DeviceCmdSet.Operation.OperationMode om;
         public DeviceOperation(EposCmd.Net.Device arg_device) {
             this.device = arg_device;
             this.sm = this.device.Operation.StateMachine;
@@ -570,6 +583,7 @@ public class Epos4Node {
             this.hm = this.device.Operation.HomingMode;
             this.pm = this.device.Operation.PositionMode;
             this.ipm = this.device.Operation.InterpolatedPositionMode;
+            this.om = this.device.Operation.OperationMode;
         }
 
         public void SetQuickStopState() {
@@ -795,6 +809,15 @@ public class Epos4Node {
             }
             catch (System.Exception e)
             {
+                throw e;
+            }
+        }
+
+        public void SetOperationMode(EposCmd.Net.EOperationMode arg_EOperationMode) {
+            try {
+                this.om.SetOperationMode(arg_EOperationMode);
+            }
+            catch (EposCmd.Net.DeviceException e) {
                 throw e;
             }
         }

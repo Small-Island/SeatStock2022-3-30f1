@@ -12,9 +12,10 @@ public class InterpolatedPositionMode : UnityEngine.MonoBehaviour {
     public void StartInterpolatedPositionMode() {
         this.status = Status.upping;
         // this.epos4Main.AllNodeDefinePosition();
-        this.epos4Main.stockLeftSlider.ActivateInterpolatedPositionMode();
-        this.epos4Main.stockRightExtend.ActivateInterpolatedPositionMode();
-        this.epos4Main.stockLeftExtend.ActivateInterpolatedPositionMode();
+        // this.epos4Main.stockLeftSlider.ActivateInterpolatedPositionMode();
+        // this.epos4Main.stockRightExtend.ActivateInterpolatedPositionMode();
+        // this.epos4Main.stockLeftExtend.ActivateInterpolatedPositionMode();
+        this.epos4Main.stockLeftExtend.SetOperationMode(EposCmd.Net.EOperationMode.OmdInterpolatedPositionMode);
         // this.epos4Main.stockLeftExtend.ClearIpmBuffer();
         // for (int i = 0; i < 50; i++) {
         //     this.epos4Main.stockLeftExtend.AddPvtValueToIpmBuffer((double)i/10, 60, (byte)i);
