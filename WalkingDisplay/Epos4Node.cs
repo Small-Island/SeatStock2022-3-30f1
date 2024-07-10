@@ -569,6 +569,54 @@ public class Epos4Node {
         }
     }
 
+    public void MoveToPositionInTimeWithLinear(double arg_pos_milli, double arg_duration, bool arg_activate) {
+        if (this.cs == ConnectionStatus.failed) return;
+        double arg_pos_r = arg_pos_milli / this.milliPerRotation;
+        double arg_pos_inc = this.incPerRotation * arg_pos_r;
+
+        // double x_in = arg_pos_inc - this.deviceOperation.GetPositionIs() * this.direction;
+        double x_inc = arg_pos_inc - this.old_arg_pos_inc;
+        double x_r  = x_inc / this.incPerRotation;
+
+        this.old_arg_pos_inc = arg_pos_inc;
+
+        if (System.Math.Abs(x_r) < 0.0001) {
+            this.profile.absolute     = false;
+            this.profile.position     = 0;
+            this.profile.velocity     = 120;
+            this.profile.acceleration = 240;
+            this.profile.deceleration = 240;
+            return;
+        }
+
+        // this.profile.absolute     = true;
+        // this.profile.position     = (int)arg_pos_milli;
+        // this.profile.velocity     = (int)System.Math.Abs(c * 2.0 * x_r / arg_sec_time * 60.0);
+        // this.profile.acceleration = (int)System.Math.Abs(c * 4.0 * x_r / arg_sec_time / arg_sec_time * 60.0);
+        // this.profile.deceleration = (int)System.Math.Abs(c * 4.0 * x_r / arg_sec_time / arg_sec_time * 60.0);
+
+        this.profile.absolute     = true;
+        this.profile.position     = (int)arg_pos_milli;
+        this.profile.velocity     = (int)(x_r / arg_duration / 60.0);
+        this.profile.acceleration = 5000;
+        this.profile.deceleration = 5000;;
+
+        if (this.profile.velocity < 1) {
+            this.profile.velocity = 120;
+        }
+
+        if (this.profile.acceleration < 1) {
+            this.profile.acceleration = 1000;
+        }
+        if (this.profile.deceleration < 1) {
+            this.profile.deceleration = 1000;
+        }
+
+        this.SetPositionProfile();
+        if (arg_activate == false) return;
+        this.MoveToPosition(arg_activate);
+    }
+
     // Unit inc   2000 inc == 1 rotation == 2 mm
     private void OnDestroy()
     {
