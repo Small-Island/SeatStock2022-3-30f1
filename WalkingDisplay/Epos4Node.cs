@@ -217,22 +217,22 @@ public class Epos4Node {
         this.profile.velocity     = 120;
         this.profile.acceleration = 240;
         this.profile.deceleration = 240;
-        try {
-            this.deviceOperation.SetPositionProfile(
-                this.profile.velocity,
-                this.profile.acceleration,
-                this.profile.deceleration
-            );
-            this.deviceOperation.MoveToPosition(
-                this.profile.position,
-                this.profile.absolute,
-                true
-            );
-        }
-        catch (EposCmd.Net.DeviceException e) {
-            this.status = e.Message;
-            this.ecode = e.ErrorCode;
-        }
+        // try {
+        //     this.deviceOperation.SetPositionProfile(
+        //         this.profile.velocity,
+        //         this.profile.acceleration,
+        //         this.profile.deceleration
+        //     );
+        //     this.deviceOperation.MoveToPosition(
+        //         this.profile.position,
+        //         this.profile.absolute,
+        //         true
+        //     );
+        // }
+        // catch (EposCmd.Net.DeviceException e) {
+        //     this.status = e.Message;
+        //     this.ecode = e.ErrorCode;
+        // }
         try {
             this.deviceOperation.DefinePosition(0);
         }
@@ -409,7 +409,7 @@ public class Epos4Node {
                     this.profile.deceleration
                 );
                 this.deviceOperation.MoveToPosition(
-                    this.profile.position,
+                    (int)(this.profile.position),
                     this.profile.absolute,
                     true
                 );
@@ -865,7 +865,7 @@ public class Epos4Node {
         public bool absolute = false;
 
         // [UnityEngine.SerializeField, UnityEngine.Range(-2000, 2000), UnityEngine.Header("Unit inc")]
-        public int position = 0;
+        public float position = 0;
         // [UnityEngine.SerializeField, UnityEngine.Range(0, 120), UnityEngine.Header("Unit rpm")]
         public int velocity = 120;
         // [UnityEngine.SerializeField, UnityEngine.Range(0, 240), UnityEngine.Header("Unit rpm/s")]
