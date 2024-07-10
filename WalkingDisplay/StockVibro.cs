@@ -53,7 +53,7 @@ public class StockVibro : UnityEngine.MonoBehaviour {
             this.name = arg_name;
             this.index = 0;
             this.timers = new System.Timers.Timer[this.trajectories.Count];
-            for (int i = 0; i < this.trajectories.Count; i++) {        
+            for (int i = 0; i < this.trajectories.Count - 1; i++) {        
                 this.timers[i] = new System.Timers.Timer((this.trajectories[i+1].clockTime - this.trajectories[i].clockTime)*1000.0);
                 this.timers[i].AutoReset = false; // 一回のみ．繰り返し無し．
                 this.timers[i].Elapsed += this.timerCallback;
