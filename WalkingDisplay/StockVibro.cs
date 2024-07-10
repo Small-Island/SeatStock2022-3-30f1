@@ -72,8 +72,8 @@ public class StockVibro : UnityEngine.MonoBehaviour {
                 return;
             }
             this.epos4Node.MoveToPositionInTimeWithLinear(
-                this.trajectories[this.index+1].clockTime - this.trajectories[this.index].clockTime,
                 this.trajectories[this.index+1].position,
+                this.trajectories[this.index+1].clockTime - this.trajectories[this.index].clockTime,
                 this.activate
             );
             this.timers[this.index].Start();
@@ -122,7 +122,7 @@ public class StockVibro : UnityEngine.MonoBehaviour {
         }
 
         public void stop() {
-            for (int i = 0; i < 0; i++) {
+            for (int i = 0; i < this.trajectories.Count - 1; i++) {
                 this.timers[i].Stop();
                 this.timers[i].Dispose();
             }
