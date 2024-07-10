@@ -580,9 +580,18 @@ public class Epos4Node {
 
         this.old_arg_pos_inc = arg_pos_inc;
 
+        if (System.Math.Abs(x_r / arg_duration * 60.0) < 1) {;
+            this.profile.velocity     = 1;
+        }
+
         this.profile.absolute     = true;
         this.profile.position     = (float)arg_pos_milli;
-        this.profile.velocity     = (int)System.Math.Abs(x_r / arg_duration / 60.0);
+        if (System.Math.Abs(x_r / arg_duration * 60.0) < 1) {;
+            this.profile.velocity = 1;
+        }
+        else {
+            this.profile.velocity = (int)System.Math.Abs(x_r / arg_duration * 60.0);
+        }
         this.profile.acceleration = 5000;
         this.profile.deceleration = 5000;
 
