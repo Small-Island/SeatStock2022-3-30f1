@@ -71,12 +71,12 @@ public class StockVibro : UnityEngine.MonoBehaviour {
             if (this.index + 1 > this.trajectories.Count - 1) {
                 return;
             }
+            this.timers[this.index].Start();
             this.epos4Node.MoveToPositionInTimeWithLinear(
                 this.trajectories[this.index+1].position,
                 this.trajectories[this.index+1].clockTime - this.trajectories[this.index].clockTime,
                 this.activate
             );
-            this.timers[this.index].Start();
         }
 
         public void AddressableLoad() {
@@ -113,12 +113,12 @@ public class StockVibro : UnityEngine.MonoBehaviour {
         public void start(bool arg_activate) {
             this.index = 0;
             this.activate = arg_activate;
+            this.timers[this.index].Start();
             this.epos4Node.MoveToPositionInTimeWithLinear(
                 this.trajectories[this.index+1].clockTime - this.trajectories[this.index].clockTime,
                 this.trajectories[this.index+1].position,
                 this.activate
             );
-            this.timers[this.index].Start();
         }
 
         public void stop() {
@@ -180,6 +180,9 @@ public class StockVibro : UnityEngine.MonoBehaviour {
         if (this.status == Status.stop) return;
         this.status = Status.stop;
         UnityEngine.Debug.Log("WalkStop");
+        this.stockLeftExtend.stop();
+        this.walkStopTimer?.Stop();
+        this.walkStopTimer?.Dispose();
         this.epos4Main.AllNodeMoveToHome();
     }
     
