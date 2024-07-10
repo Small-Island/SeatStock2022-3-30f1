@@ -68,7 +68,7 @@ public class StockVibro : UnityEngine.MonoBehaviour {
             this.timers[this.index].Stop();
             this.timers[this.index].Dispose();
             this.index++;
-            if (this.index + 1 < this.trajectories.Count) {
+            if (this.index + 1 > this.trajectories.Count - 1) {
                 return;
             }
             this.epos4Node.MoveToPositionInTimeWithLinear(
