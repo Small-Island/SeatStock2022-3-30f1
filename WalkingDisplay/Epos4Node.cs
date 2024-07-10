@@ -597,7 +597,7 @@ public class Epos4Node {
 
         this.profile.absolute     = true;
         this.profile.position     = (int)arg_pos_milli;
-        this.profile.velocity     = (int)(x_r / arg_duration / 60.0);
+        this.profile.velocity     = (int)System.Math.Abs(x_r / arg_duration / 60.0);
         this.profile.acceleration = 5000;
         this.profile.deceleration = 5000;;
 
