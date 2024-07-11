@@ -29,12 +29,12 @@ public class StockDragVibro : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField, UnityEngine.Header("指令時刻 (s)")] public double clockTime;
         [UnityEngine.SerializeField, UnityEngine.Header("動作時間 (s)")] public double duration;
         [UnityEngine.SerializeField, UnityEngine.Header("目標位置 (mm)")] public double position;
-        [UnityEngine.SerializeField, UnityEngine.Header("直線制御")] public bool useLinearMotion;
-        public Trajectory(double arg_clockTime, double arg_duration, double arg_position, bool arg_useLinearMotion) {
+        [UnityEngine.SerializeField, UnityEngine.Header("速度制御")] public bool useVelocityMode;
+        public Trajectory(double arg_clockTime, double arg_duration, double arg_position, bool arg_useVelocityMode) {
             this.clockTime = arg_clockTime;
             this.duration = arg_duration;
             this.position  = arg_position;
-            this.useLinearMotion = arg_useLinearMotion;
+            this.useVelocityMode = arg_useVelocityMode;
         }
     }
 
@@ -82,14 +82,25 @@ public class StockDragVibro : UnityEngine.MonoBehaviour {
                 return;
             }
             this.timers[this.index+1].Start();
-            if (this.trajectories[this.index].useLinearMotion) {
-                this.epos4Node.MoveToPositionInTimeWithLinear(
-                    this.trajectories[this.index].position,
-                    this.trajectories[this.index].duration,
-                    this.activate
+            if (this.trajectories[this.index].useVelocityMode) {
+                if (!this.trajectories[this.index-1].useVelocityMode) {
+                    this.epos4Node.ActivateProfileVelocityMode();
+                }
+                this.epos4Node.VelocityCmd(
+                    (this.trajectories[this.index].position - this.trajectories[this.index-1].position)/this.trajectories[this.index].duration
                 );
+                // this.epos4Node.MoveToPositionInTimeWithLinear(
+                //     this.trajectories[this.index].position,
+                //     this.trajectories[this.index].duration,
+                //     this.activate
+                // );
             }
             else {
+                if (this.index - 1 >= 0) {
+                    if (this.trajectories[this.index-1].useVelocityMode) {
+                        this.epos4Node.ActivateProfilePositionMode();
+                    }
+                }
                 this.epos4Node.SetPositionProfileInTime(this.trajectories[this.index].position, this.trajectories[this.index].duration, 1, 1);
                 this.epos4Node.MoveToPosition(this.activate);
             }
@@ -138,14 +149,23 @@ public class StockDragVibro : UnityEngine.MonoBehaviour {
             this.activate = arg_activate;
             if (this.trajectories[0].clockTime == 0) {
                 this.timers[1].Start();
-                if (this.trajectories[0].useLinearMotion) {
-                    this.epos4Node.MoveToPositionInTimeWithLinear(
-                        this.trajectories[0].position,
-                        this.trajectories[0].duration,
-                        this.activate
-                    );
+                if (this.trajectories[0].useVelocityMode) {
+                    // this.epos4Node.MoveToPositionInTimeWithLinear(
+                    //     this.trajectories[0].position,
+                    //     this.trajectories[0].duration,
+                    //     this.activate
+                    // );
+                    // this.epos4Node.ActivateProfileVelocityMode();
+                    // this.epos4Node.VelocityCmd(
+                    //     (this.trajectories[this.index].position - this.trajectories[this.index-1].position)/this.trajectories[this.index].duration
+                    // );
+                    // this.epos4Node.ActivateVelocityMode();
+                    // this.epos4Node.SetPositionMust(
+                    //     (this.trajectories[1].position - this.trajectories[this.index-1].position)/this.trajectories[this.index].duration
+                    // );
                 }
                 else {
+                    this.epos4Node.ActivateProfilePositionMode();
                     this.epos4Node.SetPositionProfileInTime(this.trajectories[0].position, this.trajectories[0].duration, 1, 1);
                     this.epos4Node.MoveToPosition(this.activate);
                 }

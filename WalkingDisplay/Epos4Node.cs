@@ -499,6 +499,42 @@ public class Epos4Node {
         }
     }
 
+    public void VelocityCmd(double arg_velocity_milliMeterPerSecond) {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.profile.velocity    = (int)(arg_velocity_milliMeterPerSecond / this.milliPerRotation * 60.0);
+            this.profile.acceleration = 10000;
+            this.profile.deceleration = 10000;
+            this.deviceOperation.SetVelocityProfile(
+                this.profile.acceleration,
+                this.profile.deceleration
+            );
+            this.deviceOperation.MoveWithVelocity(
+                this.profile.velocity
+            );
+        }
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
+        }
+    }
+
+    public void SetVelocityMust(double arg_velocity_milliMeterPerSecond) {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.profile.velocity    = (int)(arg_velocity_milliMeterPerSecond / this.milliPerRotation * 60.0);
+            this.profile.acceleration = 10000;
+            this.profile.deceleration = 10000;
+            this.deviceOperation.SetVelocityMust(
+                this.profile.velocity
+            );
+        }
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
+        }
+    }
+
     public void ActivateInterpolatedPositionMode() {
         if (this.cs == ConnectionStatus.failed) return;
         try {
@@ -620,6 +656,7 @@ public class Epos4Node {
         private EposCmd.Net.DeviceCmdSet.Operation.PositionMode pm;
         private EposCmd.Net.DeviceCmdSet.Operation.InterpolatedPositionMode ipm;
         private EposCmd.Net.DeviceCmdSet.Operation.OperationMode om;
+        private EposCmd.Net.DeviceCmdSet.Operation.VelocityMode vm;
         public DeviceOperation(EposCmd.Net.Device arg_device) {
             this.device = arg_device;
             this.sm = this.device.Operation.StateMachine;
@@ -670,6 +707,15 @@ public class Epos4Node {
             }
         }
 
+        public void ActivateVelocityMode() {
+            try {
+                this.vm.ActivateVelocityMode();
+            }
+            catch (EposCmd.Net.DeviceException e) {
+                throw e;
+            }
+        }
+
         public void MoveToPosition(int arg_position, bool arg_absolute, bool arg_immediately) {
             try
             {
@@ -687,6 +733,18 @@ public class Epos4Node {
             {
                 // arg_position (inc) == 360/2000 (deg)
                 this.pvm.MoveWithVelocity(arg_target_velocity);
+            }
+            catch (EposCmd.Net.DeviceException e) {
+                throw e;
+            }
+            return;
+        }
+
+        public void SetVelocityMust(int arg_velocityMust) {
+            try
+            {
+                // arg_position (inc) == 360/2000 (deg)
+                this.vm.SetVelocityMust(arg_velocityMust);
             }
             catch (EposCmd.Net.DeviceException e) {
                 throw e;
