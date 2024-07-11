@@ -127,6 +127,7 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
 
     public void AllNodeMoveToHome()
     {
+        this.AllNodeActivateProfilePositionMode();
         this.lifter.MoveToHome();
         this.leftPedal.MoveToHome();
         this.leftSlider.MoveToHome();

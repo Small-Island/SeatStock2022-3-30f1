@@ -309,6 +309,9 @@ public class Epos4Node {
         if (this.profile.velocity < 1) {
             this.profile.velocity = 120;
         }
+        if (this.profile.velocity > 4545) {
+            this.profile.velocity = 4545;
+        }
 
         if (this.profile.acceleration < 1) {
             this.profile.acceleration = 1000;
@@ -323,6 +326,9 @@ public class Epos4Node {
     public void SetPositionProfile() {
         if (this.cs == ConnectionStatus.failed) return;
         try {
+            if (this.profile.velocity > 4545) {
+                this.profile.velocity = 4545;
+            }
             this.deviceOperation.SetPositionProfile(
                 this.profile.velocity,
                 this.profile.acceleration,
@@ -464,6 +470,18 @@ public class Epos4Node {
         this.whichMode = WhichMode.CSP;
     }
 
+    public void ActivateVelocityMode() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.ActivateVelocityMode();
+        }
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
+        }
+        this.whichMode = WhichMode.CSP;
+    }
+
     public void SetPositionMust(double arg_positionMust) {
         if (this.cs == ConnectionStatus.failed) return;
         this.profile.position = (int)arg_positionMust;
@@ -521,12 +539,12 @@ public class Epos4Node {
 
     public void SetVelocityMust(double arg_velocity_milliMeterPerSecond) {
         if (this.cs == ConnectionStatus.failed) return;
+        this.profile.velocity    = (int)System.Math.Abs(arg_velocity_milliMeterPerSecond / this.milliPerRotation * 60.0);
+        this.profile.acceleration = 10000;
+        this.profile.deceleration = 10000;
         try {
-            this.profile.velocity    = (int)(arg_velocity_milliMeterPerSecond / this.milliPerRotation * 60.0);
-            this.profile.acceleration = 10000;
-            this.profile.deceleration = 10000;
             this.deviceOperation.SetVelocityMust(
-                this.profile.velocity
+                (int)System.Math.Abs(arg_velocity_milliMeterPerSecond / this.milliPerRotation * 60.0)
             );
         }
         catch (EposCmd.Net.DeviceException e) {
@@ -628,8 +646,8 @@ public class Epos4Node {
         else {
             this.profile.velocity = (int)System.Math.Abs(x_r / arg_duration * 60.0 * 1.0);
         }
-        this.profile.acceleration = 15000;
-        this.profile.deceleration = 15000;
+        this.profile.acceleration = 30000;
+        this.profile.deceleration = 30000;
 
         this.SetPositionProfile();
         if (arg_activate == false) return;
@@ -667,6 +685,7 @@ public class Epos4Node {
             this.pm = this.device.Operation.PositionMode;
             this.ipm = this.device.Operation.InterpolatedPositionMode;
             this.om = this.device.Operation.OperationMode;
+            this.vm = this.device.Operation.VelocityMode;
         }
 
         public void SetQuickStopState() {

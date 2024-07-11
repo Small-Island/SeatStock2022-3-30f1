@@ -83,24 +83,25 @@ public class StockDragVibro : UnityEngine.MonoBehaviour {
             }
             this.timers[this.index+1].Start();
             if (this.trajectories[this.index].useVelocityMode) {
-                if (!this.trajectories[this.index-1].useVelocityMode) {
-                    this.epos4Node.ActivateProfileVelocityMode();
-                }
-                this.epos4Node.VelocityCmd(
-                    (this.trajectories[this.index].position - this.trajectories[this.index-1].position)/this.trajectories[this.index].duration
-                );
-                // this.epos4Node.MoveToPositionInTimeWithLinear(
-                //     this.trajectories[this.index].position,
-                //     this.trajectories[this.index].duration,
-                //     this.activate
+                // if (!this.trajectories[this.index-1].useVelocityMode) {
+                //     this.epos4Node.ActivateVelocityMode();
+                // }
+                // this.epos4Node.SetVelocityMust(
+                //     (this.trajectories[this.index+1].position - this.trajectories[this.index].position)/this.trajectories[this.index].duration
                 // );
+                this.epos4Node.MoveToPositionInTimeWithLinear(
+                    this.trajectories[this.index].position,
+                    this.trajectories[this.index].duration,
+                    this.activate
+                );
             }
             else {
-                if (this.index - 1 >= 0) {
-                    if (this.trajectories[this.index-1].useVelocityMode) {
-                        this.epos4Node.ActivateProfilePositionMode();
-                    }
-                }
+                // if (this.index - 1 >= 0) {
+                //     if (this.trajectories[this.index-1].useVelocityMode) {
+                //         this.epos4Node.SetVelocityMust(0);
+                //         this.epos4Node.ActivateProfilePositionMode();
+                //     }
+                // }
                 this.epos4Node.SetPositionProfileInTime(this.trajectories[this.index].position, this.trajectories[this.index].duration, 1, 1);
                 this.epos4Node.MoveToPosition(this.activate);
             }
@@ -165,7 +166,7 @@ public class StockDragVibro : UnityEngine.MonoBehaviour {
                     // );
                 }
                 else {
-                    this.epos4Node.ActivateProfilePositionMode();
+                    // this.epos4Node.ActivateProfilePositionMode();
                     this.epos4Node.SetPositionProfileInTime(this.trajectories[0].position, this.trajectories[0].duration, 1, 1);
                     this.epos4Node.MoveToPosition(this.activate);
                 }
