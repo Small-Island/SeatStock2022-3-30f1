@@ -158,7 +158,7 @@ public class StockDragVibro : UnityEngine.MonoBehaviour {
         }
 
         public void stop() {
-            for (int i = 0; i < this.trajectories.Count - 1; i++) {
+            for (int i = 1; i < this.trajectories.Count - 1; i++) {
                 this.timers[i].Stop();
                 this.timers[i].Dispose();
             }
