@@ -6,9 +6,6 @@ public class Epos4MainEditor : Editor
     public override void OnInspectorGUI()
     {
         Epos4Main epos4Main = target as Epos4Main;
-
-        EditorGUIUtility.labelWidth = 200;
-        base.OnInspectorGUI();
         
         EditorGUIUtility.labelWidth = 125;
 
@@ -553,5 +550,8 @@ public class Epos4MainEditor : Editor
                 }
             }
         }
+
+        EditorGUIUtility.labelWidth = 200;
+        base.OnInspectorGUI();
     }
 }
