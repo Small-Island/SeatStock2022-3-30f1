@@ -152,7 +152,7 @@ public class StockDragVibro : UnityEngine.MonoBehaviour {
                 this.index = 1;
             }
             else {
-                this.timers[0].start();
+                this.timers[0].Start();
                 this.index = 0;
             }
         }
