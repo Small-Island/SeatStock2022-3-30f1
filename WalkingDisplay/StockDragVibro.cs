@@ -55,10 +55,17 @@ public class StockDragVibro : UnityEngine.MonoBehaviour {
             this.epos4Node = arg_epos4Node;
             this.stockDragVibro = arg_stockDragVibro;
             this.name = arg_name;
-            this.index = 0;
             this.timers = new System.Timers.Timer[this.trajectories.Count];
-            for (int i = 0; i < this.trajectories.Count - 1; i++) {        
-                this.timers[i] = new System.Timers.Timer((this.trajectories[i+1].clockTime - this.trajectories[i].clockTime)*1000.0);
+            if (this.trajectories[0].clockTime == 0) {
+
+            }
+            else {
+                this.timers[0] = new System.Timers.Timer((this.trajectories[0].clockTime)*1000.0);
+                this.timers[0].AutoReset = false; // 一回のみ．繰り返し無し．
+                this.timers[0].Elapsed += this.timerCallback;
+            }
+            for (int i = 1; i < this.trajectories.Count; i++) {        
+                this.timers[i] = new System.Timers.Timer((this.trajectories[i].clockTime - this.trajectories[i-1].clockTime)*1000.0);
                 this.timers[i].AutoReset = false; // 一回のみ．繰り返し無し．
                 this.timers[i].Elapsed += this.timerCallback;
             }
@@ -71,11 +78,10 @@ public class StockDragVibro : UnityEngine.MonoBehaviour {
             }
             this.timers[this.index].Stop();
             this.timers[this.index].Dispose();
-            this.index++;
-            if (this.index + 1 > this.trajectories.Count - 1) {
+            if (this.index >= this.trajectories.Count - 1) {
                 return;
             }
-            this.timers[this.index].Start();
+            this.timers[this.index+1].Start();
             if (this.trajectories[this.index].useLinearMotion) {
                 this.epos4Node.MoveToPositionInTimeWithLinear(
                     this.trajectories[this.index].position,
@@ -87,6 +93,7 @@ public class StockDragVibro : UnityEngine.MonoBehaviour {
                 this.epos4Node.SetPositionProfileInTime(this.trajectories[this.index].position, this.trajectories[this.index].duration, 1, 1);
                 this.epos4Node.MoveToPosition(this.activate);
             }
+            this.index++;
         }
 
         public void AddressableLoad() {
@@ -128,19 +135,25 @@ public class StockDragVibro : UnityEngine.MonoBehaviour {
         }
 
         public void start(bool arg_activate) {
-            this.index = 0;
             this.activate = arg_activate;
-            this.timers[this.index].Start();
-            if (this.trajectories[this.index].useLinearMotion) {
-                this.epos4Node.MoveToPositionInTimeWithLinear(
-                    this.trajectories[this.index].position,
-                    this.trajectories[this.index].duration,
-                    this.activate
-                );
+            if (this.trajectories[0].clockTime == 0) {
+                this.timers[1].Start();
+                if (this.trajectories[0].useLinearMotion) {
+                    this.epos4Node.MoveToPositionInTimeWithLinear(
+                        this.trajectories[0].position,
+                        this.trajectories[0].duration,
+                        this.activate
+                    );
+                }
+                else {
+                    this.epos4Node.SetPositionProfileInTime(this.trajectories[0].position, this.trajectories[0].duration, 1, 1);
+                    this.epos4Node.MoveToPosition(this.activate);
+                }
+                this.index = 1;
             }
             else {
-                this.epos4Node.SetPositionProfileInTime(this.trajectories[this.index].position, this.trajectories[this.index].duration, 1, 1);
-                this.epos4Node.MoveToPosition(this.activate);
+                this.timers[0].start();
+                this.index = 0;
             }
         }
 
