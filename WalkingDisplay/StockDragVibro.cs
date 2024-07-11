@@ -114,7 +114,7 @@ public class StockDragVibro : UnityEngine.MonoBehaviour {
                                     System.Convert.ToDouble(splitedLine[0]),
                                     System.Convert.ToDouble(splitedLine[1]),
                                     System.Convert.ToDouble(splitedLine[2]),
-                                    System.Convert.ToBoolean(splitedLine[3])
+                                    System.Convert.ToBoolean(System.Convert.ToDouble(splitedLine[3]))
                                 )
                             );
                         }
