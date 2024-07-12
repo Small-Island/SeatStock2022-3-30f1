@@ -7,7 +7,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
     // public UnityEngine.AudioSource audioLeftSource;
     // public UnityEngine.AudioSource audioRightSource;
     [ReadOnly] public double clockTime = 0;
-    [UnityEngine.SerializeField] public Activate activate;
+    // [UnityEngine.SerializeField] public Activate activate;
 
     [System.Serializable] public class Activate {
         // Unit mm
@@ -142,6 +142,9 @@ public class Trekking : UnityEngine.MonoBehaviour {
     public TimeSchedule lifter;
     public TimeSchedule stock;
 
+    public bool activateLeftTilt = false;
+    public bool activateRightTilt = false;
+
     public void timerCallback(object source, System.Timers.ElapsedEventArgs e) {
         this.clockTime += 0.005;
         // UnityEngine.Debug.Log("Timer Callback");
@@ -220,7 +223,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
     private void targetCalculate()//振幅値（mm）→出力パルス変換
     {
         //目標パルスを整数型で格納
-        if (this.activate.stockLeftTilt) {
+        if (this.activateLeftTilt) {
             this.targetPulseUp1[0] = (int)(-this.tiltBackward / this.degreePerPulse);
             this.targetPulseDown1[0] = (int)(-this.tiltForward / this.degreePerPulse);
         }
@@ -230,7 +233,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         }
         this.targetPulseUp1[1] = 0;
         this.targetPulseDown1[1] = 0;
-        if (this.activate.stockRightTilt) {
+        if (this.activateRightTilt) {
             this.targetPulseUp1[2] = (int)(this.tiltBackward / this.degreePerPulse);
             this.targetPulseDown1[2] = (int)(this.tiltForward / this.degreePerPulse);
         }
@@ -245,7 +248,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         this.targetPulseUp1[5] = 0;
         this.targetPulseDown1[5] = 0;
         this.seatRotationPulse = 0;
-        if (this.activate.stockLeftTilt) {
+        if (this.activateLeftTilt) {
             this.driveTimeUp1[0] = (int)(this.leftTiltDriveTimeBackward * 1000f);
             this.driveTimeDown1[0] = (int)(this.leftTiltDriveTimeForward * 1000f);
             this.delayTimeUp1[0] = (int)(this.leftTiltDelayTimeBackward * 1000f);
@@ -255,7 +258,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.driveTimeUp1[0] = 0;
             this.driveTimeDown1[0] = 0;
         }
-        if (this.activate.stockRightTilt) {
+        if (this.activateRightTilt) {
             this.driveTimeUp1[2] = (int)(this.rightTiltDriveTimeBackward * 1000f);
             this.driveTimeDown1[2] = (int)(this.rightTiltDriveTimeForward * 1000f);
             this.delayTimeUp1[2] = (int)(this.rightTiltDelayTimeBackward * 1000f);
