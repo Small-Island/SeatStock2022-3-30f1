@@ -304,8 +304,8 @@ public class Trekking : UnityEngine.MonoBehaviour {
         this.lifter.init(this.epos4Main.lifter, this.period/2, this.length.lift, 0);
         this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
         this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
-        this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.length.stockSlideForward, this.length.stockSlideBackward);
-        this.stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.length.stockSlideForward, this.length.stockSlideBackward);
+        this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.length.stockSlideForward, -this.length.stockSlideBackward);
+        this.stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.length.stockSlideForward, -this.length.stockSlideBackward);
         this.trekkingTimer = new System.Timers.Timer(5);
         this.trekkingTimer.AutoReset = true;
         this.trekkingTimer.Elapsed += this.timerCallback;
