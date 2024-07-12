@@ -41,29 +41,103 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
     [System.Serializable]
     public class TimeSchedule {
-        public Epos4Node
-        [UnityEngine.SerializeField, Range(1, 10)] public double upOrForward = 1;
-        [UnityEngine.SerializeField, Range(1, 10)] public double downOrBackward = 1;
-        public double upOrForwardRate() {
-            return (this.upOrForward)/(this.upOrForward + this.downOrBackward);
+        private Epos4Node epos4Node;
+        private double period;
+        public bool activate;
+        [UnityEngine.SerializeField, Range(1, 10)] public double motion1 = 1;
+        [UnityEngine.SerializeField, Range(1, 10)] public double motion2 = 1;
+        [UnityEngine.SerializeField, Range(1, 10)] public double motion3 = 1;
+        private double length1;
+        private double length2;
+        private double length3;
+        private double motionCount = 0;
+        public double motion1DurationRate() {
+            if (motionCount == 2) {
+                return (this.motion1)/(this.motion1 + this.motion2);
+            }
+            else if (motionCount == 3) {
+                return (this.motion1)/(this.motion1 + this.motion2 + motion3);
+            }
+            return (this.motion1)/(this.motion1 + this.motion2);
         }
-
-        public double downOrBackwardRate() {
-            return (this.downOrBackward)/(this.upOrForward + this.downOrBackward);
-        
+        public double motion2DurationRate() {
+            if (motionCount == 2) {
+                return (this.motion2)/(this.motion1 + this.motion2);
+            }
+            else if (motionCount == 3) {
+                return (this.motion2)/(this.motion1 + this.motion2 + motion3);
+            }
+            return (this.motion2)/(this.motion1 + this.motion2);
         }
-        public int upOrForwardIndex = 0;
-        public int downOrBackwardIndex = 0;
+        public double motion3DurationRate() {
+            return (this.motion3)/(this.motion1 + this.motion2 + motion3);
+        }
+        public int motion1Index = 0;
+        public int motion2Index = 0;
+        public int motion3Index = 0;
         [UnityEngine.SerializeField, UnityEngine.Header("歩行周期の割合(%)だけ遅延"), UnityEngine.Range(0f, 100f)] public int waitRate = 0;
 
-        public void init(Epos4Node arg_epos4Node) {
-            
-            this.upOrForwardIndex = 0;
-            this.downOrBackwardIndex = 0;
+        public void init(Epos4Node arg_epos4Node, double arg_period, double arg_length1, double arg_length2) {
+            this.epos4Node = arg_epos4Node;
+            this.motion1Index = 0;
+            this.motion2Index = 0;
+            this.motion3Index = 0;
+            this.period = arg_period;
+            this.length1 = arg_length1;
+            this.length2 = arg_length2;
+            this.motionCount = 2;
         }
 
-        public void timerCallback(object source, System.Timers.ElapsedEventArgs e) {
-        }        
+        public void init(Epos4Node arg_epos4Node, double arg_period, double arg_length1, double arg_length2, double arg_length3) {
+            this.epos4Node = arg_epos4Node;
+            this.motion1Index = 0;
+            this.motion2Index = 0;
+            this.motion3Index = 0;
+            this.period = arg_period;
+            this.length1 = arg_length1;
+            this.length2 = arg_length2;
+            this.length3 = arg_length3;
+            this.motionCount = 3;
+        }
+
+        public void timerCallback(double arg_clockTime) {
+            //Up or Forward
+            if (arg_clockTime > this.motion1Index * this.period + this.waitRate*this.period) {
+                this.motion1Index++;
+                UnityEngine.Debug.Log("Timer Callback Up");
+                this.epos4Node.SetPositionProfileInTime(
+                    this.length1,
+                    this.period*this.motion1DurationRate(),
+                    5, 1
+                );
+                this.epos4Node.MoveToPosition(this.activate);
+            }
+
+            //Down or Forward
+            if (arg_clockTime > this.motion2Index * this.period + this.period*this.motion1DurationRate() + this.waitRate*this.period) {
+                this.motion2Index++;
+                UnityEngine.Debug.Log("Timer Callback Down");
+                this.epos4Node.SetPositionProfileInTime(
+                    this.length2,
+                    this.period*this.motion2DurationRate(),
+                    5, 1
+                );
+                this.epos4Node.MoveToPosition(this.activate);
+            }
+
+            if (this.motionCount == 3) {
+                if (arg_clockTime > this.motion3Index * this.period + this.period*this.motion1DurationRate() + this.period*this.motion2DurationRate() + this.waitRate*this.period) {
+                    this.motion3Index++;
+                    UnityEngine.Debug.Log("Timer Callback Down");
+                    this.epos4Node.SetPositionProfileInTime(
+                        this.length3,
+                        this.period*this.motion2DurationRate(),
+                        5, 1
+                    );
+                    this.epos4Node.MoveToPosition(this.activate);
+                }
+            }
+        }   
     }
     [UnityEngine.Header("動作時間比率")]
     public TimeSchedule lifter;
@@ -73,57 +147,13 @@ public class Trekking : UnityEngine.MonoBehaviour {
         this.clockTime += 0.005;
         // UnityEngine.Debug.Log("Timer Callback");
         // Lifter
-        //Up
-        if (this.clockTime > this.lifter.upOrForwardIndex * this.period/2.0 + this.lifter.waitRate*this.period) {
-            this.lifter.upOrForwardIndex++;
-            UnityEngine.Debug.Log("Timer Callback Up");
-            this.epos4Main.lifter.SetPositionProfileInTime(
-                this.length.lift,
-                this.period/2*this.lifter.upOrForwardRate(),
-                5, 1
-            );
-            this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
-        }
-
-        //Down
-        if (this.clockTime > this.lifter.downOrBackwardIndex * this.period/2.0 + this.period/2.0*this.lifter.upOrForwardRate() + this.lifter.waitRate*this.p) {
-            this.lifter.downOrBackwardIndex++;
-            UnityEngine.Debug.Log("Timer Callback Down");
-            this.epos4Main.lifter.SetPositionProfileInTime(
-                0,
-                this.period/2*this.lifter.downOrBackwardRate(),
-                5, 1
-            );
-            this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
-        }
+        this.lifter.timerCallback(this.clockTime);
 
         // Stock Left
 
         // Extend
 
-        //Up
-        if (this.clockTime > this.lifter.upOrForwardIndex * this.period/2.0 + this.lifter.waitRate*this.period) {
-            this.lifter.upOrForwardIndex++;
-            UnityEngine.Debug.Log("Timer Callback Up");
-            this.epos4Main.lifter.SetPositionProfileInTime(
-                this.length.lift,
-                this.period/2*this.lifter.upOrForwardRate(),
-                5, 1
-            );
-            this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
-        }
 
-        //Down
-        if (this.clockTime > this.lifter.downOrBackwardIndex * this.period/2.0 + this.period/2.0*this.lifter.upOrForwardRate() + this.lifter.waitRate*this.p) {
-            this.lifter.downOrBackwardIndex++;
-            UnityEngine.Debug.Log("Timer Callback Down");
-            this.epos4Main.lifter.SetPositionProfileInTime(
-                0,
-                this.period/2*this.lifter.downOrBackwardRate(),
-                5, 1
-            );
-            this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
-        }
 
         // Slider
 
@@ -280,7 +310,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         this.esp32Main.SendText(this.sendText);
 
         this.clockTime = 0;
-        this.lifter.resetIdx();
+        this.lifter.init(this.epos4Main.lifter, this.period, this.length.lift, 0);
         this.trekkingTimer = new System.Timers.Timer(5);
         this.trekkingTimer.AutoReset = true;
         this.trekkingTimer.Elapsed += this.timerCallback;
