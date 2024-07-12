@@ -8,6 +8,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
     public UnityEngine.AudioSource audioLeftSource;
     public UnityEngine.AudioSource audioRightSource;
+    public double clockTime = 0;
     [UnityEngine.SerializeField] public Activate activate;
 
     [System.Serializable]
@@ -71,7 +72,8 @@ public class Trekking : UnityEngine.MonoBehaviour {
         // UnityEngine.Debug.Log("Timer Callback");
         // Lifter
         //Up
-        if (this.clockTime > this.lifter.upOrForwardIndex * this.period/2) {
+        if (this.clockTime > this.lifter.upOrForwardIndex * this.period/2.0 + this.lifter.waitTime) {
+            this.lifter.upOrForwardIndex++;
             UnityEngine.Debug.Log("Timer Callback Up");
             this.epos4Main.lifter.SetPositionProfileInTime(
                 this.length.lift,
@@ -79,11 +81,11 @@ public class Trekking : UnityEngine.MonoBehaviour {
                 5, 1
             );
             this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
-            this.lifter.upOrForwardIndex++;
         }
 
         //Down
-        if (this.clockTime > this.lifter.downOrBackwardIndex * this.period/2 + this.period/2*this.lifter.upOrForwardRate()) {
+        if (this.clockTime > this.lifter.downOrBackwardIndex * this.period/2.0 + this.period/2.0*this.lifter.upOrForwardRate() + this.lifter.waitTime) {
+            this.lifter.downOrBackwardIndex++;
             UnityEngine.Debug.Log("Timer Callback Down");
             this.epos4Main.lifter.SetPositionProfileInTime(
                 0,
@@ -91,7 +93,6 @@ public class Trekking : UnityEngine.MonoBehaviour {
                 5, 1
             );
             this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
-            this.lifter.downOrBackwardIndex++;
         }
 
         // Stock Left
@@ -221,8 +222,6 @@ public class Trekking : UnityEngine.MonoBehaviour {
         Readied, NowCooling
     }
     // [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
-
-    public double clockTime = 0;
     private System.Timers.Timer trekkingTimer;
 
     public void WalkStraight() {
@@ -236,36 +235,38 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.walkStraightTimer.Stop();
             this.walkStraightTimer.Dispose();
         }
-        this.walkStraightTimer = new System.Timers.Timer(10);
-        this.walkStraightTimer.AutoReset = false;
-        this.walkStraightTimer.Elapsed += (sender, e) => {
-            if (this.coolingStatus == CoolingStatus.NowCooling) return;
+        // this.walkStraightTimer = new System.Timers.Timer(10);
+        // this.walkStraightTimer.AutoReset = false;
+        // this.walkStraightTimer.Elapsed += (sender, e) => {
+        //     if (this.coolingStatus == CoolingStatus.NowCooling) return;
             
-            this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
-            this.th.Start();
-            this.walkStraightTimer.Stop();
-            this.walkStraightTimer.Dispose();
+        //     this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
+        //     this.th.Start();
+        //     this.walkStraightTimer.Stop();
+        //     this.walkStraightTimer.Dispose();
 
-            this.targetCalculate();//目標値計算
-            //送信するデータを文字列でまとめる
-            this.sendText = "start" + ",";
-            for (int i = 0; i < 6; i++) {
-                this.sendText += this.targetPulseUp1[i].ToString() + "," + this.targetPulseDown1[i].ToString() + ",";
-                this.sendText += this.driveTimeUp1[i].ToString() + "," + this.driveTimeDown1[i].ToString() + ",";
-                this.sendText += this.delayTimeUp1[i].ToString() + "," + this.delayTimeDown1[i].ToString() + ",";
-                this.sendText += this.delayTimeFirst[i].ToString() + ",";
-            }
-            this.sendText += this.seatRotationPulse.ToString() + ",";
-            this.sendText += "/";//終わりの目印
-            this.esp32Main.SendText(this.sendText);
-            
-            this.clockTime = 0;
-            this.lifter.resetIdx();
-            this.trekkingTimer = new System.Timers.Timer(5);
-            this.trekkingTimer.AutoReset = true;
-            this.trekkingTimer.Elapsed += this.timerCallback;
-            this.trekkingTimer.Start();
-        };
+        //     this.targetCalculate();//目標値計算
+        //     //送信するデータを文字列でまとめる
+        //     this.sendText = "start" + ",";
+        //     for (int i = 0; i < 6; i++) {
+        //         this.sendText += this.targetPulseUp1[i].ToString() + "," + this.targetPulseDown1[i].ToString() + ",";
+        //         this.sendText += this.driveTimeUp1[i].ToString() + "," + this.driveTimeDown1[i].ToString() + ",";
+        //         this.sendText += this.delayTimeUp1[i].ToString() + "," + this.delayTimeDown1[i].ToString() + ",";
+        //         this.sendText += this.delayTimeFirst[i].ToString() + ",";
+        //     }
+        //     this.sendText += this.seatRotationPulse.ToString() + ",";
+        //     this.sendText += "/";//終わりの目印
+        //     this.esp32Main.SendText(this.sendText);
+        
+        //     this.trekkingTimer.Start();
+        //     UnityEngine.Debug.Log("hogehoege");
+        // };
+        this.clockTime = 0;
+        this.lifter.resetIdx();
+        this.trekkingTimer = new System.Timers.Timer(5);
+        this.trekkingTimer.AutoReset = true;
+        this.trekkingTimer.Elapsed += this.timerCallback;
+        this.trekkingTimer.Start();
     }
 
     public void WalkStop() {
