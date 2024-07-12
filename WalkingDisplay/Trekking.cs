@@ -37,7 +37,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField, Range(0, 200)] public double stockSlideBackward = 1;
     }
 
-    public double walkPeriod = 3;
+    [UnityEngine.SerializeField, UnityEngine.Header("Unit (s)"), UnityEngine.Range(2f, 10f)] public float period = 5;
 
     public Length length;
 
@@ -71,11 +71,11 @@ public class Trekking : UnityEngine.MonoBehaviour {
         // UnityEngine.Debug.Log("Timer Callback");
         // Lifter
         //Up
-        if (this.clockTime > this.lifter.upOrForwardIndex * this.walkPeriod/2) {
+        if (this.clockTime > this.lifter.upOrForwardIndex * this.period/2) {
             UnityEngine.Debug.Log("Timer Callback Up");
             this.epos4Main.lifter.SetPositionProfileInTime(
                 this.length.lift,
-                this.walkPeriod*this.lifter.upOrForwardRate(),
+                this.period/2*this.lifter.upOrForwardRate(),
                 5, 1
             );
             this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
@@ -83,11 +83,11 @@ public class Trekking : UnityEngine.MonoBehaviour {
         }
 
         //Down
-        if (this.clockTime > this.lifter.downOrBackwardIndex * this.walkPeriod/2 + this.walkPeriod/2*this.lifter.upOrForwardRate()) {
+        if (this.clockTime > this.lifter.downOrBackwardIndex * this.period/2 + this.period/2*this.lifter.upOrForwardRate()) {
             UnityEngine.Debug.Log("Timer Callback Down");
             this.epos4Main.lifter.SetPositionProfileInTime(
                 0,
-                this.walkPeriod*this.lifter.downOrBackwardRate(),
+                this.period/2*this.lifter.downOrBackwardRate(),
                 5, 1
             );
             this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
@@ -121,12 +121,11 @@ public class Trekking : UnityEngine.MonoBehaviour {
     [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
 
     private void Start() {
-        this.tiltCSVLoad();
     }
 
 
     [UnityEngine.Header("Stock Tilt Conf")]
-    [UnityEngine.SerializeField] public UnityEngine.AddressableAssets.AssetReference csvFileTilt;
+    // [UnityEngine.SerializeField] public UnityEngine.AddressableAssets.AssetReference csvFileTilt;
     // public string portName = "COM3";    
     // public int baudRate = 9600;
     // private System.IO.Ports.SerialPort client;
@@ -135,7 +134,6 @@ public class Trekking : UnityEngine.MonoBehaviour {
     public string sendText;
     [UnityEngine.SerializeField, UnityEngine.Header("Unit (deg), Absolute, Backward Positive, Forward Negative"), UnityEngine.Range(0, 10)] public float tiltBackward = 0;
     [UnityEngine.SerializeField, UnityEngine.Range(-30, 0)] public float tiltForward = 0;
-    [UnityEngine.SerializeField, UnityEngine.Header("Unit (s)"), UnityEngine.Range(2f, 10f)] public float period = 5;
     [UnityEngine.SerializeField, UnityEngine.Header("Tilt Backward Time Ratio"), UnityEngine.Range(1f, 5f)] public float tiltBackwardTimeRatio = 1;
     [UnityEngine.SerializeField, UnityEngine.Header("Tilt Forward  Time Ratio"), UnityEngine.Range(1f, 5f)] public float tiltForwardTimeRatio = 1;
     public bool doubleStock = false;
@@ -153,54 +151,16 @@ public class Trekking : UnityEngine.MonoBehaviour {
     private int[] targetPulseUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
     private int[] targetPulseDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
     //駆動時間（送信）
-    private int[] driveTimeUp1 = new int[6] { 5000, 0, 5000, 0, 0, 0 };//上昇／前進時の駆動時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
-    private int[] driveTimeDown1 = new int[6] {5000, 0, 5000, 0, 0, 0 };//下降／後退時の駆動時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+    private int[] driveTimeUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の駆動時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+    private int[] driveTimeDown1 = new int[6] {0, 0, 0, 0, 0, 0 };//下降／後退時の駆動時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
     //待機時間（送信）
     private int[] delayTimeUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進始めモータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
     private int[] delayTimeDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退始めモータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
-    private int[] delayTimeFirst = new int[6] { 2500, 0, 0, 0, 0, 0 };//一歩目モータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+    private int[] delayTimeFirst = new int[6] { 0, 0, 0, 0, 0, 0 };//一歩目モータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
     private int seatRotationPulse;
-
-    public System.Timers.Timer walkStopTimer;
-    public UnityEngine.AddressableAssets.AssetReference csvFileStop;
 
     public float ExperienceTime = 0;
 
-    private void tiltCSVLoad() {
-        UnityEngine.TextAsset dataFile = new UnityEngine.TextAsset(); //テキストファイルの保持
-        dataFile = null;
-        string str = "";
-        //Assetのロード
-        UnityEngine.AddressableAssets.Addressables.LoadAssetAsync<UnityEngine.TextAsset>(this.csvFileTilt).Completed += op => {
-            //ロードに成功
-            str = op.Result.text;
-            System.IO.StringReader reader = new System.IO.StringReader(str);
-            int count = 0;
-            while (reader.Peek() != -1) // reader.Peaekが-1になるまで
-            {
-                string line = reader.ReadLine(); // 一行ずつ読み込み
-                string[] splitedLine = line.Split(','); // , で分割
-                if (count > 0) {
-                    this.period = System.Convert.ToSingle(splitedLine[0]);
-                    this.tiltBackward = System.Convert.ToSingle(splitedLine[1]);
-                    this.tiltForward = System.Convert.ToSingle(splitedLine[2]);
-                    this.tiltBackwardTimeRatio = System.Convert.ToSingle(splitedLine[3]);
-                    this.tiltForwardTimeRatio = System.Convert.ToSingle(splitedLine[4]);
-                    this.startClockTimeLeftTilt = System.Convert.ToDouble(splitedLine[5]);
-                    this.startClockTimeRightTilt = System.Convert.ToDouble(splitedLine[6]);
-                    this.leftTiltDriveTimeBackward = System.Convert.ToDouble(splitedLine[7]);
-                    this.leftTiltDriveTimeForward = System.Convert.ToDouble(splitedLine[8]);
-                    this.rightTiltDriveTimeBackward = System.Convert.ToDouble(splitedLine[9]);
-                    this.rightTiltDriveTimeForward = System.Convert.ToDouble(splitedLine[10]);
-                    this.leftTiltDelayTimeBackward = System.Convert.ToDouble(splitedLine[11]);
-                    this.leftTiltDelayTimeForward = System.Convert.ToDouble(splitedLine[12]);
-                    this.rightTiltDelayTimeBackward = System.Convert.ToDouble(splitedLine[13]);
-                    this.rightTiltDelayTimeForward = System.Convert.ToDouble(splitedLine[14]);
-                }
-                count++;
-            }
-        };
-    }
     private void targetCalculate()//振幅値（mm）→出力パルス変換
     {
         //目標パルスを整数型で格納
@@ -298,27 +258,14 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.sendText += this.seatRotationPulse.ToString() + ",";
             this.sendText += "/";//終わりの目印
             this.esp32Main.SendText(this.sendText);
-            // this.clockTime = 0;
-            // this.trekkingTimer = new System.Timers.Timer(5);
-            // this.trekkingTimer.AutoReset = true;
-            // this.trekkingTimer.Elapsed += this.timerCallback;
-            // this.trekkingTimer.Start();
+            
+            this.clockTime = 0;
+            this.lifter.resetIdx();
+            this.trekkingTimer = new System.Timers.Timer(5);
+            this.trekkingTimer.AutoReset = true;
+            this.trekkingTimer.Elapsed += this.timerCallback;
+            this.trekkingTimer.Start();
         };
-        this.walkStraightTimer.Start();
-        this.walkStopTimer = new System.Timers.Timer(this.ExperienceTime*1000);
-        this.walkStopTimer.AutoReset = false;
-        this.walkStopTimer.Elapsed += (sender, e) => {
-            this.WalkStop();
-        };
-        // this.walkStopTimer.Start();
-        this.clockTime = 0;
-        this.lifter.resetIdx();
-        this.trekkingTimer = new System.Timers.Timer(5);
-        this.trekkingTimer.AutoReset = true;
-        this.trekkingTimer.Elapsed += this.timerCallback;
-        this.trekkingTimer.Start();
-        // this.video.Play();
-        // this.video.MuteOff();
     }
 
     public void WalkStop() {
@@ -345,8 +292,6 @@ public class Trekking : UnityEngine.MonoBehaviour {
             };
             this.coolingTimer.Start();
         }
-        this.walkStopTimer?.Stop();
-        this.walkStopTimer?.Dispose();
         this.pauseFlag = true;
     }
 
@@ -449,7 +394,5 @@ public class Trekking : UnityEngine.MonoBehaviour {
     private void OnDestroy() {
         this.WalkStop();
         this.Destroied = true;
-        this.walkStopTimer?.Stop();
-        this.walkStopTimer?.Dispose();
     }
 }
