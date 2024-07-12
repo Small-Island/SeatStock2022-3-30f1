@@ -6,6 +6,8 @@ public class Trekking : UnityEngine.MonoBehaviour {
     // public Video video;
     // public UnityEngine.AudioSource audioLeftSource;
     // public UnityEngine.AudioSource audioRightSource;
+    [UnityEngine.SerializeField, ReadOnly] public Status status;
+    [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
     [ReadOnly] public double clockTime = 0;
     [System.Serializable] public class Length {
         // Unit mm
@@ -14,7 +16,6 @@ public class Trekking : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField, Range(0, 190)] public double legSlider = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double stockExtendTopPoint = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double stockExtendPokePoint = 1;
-        [UnityEngine.SerializeField, Range(0, 100)] public double stockExtendStrokePoint = 1;
         [UnityEngine.SerializeField, Range(0, 200)] public double stockSlideForward = 1;
         [UnityEngine.SerializeField, Range(0, 200)] public double stockSlideBackward = 1;
     }
@@ -27,33 +28,34 @@ public class Trekking : UnityEngine.MonoBehaviour {
         private Epos4Node epos4Node;
         private double period;
         public bool activate;
-        [UnityEngine.SerializeField, Range(1, 10)] public double motion1 = 1;
-        [UnityEngine.SerializeField, Range(1, 10)] public double motion2 = 1;
-        [UnityEngine.SerializeField, Range(1, 10)] public double motion3 = 1;
+        public bool useStiffness;
+        [UnityEngine.SerializeField, Range(1, 10)] public int motion1 = 1;
+        [UnityEngine.SerializeField, Range(1, 10)] public int motion2 = 1;
+        [UnityEngine.SerializeField, Range(1, 10)] public int motion3 = 1;
         [ReadOnly] public double position1;
         [ReadOnly] public double position2;
         [ReadOnly] public double posiiton3;
         [ReadOnly] public double motionCount = 0;
         public double motion1DurationRate() {
             if (motionCount == 2) {
-                return (this.motion1)/(this.motion1 + this.motion2);
+                return (double)(this.motion1)/(double)(this.motion1 + this.motion2);
             }
             else if (motionCount == 3) {
-                return (this.motion1)/(this.motion1 + this.motion2 + motion3);
+                return (double)(this.motion1)/(double)(this.motion1 + this.motion2 + motion3);
             }
-            return (this.motion1)/(this.motion1 + this.motion2);
+            return (double)(this.motion1)/(double)(this.motion1 + this.motion2);
         }
         public double motion2DurationRate() {
             if (motionCount == 2) {
-                return (this.motion2)/(this.motion1 + this.motion2);
+                return (double)(this.motion2)/(double)(this.motion1 + this.motion2);
             }
             else if (motionCount == 3) {
-                return (this.motion2)/(this.motion1 + this.motion2 + motion3);
+                return (double)(this.motion2)/(double)(this.motion1 + this.motion2 + motion3);
             }
-            return (this.motion2)/(this.motion1 + this.motion2);
+            return (double)(this.motion2)/(double)(this.motion1 + this.motion2);
         }
         public double motion3DurationRate() {
-            return (this.motion3)/(this.motion1 + this.motion2 + motion3);
+            return (double)(this.motion3)/(double)(this.motion1 + this.motion2 + motion3);
         }
         [ReadOnly] public int motion1Index = 0;
         [ReadOnly] public int motion2Index = 0;
@@ -83,11 +85,9 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.motionCount = 3;
         }
 
-        public void timerCallback(double arg_clockTime) {
-            //Up or Forward
+        public void timerCallback(double arg_clockTime, double arg_stiffness) {
             if (arg_clockTime > this.motion1Index * this.period + this.waitRate*this.period) {
                 this.motion1Index++;
-                UnityEngine.Debug.Log("Timer Callback Up");
                 this.epos4Node.SetPositionProfileInTime(
                     this.position1,
                     this.period*this.motion1DurationRate(),
@@ -96,25 +96,31 @@ public class Trekking : UnityEngine.MonoBehaviour {
                 this.epos4Node.MoveToPosition(this.activate);
             }
 
-            //Down or Forward
             if (arg_clockTime > this.motion2Index * this.period + this.period*this.motion1DurationRate() + this.waitRate*this.period) {
                 this.motion2Index++;
-                UnityEngine.Debug.Log("Timer Callback Down");
-                this.epos4Node.SetPositionProfileInTime(
-                    this.position2,
-                    this.period*this.motion2DurationRate(),
-                    5, 1
-                );
+                if (this.useStiffness) {
+                    this.epos4Node.SetPositionProfileInTime(
+                        this.position2,
+                        this.period*this.motion2DurationRate(),
+                        1, 1 + arg_stiffness
+                    );
+                }
+                else {
+                    this.epos4Node.SetPositionProfileInTime(
+                        this.position2,
+                        this.period*this.motion2DurationRate(),
+                        5, 1
+                    );
+                }
                 this.epos4Node.MoveToPosition(this.activate);
             }
 
             if (this.motionCount == 3) {
                 if (arg_clockTime > this.motion3Index * this.period + this.period*this.motion1DurationRate() + this.period*this.motion2DurationRate() + this.waitRate*this.period) {
                     this.motion3Index++;
-                    UnityEngine.Debug.Log("Timer Callback Down");
                     this.epos4Node.SetPositionProfileInTime(
                         this.posiiton3,
-                        this.period*this.motion2DurationRate(),
+                        this.period*this.motion3DurationRate(),
                         5, 1
                     );
                     this.epos4Node.MoveToPosition(this.activate);
@@ -122,7 +128,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
             }
         }   
     }
-    [UnityEngine.Header("動作時間比率")]
+    [UnityEngine.Header("動作時間比")]
     public TimeSchedule lifter;
     public TimeSchedule stockLeftExtend;
 
@@ -131,15 +137,15 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
     public void timerCallback(object source, System.Timers.ElapsedEventArgs e) {
         this.clockTime += 0.005;
-        // UnityEngine.Debug.Log("Timer Callback");
         // Lifter
-        this.lifter.timerCallback(this.clockTime);
+        if (this.status == Status.stop) return;
+        this.lifter.timerCallback(this.clockTime, this.stiffness);
 
         // Stock Left
 
         // Extend
-
-        this.stockLeftExtend.timerCallback(this.clockTime);
+        if (this.status == Status.stop) return;
+        this.stockLeftExtend.timerCallback(this.clockTime, this.stiffness);
 
 
         // Slider
@@ -158,11 +164,6 @@ public class Trekking : UnityEngine.MonoBehaviour {
     public enum Status {
         stop, walking
     }
-
-
-    
-    [UnityEngine.SerializeField, ReadOnly] public Status status;
-    [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
 
     private void Start() {
     }
@@ -298,7 +299,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
         this.clockTime = 0;
         this.lifter.init(this.epos4Main.lifter, this.period/2, this.length.lift, 0);
-        this.lifter.init(this.epos4Main.lifter, this.period/2, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, this.length.stockExtendStrokePoint);
+        this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
         this.trekkingTimer = new System.Timers.Timer(5);
         this.trekkingTimer.AutoReset = true;
         this.trekkingTimer.Elapsed += this.timerCallback;
@@ -308,7 +309,6 @@ public class Trekking : UnityEngine.MonoBehaviour {
     public void WalkStop() {
         this.trekkingTimer?.Stop();
         this.trekkingTimer?.Dispose();
-        if (this.status == Status.stop) return;
         this.status = Status.stop;
         UnityEngine.Debug.Log("WalkStop");
         this.epos4Main.AllNodeMoveToHome();
