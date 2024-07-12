@@ -55,9 +55,9 @@ public class Trekking : UnityEngine.MonoBehaviour {
         public double motion3DurationRate() {
             return (this.motion3)/(this.motion1 + this.motion2 + motion3);
         }
-        public int motion1Index = 0;
-        public int motion2Index = 0;
-        public int motion3Index = 0;
+        [ReadOnly] public int motion1Index = 0;
+        [ReadOnly] public int motion2Index = 0;
+        [ReadOnly] public int motion3Index = 0;
         [UnityEngine.SerializeField, UnityEngine.Header("歩行周期の割合(%)だけ遅延"), UnityEngine.Range(0f, 100f)] public int waitRate = 0;
 
         public void init(Epos4Node arg_epos4Node, double arg_period, double arg_position1, double arg_position2) {
