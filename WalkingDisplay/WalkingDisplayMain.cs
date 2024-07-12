@@ -36,7 +36,7 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField, Range(0, 500)] public double stockSlider = 1;
     }
 
-    [UnityEngine.SerializeField, Range(0.1f, 20)] public double stiffness = 1;
+    [UnityEngine.SerializeField, Range(0.1f, 10000)] public double stiffness = 1;
 
     [UnityEngine.SerializeField] private Epos4Main epos4Main;
     public enum Status {
