@@ -7,30 +7,14 @@ public class Trekking : UnityEngine.MonoBehaviour {
     // public UnityEngine.AudioSource audioLeftSource;
     // public UnityEngine.AudioSource audioRightSource;
     [ReadOnly] public double clockTime = 0;
-    // [UnityEngine.SerializeField] public Activate activate;
-
-    [System.Serializable] public class Activate {
-        // Unit mm
-        [UnityEngine.SerializeField] public bool lifter           = false;
-        [UnityEngine.SerializeField] public bool leftPedal        = false;
-        [UnityEngine.SerializeField] public bool leftSlider       = false;
-        [UnityEngine.SerializeField] public bool rightPedal       = false;
-        [UnityEngine.SerializeField] public bool rightSlider      = false;
-        [UnityEngine.SerializeField] public bool stockLeftExtend  = false;
-        [UnityEngine.SerializeField] public bool stockLeftSlider  = false;
-        [UnityEngine.SerializeField] public bool stockRightExtend = false;
-        [UnityEngine.SerializeField] public bool stockRightSlider = false;
-        [UnityEngine.SerializeField] public bool stockLeftTilt    = false;
-        [UnityEngine.SerializeField] public bool stockRightTilt   = false;
-    }
-
-    [System.Serializable]
-    public class Length {
+    [System.Serializable] public class Length {
         // Unit mm
         [UnityEngine.SerializeField, Range(0, 30)] public double lift = 1;
         [UnityEngine.SerializeField, Range(0, 68)] public double pedal = 1;
         [UnityEngine.SerializeField, Range(0, 190)] public double legSlider = 1;
-        [UnityEngine.SerializeField, Range(0, 100)] public double stockExtend = 1;
+        [UnityEngine.SerializeField, Range(0, 100)] public double stockExtendTopPoint = 1;
+        [UnityEngine.SerializeField, Range(0, 100)] public double stockExtendPokePoint = 1;
+        [UnityEngine.SerializeField, Range(0, 100)] public double stockExtendStrokePoint = 1;
         [UnityEngine.SerializeField, Range(0, 200)] public double stockSlideForward = 1;
         [UnityEngine.SerializeField, Range(0, 200)] public double stockSlideBackward = 1;
     }
@@ -46,9 +30,9 @@ public class Trekking : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField, Range(1, 10)] public double motion1 = 1;
         [UnityEngine.SerializeField, Range(1, 10)] public double motion2 = 1;
         [UnityEngine.SerializeField, Range(1, 10)] public double motion3 = 1;
-        private double length1;
-        private double length2;
-        private double length3;
+        [ReadOnly] public double position1;
+        [ReadOnly] public double position2;
+        [ReadOnly] public double posiiton3;
         [ReadOnly] public double motionCount = 0;
         public double motion1DurationRate() {
             if (motionCount == 2) {
@@ -76,26 +60,26 @@ public class Trekking : UnityEngine.MonoBehaviour {
         public int motion3Index = 0;
         [UnityEngine.SerializeField, UnityEngine.Header("歩行周期の割合(%)だけ遅延"), UnityEngine.Range(0f, 100f)] public int waitRate = 0;
 
-        public void init(Epos4Node arg_epos4Node, double arg_period, double arg_length1, double arg_length2) {
+        public void init(Epos4Node arg_epos4Node, double arg_period, double arg_position1, double arg_position2) {
             this.epos4Node = arg_epos4Node;
             this.motion1Index = 0;
             this.motion2Index = 0;
             this.motion3Index = 0;
             this.period = arg_period;
-            this.length1 = arg_length1;
-            this.length2 = arg_length2;
+            this.position1 = arg_position1;
+            this.position2 = arg_position2;
             this.motionCount = 2;
         }
 
-        public void init(Epos4Node arg_epos4Node, double arg_period, double arg_length1, double arg_length2, double arg_length3) {
+        public void init(Epos4Node arg_epos4Node, double arg_period, double arg_position1, double arg_position2, double arg_position3) {
             this.epos4Node = arg_epos4Node;
             this.motion1Index = 0;
             this.motion2Index = 0;
             this.motion3Index = 0;
             this.period = arg_period;
-            this.length1 = arg_length1;
-            this.length2 = arg_length2;
-            this.length3 = arg_length3;
+            this.position1 = arg_position1;
+            this.position2 = arg_position2;
+            this.posiiton3 = arg_position3;
             this.motionCount = 3;
         }
 
@@ -105,7 +89,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
                 this.motion1Index++;
                 UnityEngine.Debug.Log("Timer Callback Up");
                 this.epos4Node.SetPositionProfileInTime(
-                    this.length1,
+                    this.position1,
                     this.period*this.motion1DurationRate(),
                     5, 1
                 );
@@ -117,7 +101,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
                 this.motion2Index++;
                 UnityEngine.Debug.Log("Timer Callback Down");
                 this.epos4Node.SetPositionProfileInTime(
-                    this.length2,
+                    this.position2,
                     this.period*this.motion2DurationRate(),
                     5, 1
                 );
@@ -129,7 +113,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
                     this.motion3Index++;
                     UnityEngine.Debug.Log("Timer Callback Down");
                     this.epos4Node.SetPositionProfileInTime(
-                        this.length3,
+                        this.posiiton3,
                         this.period*this.motion2DurationRate(),
                         5, 1
                     );
@@ -140,7 +124,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
     }
     [UnityEngine.Header("動作時間比率")]
     public TimeSchedule lifter;
-    public TimeSchedule stock;
+    public TimeSchedule stockLeftExtend;
 
     public bool activateLeftTilt = false;
     public bool activateRightTilt = false;
@@ -155,6 +139,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
         // Extend
 
+        this.stockLeftExtend.timerCallback(this.clockTime);
 
 
         // Slider
@@ -313,6 +298,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
         this.clockTime = 0;
         this.lifter.init(this.epos4Main.lifter, this.period/2, this.length.lift, 0);
+        this.lifter.init(this.epos4Main.lifter, this.period/2, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, this.length.stockExtendStrokePoint);
         this.trekkingTimer = new System.Timers.Timer(5);
         this.trekkingTimer.AutoReset = true;
         this.trekkingTimer.Elapsed += this.timerCallback;
