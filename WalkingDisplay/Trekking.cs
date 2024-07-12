@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Trekking : UnityEngine.MonoBehaviour {
-    public Video video;
-    // public UnityEngine.Video.VideoPlayer videoPlayer;
-
-    public UnityEngine.AudioSource audioLeftSource;
-    public UnityEngine.AudioSource audioRightSource;
-    public double clockTime = 0;
+    // public Video video;
+    // public UnityEngine.AudioSource audioLeftSource;
+    // public UnityEngine.AudioSource audioRightSource;
+    [ReadOnly] public double clockTime = 0;
     [UnityEngine.SerializeField] public Activate activate;
 
-    [System.Serializable]
-    public class Activate {
+    [System.Serializable] public class Activate {
         // Unit mm
         [UnityEngine.SerializeField] public bool lifter           = false;
         [UnityEngine.SerializeField] public bool leftPedal        = false;
@@ -44,6 +41,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
     [System.Serializable]
     public class TimeSchedule {
+        public Epos4Node
         [UnityEngine.SerializeField, Range(1, 10)] public double upOrForward = 1;
         [UnityEngine.SerializeField, Range(1, 10)] public double downOrBackward = 1;
         public double upOrForwardRate() {
@@ -56,12 +54,16 @@ public class Trekking : UnityEngine.MonoBehaviour {
         }
         public int upOrForwardIndex = 0;
         public int downOrBackwardIndex = 0;
-        public int waitTime = 0;
+        [UnityEngine.SerializeField, UnityEngine.Header("歩行周期の割合(%)だけ遅延"), UnityEngine.Range(0f, 100f)] public int waitRate = 0;
 
-        public void resetIdx() {
+        public void init(Epos4Node arg_epos4Node) {
+            
             this.upOrForwardIndex = 0;
             this.downOrBackwardIndex = 0;
         }
+
+        public void timerCallback(object source, System.Timers.ElapsedEventArgs e) {
+        }        
     }
     [UnityEngine.Header("動作時間比率")]
     public TimeSchedule lifter;
@@ -72,7 +74,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         // UnityEngine.Debug.Log("Timer Callback");
         // Lifter
         //Up
-        if (this.clockTime > this.lifter.upOrForwardIndex * this.period/2.0 + this.lifter.waitTime) {
+        if (this.clockTime > this.lifter.upOrForwardIndex * this.period/2.0 + this.lifter.waitRate*this.period) {
             this.lifter.upOrForwardIndex++;
             UnityEngine.Debug.Log("Timer Callback Up");
             this.epos4Main.lifter.SetPositionProfileInTime(
@@ -84,7 +86,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         }
 
         //Down
-        if (this.clockTime > this.lifter.downOrBackwardIndex * this.period/2.0 + this.period/2.0*this.lifter.upOrForwardRate() + this.lifter.waitTime) {
+        if (this.clockTime > this.lifter.downOrBackwardIndex * this.period/2.0 + this.period/2.0*this.lifter.upOrForwardRate() + this.lifter.waitRate*this.p) {
             this.lifter.downOrBackwardIndex++;
             UnityEngine.Debug.Log("Timer Callback Down");
             this.epos4Main.lifter.SetPositionProfileInTime(
@@ -98,6 +100,30 @@ public class Trekking : UnityEngine.MonoBehaviour {
         // Stock Left
 
         // Extend
+
+        //Up
+        if (this.clockTime > this.lifter.upOrForwardIndex * this.period/2.0 + this.lifter.waitRate*this.period) {
+            this.lifter.upOrForwardIndex++;
+            UnityEngine.Debug.Log("Timer Callback Up");
+            this.epos4Main.lifter.SetPositionProfileInTime(
+                this.length.lift,
+                this.period/2*this.lifter.upOrForwardRate(),
+                5, 1
+            );
+            this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
+        }
+
+        //Down
+        if (this.clockTime > this.lifter.downOrBackwardIndex * this.period/2.0 + this.period/2.0*this.lifter.upOrForwardRate() + this.lifter.waitRate*this.p) {
+            this.lifter.downOrBackwardIndex++;
+            UnityEngine.Debug.Log("Timer Callback Down");
+            this.epos4Main.lifter.SetPositionProfileInTime(
+                0,
+                this.period/2*this.lifter.downOrBackwardRate(),
+                5, 1
+            );
+            this.epos4Main.lifter.MoveToPosition(this.activate.lifter);
+        }
 
         // Slider
 
@@ -235,32 +261,24 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.walkStraightTimer.Stop();
             this.walkStraightTimer.Dispose();
         }
-        // this.walkStraightTimer = new System.Timers.Timer(10);
-        // this.walkStraightTimer.AutoReset = false;
-        // this.walkStraightTimer.Elapsed += (sender, e) => {
-        //     if (this.coolingStatus == CoolingStatus.NowCooling) return;
-            
-        //     this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
-        //     this.th.Start();
-        //     this.walkStraightTimer.Stop();
-        //     this.walkStraightTimer.Dispose();
-
-        //     this.targetCalculate();//目標値計算
-        //     //送信するデータを文字列でまとめる
-        //     this.sendText = "start" + ",";
-        //     for (int i = 0; i < 6; i++) {
-        //         this.sendText += this.targetPulseUp1[i].ToString() + "," + this.targetPulseDown1[i].ToString() + ",";
-        //         this.sendText += this.driveTimeUp1[i].ToString() + "," + this.driveTimeDown1[i].ToString() + ",";
-        //         this.sendText += this.delayTimeUp1[i].ToString() + "," + this.delayTimeDown1[i].ToString() + ",";
-        //         this.sendText += this.delayTimeFirst[i].ToString() + ",";
-        //     }
-        //     this.sendText += this.seatRotationPulse.ToString() + ",";
-        //     this.sendText += "/";//終わりの目印
-        //     this.esp32Main.SendText(this.sendText);
+        if (this.coolingStatus == CoolingStatus.NowCooling) return;
         
-        //     this.trekkingTimer.Start();
-        //     UnityEngine.Debug.Log("hogehoege");
-        // };
+        this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
+        this.th.Start();
+
+        this.targetCalculate();//目標値計算
+        //送信するデータを文字列でまとめる
+        this.sendText = "start" + ",";
+        for (int i = 0; i < 6; i++) {
+            this.sendText += this.targetPulseUp1[i].ToString() + "," + this.targetPulseDown1[i].ToString() + ",";
+            this.sendText += this.driveTimeUp1[i].ToString() + "," + this.driveTimeDown1[i].ToString() + ",";
+            this.sendText += this.delayTimeUp1[i].ToString() + "," + this.delayTimeDown1[i].ToString() + ",";
+            this.sendText += this.delayTimeFirst[i].ToString() + ",";
+        }
+        this.sendText += this.seatRotationPulse.ToString() + ",";
+        this.sendText += "/";//終わりの目印
+        this.esp32Main.SendText(this.sendText);
+
         this.clockTime = 0;
         this.lifter.resetIdx();
         this.trekkingTimer = new System.Timers.Timer(5);
@@ -359,35 +377,35 @@ public class Trekking : UnityEngine.MonoBehaviour {
     private bool audioRightFlag = false;
 
     private void Update() {
-        this.thumbStickR = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.RTouch);
-        this.thumbStickL = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.LTouch);
-        if (System.Math.Abs(this.thumbStickR.y) > 0.5 && System.Math.Abs(this.thumbStickL.y) > 0.5) {
-        }
-        else if (this.thumbStickR.y > 0.5 || this.thumbStickL.y > 0.5) {
-            // this.WalkStraight();
-        }
-        else if (this.thumbStickR.y < -0.5 || this.thumbStickL.y < -0.5) {
-            // this.WalkStop();
-        }
+        // this.thumbStickR = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.RTouch);
+        // this.thumbStickL = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.LTouch);
+        // if (System.Math.Abs(this.thumbStickR.y) > 0.5 && System.Math.Abs(this.thumbStickL.y) > 0.5) {
+        // }
+        // else if (this.thumbStickR.y > 0.5 || this.thumbStickL.y > 0.5) {
+        //     // this.WalkStraight();
+        // }
+        // else if (this.thumbStickR.y < -0.5 || this.thumbStickL.y < -0.5) {
+        //     // this.WalkStop();
+        // }
 
-        if (this.video != null) {
-            if (this.status == Status.stop & this.video.videoPlayer.isPlaying & this.pauseFlag) {
-                this.video?.Pause();
-                this.pauseFlag = false;
-            }
-        }
-        if (this.audioLeftFlag) {
-            if (this.audioLeftSource != null) {
-                this.audioLeftSource.Play();
-            }
-            this.audioLeftFlag = false;
-        }
-        if (this.audioRightFlag) {
-            if (this.audioRightSource != null) {
-                this.audioRightSource.Play();
-            }
-            this.audioRightFlag = false;
-        }
+        // if (this.video != null) {
+        //     if (this.status == Status.stop & this.video.videoPlayer.isPlaying & this.pauseFlag) {
+        //         this.video?.Pause();
+        //         this.pauseFlag = false;
+        //     }
+        // }
+        // if (this.audioLeftFlag) {
+        //     if (this.audioLeftSource != null) {
+        //         this.audioLeftSource.Play();
+        //     }
+        //     this.audioLeftFlag = false;
+        // }
+        // if (this.audioRightFlag) {
+        //     if (this.audioRightSource != null) {
+        //         this.audioRightSource.Play();
+        //     }
+        //     this.audioRightFlag = false;
+        // }
     }
 
     private bool Destroied = false;

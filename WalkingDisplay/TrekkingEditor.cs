@@ -28,9 +28,9 @@ public class TrekkingEditor : Editor
             trekking.WalkStop();
         }
 
-        if (GUILayout.Button("Exit")) {
-            trekking.video.Exit();
-        }
+        // if (GUILayout.Button("Exit")) {
+        //     trekking.video.Exit();
+        // }
         EditorGUIUtility.labelWidth = 200;
         base.OnInspectorGUI();
     }
