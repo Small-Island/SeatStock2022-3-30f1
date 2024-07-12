@@ -39,8 +39,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
     public Length length;
 
-    [System.Serializable]
-    public class TimeSchedule {
+    [System.Serializable] public class TimeSchedule {
         private Epos4Node epos4Node;
         private double period;
         public bool activate;
@@ -50,7 +49,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         private double length1;
         private double length2;
         private double length3;
-        private double motionCount = 0;
+        [ReadOnly] public double motionCount = 0;
         public double motion1DurationRate() {
             if (motionCount == 2) {
                 return (this.motion1)/(this.motion1 + this.motion2);
@@ -310,7 +309,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         this.esp32Main.SendText(this.sendText);
 
         this.clockTime = 0;
-        this.lifter.init(this.epos4Main.lifter, this.period, this.length.lift, 0);
+        this.lifter.init(this.epos4Main.lifter, this.period/2, this.length.lift, 0);
         this.trekkingTimer = new System.Timers.Timer(5);
         this.trekkingTimer.AutoReset = true;
         this.trekkingTimer.Elapsed += this.timerCallback;
