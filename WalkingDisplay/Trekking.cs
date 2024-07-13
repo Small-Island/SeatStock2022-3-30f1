@@ -301,7 +301,9 @@ public class Trekking : UnityEngine.MonoBehaviour {
         this.targetPulseDown1[5] = 0;
         this.seatRotationPulse = 0;
         if (this.activateLeftTilt) {
+            this.leftTiltDriveTimeBackward = this.period * (this.tiltBackwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio);
             this.driveTimeUp1[0] = (int)(this.leftTiltDriveTimeBackward * 1000f);
+            this.leftTiltDriveTimeForward = this.period * (this.tiltForwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio);
             this.driveTimeDown1[0] = (int)(this.leftTiltDriveTimeForward * 1000f);
             this.delayTimeUp1[0] = (int)(this.leftTiltDelayTimeBackward * 1000f);
             this.delayTimeDown1[0] = (int)(this.leftTiltDelayTimeForward * 1000f);
@@ -311,7 +313,9 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.driveTimeDown1[0] = 0;
         }
         if (this.activateRightTilt) {
+            this.rightTiltDriveTimeBackward = this.period * (this.tiltBackwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio);
             this.driveTimeUp1[2] = (int)(this.rightTiltDriveTimeBackward * 1000f);
+            this.rightTiltDriveTimeForward = this.period * (this.tiltForwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio);
             this.driveTimeDown1[2] = (int)(this.rightTiltDriveTimeForward * 1000f);
             this.delayTimeUp1[2] = (int)(this.rightTiltDelayTimeBackward * 1000f);
             this.delayTimeDown1[2] = (int)(this.rightTiltDelayTimeForward * 1000f);
