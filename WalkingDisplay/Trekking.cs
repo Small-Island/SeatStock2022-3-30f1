@@ -30,25 +30,16 @@ public class Trekking : UnityEngine.MonoBehaviour {
         public double period;
         public bool activate;
         public bool useStiffness;
-        [UnityEngine.SerializeField, Range(0, 10)] public int wait1 = 0;
         [UnityEngine.SerializeField, Range(1, 10)] public int motion1 = 1;
-        [UnityEngine.SerializeField, Range(0, 10)] public int wait2 = 0;
+        [UnityEngine.SerializeField, Range(0, 10)] public int wait1 = 0;
         [UnityEngine.SerializeField, Range(1, 10)] public int motion2 = 1;
-        [UnityEngine.SerializeField, Range(0, 10)] public int wait3 = 0;
-        [UnityEngine.SerializeField, Range(1, 10)] public int motion3 = 1;
+        [UnityEngine.SerializeField, Range(0, 10)] public int wait2 = 0;
+        [UnityEngine.SerializeField, Range(1, 10)] public int motion3 = 1
+        [UnityEngine.SerializeField, Range(0, 10)] public int wait3 = 0;;
         [ReadOnly] public double position1;
         [ReadOnly] public double position2;
         [ReadOnly] public double position3;
         [ReadOnly] public double motionCount = 0;
-        public double wait1Duration() {
-            if (motionCount == 2) {
-                return (double)(this.wait1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
-            }
-            else if (motionCount == 3) {
-                return (double)(this.wait1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.wait3 + this.motion3)*this.period;
-            }
-            return (double)(this.wait1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
-        }
         public double motion1Duration() {
             if (motionCount == 2) {
                 return (double)(this.motion1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
@@ -58,14 +49,14 @@ public class Trekking : UnityEngine.MonoBehaviour {
             }
             return (double)(this.motion1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
         }
-        public double wait2Duration() {
+        public double wait1Duration() {
             if (motionCount == 2) {
-                return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+                return (double)(this.wait1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
             }
             else if (motionCount == 3) {
-                return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.wait3 + this.motion3)*this.period;
+                return (double)(this.wait1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.wait3 + this.motion3)*this.period;
             }
-            return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+            return (double)(this.wait1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
         }
         public double motion2Duration() {
             if (motionCount == 2) {
@@ -76,11 +67,20 @@ public class Trekking : UnityEngine.MonoBehaviour {
             }
             return (double)(this.motion2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
         }
-        public double wait3Duration() {
-            return (double)(this.wait3)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+        public double wait2Duration() {
+            if (motionCount == 2) {
+                return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+            }
+            else if (motionCount == 3) {
+                return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.wait3 + this.motion3)*this.period;
+            }
+            return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
         }
         public double motion3Duration() {
             return (double)(this.motion3)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+        }
+        public double wait3Duration() {
+            return (double)(this.wait3)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
         }
         [ReadOnly] public int motion1Index = 0;
         [ReadOnly] public int motion2Index = 0;
@@ -114,7 +114,6 @@ public class Trekking : UnityEngine.MonoBehaviour {
             if (
                 arg_clockTime
                 > this.motion1Index * this.period
-                    + this.wait1Duration()
                     + (double)this.waitRate/100.0*this.period
             ) {
                 this.motion1Index++;
@@ -129,9 +128,8 @@ public class Trekking : UnityEngine.MonoBehaviour {
             if (
                 arg_clockTime
                 > this.motion2Index * this.period
-                    + this.wait1Duration()
                     + this.motion1Duration()
-                    + this.wait2Duration()
+                    + this.wait1Duration()
                     + (double)this.waitRate/100.0*this.period
             ) {
                 this.motion2Index++;
@@ -156,11 +154,10 @@ public class Trekking : UnityEngine.MonoBehaviour {
                 if (
                     arg_clockTime
                     > this.motion3Index * this.period
-                        + this.wait1Duration()
                         + this.motion1Duration()
-                        + this.wait2Duration()
+                        + this.wait1Duration()
                         + this.motion2Duration()
-                        + this.wait3Duration()
+                        + this.wait2Duration()
                         + (double)this.waitRate/100.0*this.period
                 ) {
                     this.motion3Index++;
