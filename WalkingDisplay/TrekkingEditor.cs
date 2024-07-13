@@ -28,6 +28,17 @@ public class TrekkingEditor : Editor
             trekking.WalkStop();
         }
 
+        trekking.scaledLength.lift = trekking.length.lift * trekking.scale;
+        trekking.scaledLength.pedal = trekking.length.pedal;
+        trekking.scaledLength.legForward = trekking.length.legForward;
+        trekking.scaledLength.legBackward = trekking.length.legBackward;
+        trekking.scaledLength.stockExtendTopPoint = trekking.length.stockExtendTopPoint * trekking.scale;
+        trekking.scaledLength.stockExtendPokePoint = trekking.length.stockExtendPokePoint * trekking.scale;
+        trekking.scaledLength.stockSlideForward = trekking.length.stockSlideForward * trekking.scale;
+        trekking.scaledLength.stockSlideBackward = trekking.length.stockSlideBackward * trekking.scale;
+        trekking.tiltBackwardScaled = trekking.tiltBackward * trekking.scale;
+        trekking.tiltForwardScaled = trekking.tiltForward * trekking.scale;
+
         // if (GUILayout.Button("Exit")) {
         //     trekking.video.Exit();
         // }

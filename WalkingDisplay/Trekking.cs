@@ -9,28 +9,36 @@ public class Trekking : UnityEngine.MonoBehaviour {
     [UnityEngine.SerializeField, ReadOnly] public Status status;
     [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
     [ReadOnly] public double clockTime = 0;
-     public float ExperienceTime = 0;
+    public float ExperienceTime = 0;
+
+    [UnityEngine.SerializeField, Range(0.5f, 1.5f)] public double scale = 1;
+
     [System.Serializable] public class Length {
         // Unit mm
-        [UnityEngine.SerializeField, Range(0, 30)] public double lift = 1;
+        [UnityEngine.SerializeField, Range(0, 40)] public double lift = 1;
         [UnityEngine.SerializeField, Range(0, 68)] public double pedal = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double legForward = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double legBackward = 1;
         [UnityEngine.SerializeField, Range(0, 300)] public double stockExtendTopPoint = 1;
         [UnityEngine.SerializeField, Range(0, 300)] public double stockExtendPokePoint = 1;
-        [UnityEngine.SerializeField, Range(0, 200)] public double stockSlideForward = 1;
-        [UnityEngine.SerializeField, Range(0, 200)] public double stockSlideBackward = 1;
+        [UnityEngine.SerializeField, Range(0, 300)] public double stockSlideForward = 1;
+        [UnityEngine.SerializeField, Range(0, 300)] public double stockSlideBackward = 1;
     }
 
     [UnityEngine.SerializeField, UnityEngine.Header("Unit (s)"), UnityEngine.Range(2f, 10f)] public float period = 5;
 
     public Length length;
+    [UnityEngine.SerializeField] public Length scaledLength;
 
     [System.Serializable] public class TimeSchedule {
         private Epos4Node epos4Node;
         private double period;
         public bool activate;
         public bool useStiffness;
+        public bool useVibro;
+        public double climbMm = 0;
+        public int climbCount = 0;
+        public int climbIdx = 0;
         [UnityEngine.SerializeField, Range(0, 10)] public int motion1 = 1;
         [UnityEngine.SerializeField, Range(0, 10)] public int wait1 = 0;
         [UnityEngine.SerializeField, Range(0, 10)] public int motion2 = 1;
@@ -86,6 +94,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         [ReadOnly] public int motion1Index = 0;
         [ReadOnly] public int motion2Index = 0;
         [ReadOnly] public int motion3Index = 0;
+        [ReadOnly] public int vibroIndex = 0;
         [UnityEngine.SerializeField, UnityEngine.Header("歩行周期の割合(%)だけ遅延"), UnityEngine.Range(0f, 200f)] public int waitRate = 0;
 
         public void init(Epos4Node arg_epos4Node, double arg_period, double arg_position1, double arg_position2) {
@@ -97,6 +106,8 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.position1 = arg_position1;
             this.position2 = arg_position2;
             this.motionCount = 2;
+            this.vibroIndex = 0;
+            this.climbIdx = 0;
         }
 
         public void init(Epos4Node arg_epos4Node, double arg_period, double arg_position1, double arg_position2, double arg_position3) {
@@ -109,31 +120,23 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.position2 = arg_position2;
             this.position3 = arg_position3;
             this.motionCount = 3;
+            this.vibroIndex = 0;
+            this.climbIdx = 0;
         }
 
-        public void vibroTimerCallback(double arg_clockTime, ref bool arg_flag) {
-            if (
-                arg_clockTime
-                > this.motion2Index * this.period
-                    + this.motion1Duration()
-                    + this.wait1Duration()
-                    + this.motion2Duration()
-                    + this.wait2Duration()
-                    + (double)this.waitRate/100.0*this.period
-            ) {
-                arg_flag = true;
-            }
-        }
-
-        public void timerCallback(double arg_clockTime, double arg_stiffness) {
+        public void timerCallback(double arg_clockTime, double arg_stiffness, ref bool arg_flag) {
             if (
                 arg_clockTime
                 > this.motion1Index * this.period
                     + (double)this.waitRate/100.0*this.period
             ) {
                 this.motion1Index++;
+                this.climbIdx++;
+                if (this.climbIdx > this.climbCount) {
+                    this.climbIdx = 0;
+                }
                 this.epos4Node.SetPositionProfileInTime(
-                    this.position1,
+                    this.position1 + this.climbIdx*this.climbMm,
                     this.motion1Duration(),
                     5, 1
                 );
@@ -150,19 +153,34 @@ public class Trekking : UnityEngine.MonoBehaviour {
                 this.motion2Index++;
                 if (this.useStiffness) {
                     this.epos4Node.SetPositionProfileInTime(
-                        this.position2,
+                        this.position2 + this.climbIdx*this.climbMm,
                         this.motion2Duration(),
                         1, 1 + arg_stiffness
                     );
                 }
                 else {
                     this.epos4Node.SetPositionProfileInTime(
-                        this.position2,
+                        this.position2 + this.climbIdx*this.climbMm,
                         this.motion2Duration(),
                         5, 1
                     );
                 }
                 this.epos4Node.MoveToPosition(this.activate);
+            }
+
+            if (this.useVibro) {
+                if (
+                    arg_clockTime
+                    > this.vibroIndex * this.period
+                        + this.motion1Duration()
+                        + this.wait1Duration()
+                        + this.motion2Duration()
+                        + (double)this.waitRate/100.0*this.period
+                        - 0.6
+                ) {
+                    this.vibroIndex++;
+                    arg_flag = true;
+                }
             }
 
             if (this.motionCount == 3) {
@@ -177,7 +195,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
                 ) {
                     this.motion3Index++;
                     this.epos4Node.SetPositionProfileInTime(
-                        this.position3,
+                        this.position3 + this.climbIdx * this.climbMm,
                         this.motion3Duration(),
                         5, 1
                     );
@@ -200,44 +218,44 @@ public class Trekking : UnityEngine.MonoBehaviour {
     public bool activateLeftTilt = false;
     public bool activateRightTilt = false;
 
+    public bool dummyFlag = false;
+
     public void timerCallback(object source, System.Timers.ElapsedEventArgs e) {
         this.clockTime += 0.005;
         // Lifter
         if (this.status == Status.stop) return;
-        this.lifter.timerCallback(this.clockTime, this.stiffness);
+        this.lifter.timerCallback(this.clockTime, this.stiffness, ref this.dummyFlag);
 
         if (this.status == Status.stop) return;
-        this.leftPedal.timerCallback(this.clockTime, this.stiffness);
-        this.leftPedal.vibroTimerCallback(this.clockTime, ref this.audioLeftFlag);
+        this.leftPedal.timerCallback(this.clockTime, this.stiffness, ref this.audioLeftFlag);
 
         // LegSlider
         if (this.status == Status.stop) return;
-        this.leftSlider.timerCallback(this.clockTime, this.stiffness);
+        this.leftSlider.timerCallback(this.clockTime, this.stiffness, ref this.dummyFlag);
 
         if (this.status == Status.stop) return;
-        this.rightPedal.timerCallback(this.clockTime, this.stiffness);
-        this.rightPedal.vibroTimerCallback(this.clockTime, ref this.audioRightFlag);
+        this.rightPedal.timerCallback(this.clockTime, this.stiffness, ref this.audioRightFlag);
 
         if (this.status == Status.stop) return;
-        this.rightSlider.timerCallback(this.clockTime, this.stiffness);
+        this.rightSlider.timerCallback(this.clockTime, this.stiffness, ref this.dummyFlag);
 
         // Stock Left
 
         // Extend
         if (this.status == Status.stop) return;
-        this.stockLeftExtend.timerCallback(this.clockTime, this.stiffness);
+        this.stockLeftExtend.timerCallback(this.clockTime, this.stiffness, ref this.dummyFlag);
         // Slider
         if (this.status == Status.stop) return;
-        this.stockLeftSlider.timerCallback(this.clockTime, this.stiffness);
+        this.stockLeftSlider.timerCallback(this.clockTime, this.stiffness, ref this.dummyFlag);
         
         // Stock Right
 
         // Extend
         if (this.status == Status.stop) return;
-        this.stockRightExtend.timerCallback(this.clockTime, this.stiffness);
+        this.stockRightExtend.timerCallback(this.clockTime, this.stiffness, ref this.dummyFlag);
         // Slider
         if (this.status == Status.stop) return;
-        this.stockRightSlider.timerCallback(this.clockTime, this.stiffness);
+        this.stockRightSlider.timerCallback(this.clockTime, this.stiffness, ref this.dummyFlag);
     }
 
 
@@ -262,8 +280,11 @@ public class Trekking : UnityEngine.MonoBehaviour {
     public string sendText;
     [UnityEngine.SerializeField, UnityEngine.Header("Unit (deg), Absolute, Backward Positive, Forward Negative"), UnityEngine.Range(0, 10)] public float tiltBackward = 0;
     [UnityEngine.SerializeField, UnityEngine.Range(-30, 0)] public float tiltForward = 0;
-    [UnityEngine.SerializeField, UnityEngine.Header("Tilt Backward Time Ratio"), UnityEngine.Range(1f, 5f)] public float tiltBackwardTimeRatio = 1;
-    [UnityEngine.SerializeField, UnityEngine.Header("Tilt Forward  Time Ratio"), UnityEngine.Range(1f, 5f)] public float tiltForwardTimeRatio = 1;
+    [UnityEngine.SerializeField, ReadOnly, UnityEngine.Header("Unit (deg), Absolute, Backward Positive, Forward Negative"), UnityEngine.Range(0, 10)] public double tiltBackwardScaled = 0;
+    [UnityEngine.SerializeField, ReadOnly, UnityEngine.Range(-30, 0)] public double tiltForwardScaled = 0;
+    [UnityEngine.SerializeField, UnityEngine.Header("Tilt Backward Time Ratio"), UnityEngine.Range(1, 10)] public float tiltBackwardTimeRatio = 1;
+    [UnityEngine.SerializeField, UnityEngine.Header("Tilt Forward delay Ratio"), UnityEngine.Range(0, 10)] public float tiltForwardDelayRatio = 1;
+    [UnityEngine.SerializeField, UnityEngine.Header("Tilt Forward  Time Ratio"), UnityEngine.Range(1, 10)] public float tiltForwardTimeRatio = 1;
     public bool doubleStock = false;
     public double startClockTimeLeftTilt = 0;
     public double startClockTimeRightTilt = 0;
@@ -291,8 +312,8 @@ public class Trekking : UnityEngine.MonoBehaviour {
     {
         //目標パルスを整数型で格納
         if (this.activateLeftTilt) {
-            this.targetPulseUp1[0] = (int)(-this.tiltBackward / this.degreePerPulse);
-            this.targetPulseDown1[0] = (int)(-this.tiltForward / this.degreePerPulse);
+            this.targetPulseUp1[0] = (int)(-this.tiltBackwardScaled / this.degreePerPulse);
+            this.targetPulseDown1[0] = (int)(-this.tiltForwardScaled / this.degreePerPulse);
         }
         else {
             this.targetPulseUp1[0] = 0;
@@ -301,8 +322,8 @@ public class Trekking : UnityEngine.MonoBehaviour {
         this.targetPulseUp1[1] = 0;
         this.targetPulseDown1[1] = 0;
         if (this.activateRightTilt) {
-            this.targetPulseUp1[2] = (int)(this.tiltBackward / this.degreePerPulse);
-            this.targetPulseDown1[2] = (int)(this.tiltForward / this.degreePerPulse);
+            this.targetPulseUp1[2] = (int)(this.tiltBackwardScaled / this.degreePerPulse);
+            this.targetPulseDown1[2] = (int)(this.tiltForwardScaled / this.degreePerPulse);
         }
         else {
             this.targetPulseUp1[2] = 0;
@@ -316,11 +337,12 @@ public class Trekking : UnityEngine.MonoBehaviour {
         this.targetPulseDown1[5] = 0;
         this.seatRotationPulse = 0;
         if (this.activateLeftTilt) {
-            this.leftTiltDriveTimeBackward = this.period * (this.tiltBackwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio);
+            this.leftTiltDriveTimeBackward = this.period * (this.tiltBackwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
             this.driveTimeUp1[0] = (int)(this.leftTiltDriveTimeBackward * 1000f);
-            this.leftTiltDriveTimeForward = this.period * (this.tiltForwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio);
+            this.leftTiltDriveTimeForward = this.period * (this.tiltForwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
             this.driveTimeDown1[0] = (int)(this.leftTiltDriveTimeForward * 1000f);
             this.delayTimeUp1[0] = (int)(this.leftTiltDelayTimeBackward * 1000f);
+            this.leftTiltDelayTimeForward = this.period * (this.tiltForwardDelayRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
             this.delayTimeDown1[0] = (int)(this.leftTiltDelayTimeForward * 1000f);
         }
         else {
@@ -328,11 +350,12 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.driveTimeDown1[0] = 0;
         }
         if (this.activateRightTilt) {
-            this.rightTiltDriveTimeBackward = this.period * (this.tiltBackwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio);
+            this.rightTiltDriveTimeBackward = this.period * (this.tiltBackwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
             this.driveTimeUp1[2] = (int)(this.rightTiltDriveTimeBackward * 1000f);
-            this.rightTiltDriveTimeForward = this.period * (this.tiltForwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardTimeRatio);
+            this.rightTiltDriveTimeForward = this.period * (this.tiltForwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
             this.driveTimeDown1[2] = (int)(this.rightTiltDriveTimeForward * 1000f);
             this.delayTimeUp1[2] = (int)(this.rightTiltDelayTimeBackward * 1000f);
+            this.rightTiltDelayTimeForward = this.period * (this.tiltForwardDelayRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
             this.delayTimeDown1[2] = (int)(this.rightTiltDelayTimeForward * 1000f);
         }
         else {
@@ -341,7 +364,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         }
         
         // this.startClockTimeLeftTilt = this.period*1.0/10.0;
-        this.startClockTimeLeftTilt = 0;
+        this.startClockTimeLeftTilt = this.period*0.0/10.0;
         this.delayTimeFirst[0] = (int)(startClockTimeLeftTilt * 1000.0);
         // this.startClockTimeRightTilt = this.period*6.0/10.0;
         this.startClockTimeRightTilt = this.period*5.0/10.0;
@@ -391,17 +414,17 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.esp32Main.SendText(this.sendText);
 
             this.clockTime = 0;
-            this.lifter.init(this.epos4Main.lifter, this.period/2, this.length.lift, 0);
-            this.leftPedal.init(this.epos4Main.leftPedal, this.period, this.length.pedal, 0);
-            this.leftSlider.init(this.epos4Main.leftSlider, this.period, this.length.legForward, -this.length.legBackward);
-            this.rightPedal.init(this.epos4Main.rightPedal, this.period, this.length.pedal, 0);
-            this.rightSlider.init(this.epos4Main.rightSlider, this.period, this.length.legForward, -this.length.legBackward);
-            this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
-            this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
-            // this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, 0);
-            // this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.length.stockExtendTopPoint, 0);
-            this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.length.stockSlideForward, -this.length.stockSlideBackward);
-            this.stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.length.stockSlideForward, -this.length.stockSlideBackward);
+            this.lifter.init(this.epos4Main.lifter, this.period/2, this.scaledLength.lift, 0);
+            this.leftPedal.init(this.epos4Main.leftPedal, this.period, this.scaledLength.pedal, 0);
+            this.leftSlider.init(this.epos4Main.leftSlider, this.period, this.scaledLength.legForward, -this.scaledLength.legBackward);
+            this.rightPedal.init(this.epos4Main.rightPedal, this.period, this.scaledLength.pedal, 0);
+            this.rightSlider.init(this.epos4Main.rightSlider, this.period, this.scaledLength.legForward, -this.scaledLength.legBackward);
+            this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.scaledLength.stockExtendTopPoint, this.scaledLength.stockExtendPokePoint, 0);
+            this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.scaledLength.stockExtendTopPoint, this.scaledLength.stockExtendPokePoint, 0);
+            // this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.scaledLength.stockExtendTopPoint, 0);
+            // this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.scaledLength.stockExtendTopPoint, 0);
+            this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
+            this.stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
             this.trekkingTimer = new System.Timers.Timer(5);
             this.trekkingTimer.AutoReset = true;
             this.trekkingTimer.Elapsed += this.timerCallback;
@@ -526,6 +549,15 @@ public class Trekking : UnityEngine.MonoBehaviour {
         //         this.pauseFlag = false;
         //     }
         // }
+
+        // this.scaledLength.lift = this.length.lift * this.scale;
+        // this.scaledLength.stockExtendTopPoint = this.length.stockExtendTopPoint * this.scale;
+        // this.scaledLength.stockExtendPokePoint = this.length.stockExtendPokePoint * this.scale;
+        // this.scaledLength.stockSlideForward = this.length.stockSlideForward * this.scale;
+        // this.scaledLength.stockSlideBackward = this.length.stockSlideBackward * this.scale;
+        // this.tiltBackwardScaled = this.tiltBackward * this.scale;
+        // this.tiltForwardScaled = this.tiltForward * this.scale;
+
         if (this.audioLeftFlag) {
             if (this.audioLeftSource != null) {
                 this.audioLeftSource.Play();
