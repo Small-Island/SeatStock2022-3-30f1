@@ -34,8 +34,8 @@ public class Trekking : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField, Range(0, 10)] public int wait1 = 0;
         [UnityEngine.SerializeField, Range(1, 10)] public int motion2 = 1;
         [UnityEngine.SerializeField, Range(0, 10)] public int wait2 = 0;
-        [UnityEngine.SerializeField, Range(1, 10)] public int motion3 = 1
-        [UnityEngine.SerializeField, Range(0, 10)] public int wait3 = 0;;
+        [UnityEngine.SerializeField, Range(1, 10)] public int motion3 = 1;
+        [UnityEngine.SerializeField, Range(0, 10)] public int wait3 = 0;
         [ReadOnly] public double position1;
         [ReadOnly] public double position2;
         [ReadOnly] public double position3;
