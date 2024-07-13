@@ -30,11 +30,11 @@ public class Trekking : UnityEngine.MonoBehaviour {
         public double period;
         public bool activate;
         public bool useStiffness;
-        [UnityEngine.SerializeField, Range(0, 10)] public int wait1 = 1;
+        [UnityEngine.SerializeField, Range(0, 10)] public int wait1 = 0;
         [UnityEngine.SerializeField, Range(1, 10)] public int motion1 = 1;
-        [UnityEngine.SerializeField, Range(0, 10)] public int wait2 = 1;
+        [UnityEngine.SerializeField, Range(0, 10)] public int wait2 = 0;
         [UnityEngine.SerializeField, Range(1, 10)] public int motion2 = 1;
-        [UnityEngine.SerializeField, Range(0, 10)] public int wait3 = 1;
+        [UnityEngine.SerializeField, Range(0, 10)] public int wait3 = 0;
         [UnityEngine.SerializeField, Range(1, 10)] public int motion3 = 1;
         [ReadOnly] public double position1;
         [ReadOnly] public double position2;
