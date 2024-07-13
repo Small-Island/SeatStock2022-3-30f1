@@ -376,10 +376,10 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.leftSlider.init(this.epos4Main.leftSlider, this.period, this.length.legForward, -this.length.legBackward);
             this.rightPedal.init(this.epos4Main.rightPedal, this.period, this.length.pedal, 0);
             this.rightSlider.init(this.epos4Main.rightSlider, this.period, this.length.legForward, -this.length.legBackward);
-            // this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
-            // this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
-            this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, 0);
-            this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.length.stockExtendTopPoint, 0);
+            this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
+            this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
+            // this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, 0);
+            // this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.length.stockExtendTopPoint, 0);
             this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.length.stockSlideForward, -this.length.stockSlideBackward);
             this.stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.length.stockSlideForward, -this.length.stockSlideBackward);
             this.trekkingTimer = new System.Timers.Timer(5);
