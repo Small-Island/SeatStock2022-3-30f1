@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Trekking : UnityEngine.MonoBehaviour {
     // public Video video;
-    // public UnityEngine.AudioSource audioLeftSource;
-    // public UnityEngine.AudioSource audioRightSource;
+    public UnityEngine.AudioSource audioLeftSource;
+    public UnityEngine.AudioSource audioRightSource;
     [UnityEngine.SerializeField, ReadOnly] public Status status;
     [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
     [ReadOnly] public double clockTime = 0;
@@ -111,6 +111,20 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.motionCount = 3;
         }
 
+        public void vibroTimerCallback(double arg_clockTime, ref bool arg_flag) {
+            if (
+                arg_clockTime
+                > this.motion2Index * this.period
+                    + this.motion1Duration()
+                    + this.wait1Duration()
+                    + this.motion2Duration()
+                    + this.wait2Duration()
+                    + (double)this.waitRate/100.0*this.period
+            ) {
+                arg_flag = true;
+            }
+        }
+
         public void timerCallback(double arg_clockTime, double arg_stiffness) {
             if (
                 arg_clockTime
@@ -194,6 +208,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
         if (this.status == Status.stop) return;
         this.leftPedal.timerCallback(this.clockTime, this.stiffness);
+        this.leftPedal.vibroTimerCallback(this.clockTime, ref this.audioLeftFlag);
 
         // LegSlider
         if (this.status == Status.stop) return;
@@ -201,6 +216,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
         if (this.status == Status.stop) return;
         this.rightPedal.timerCallback(this.clockTime, this.stiffness);
+        this.rightPedal.vibroTimerCallback(this.clockTime, ref this.audioRightFlag);
 
         if (this.status == Status.stop) return;
         this.rightSlider.timerCallback(this.clockTime, this.stiffness);
@@ -211,13 +227,13 @@ public class Trekking : UnityEngine.MonoBehaviour {
         if (this.status == Status.stop) return;
         this.stockLeftExtend.timerCallback(this.clockTime, this.stiffness);
         // Slider
-         if (this.status == Status.stop) return;
+        if (this.status == Status.stop) return;
         this.stockLeftSlider.timerCallback(this.clockTime, this.stiffness);
         
         // Stock Right
 
         // Extend
-         if (this.status == Status.stop) return;
+        if (this.status == Status.stop) return;
         this.stockRightExtend.timerCallback(this.clockTime, this.stiffness);
         // Slider
         if (this.status == Status.stop) return;
@@ -510,18 +526,18 @@ public class Trekking : UnityEngine.MonoBehaviour {
         //         this.pauseFlag = false;
         //     }
         // }
-        // if (this.audioLeftFlag) {
-        //     if (this.audioLeftSource != null) {
-        //         this.audioLeftSource.Play();
-        //     }
-        //     this.audioLeftFlag = false;
-        // }
-        // if (this.audioRightFlag) {
-        //     if (this.audioRightSource != null) {
-        //         this.audioRightSource.Play();
-        //     }
-        //     this.audioRightFlag = false;
-        // }
+        if (this.audioLeftFlag) {
+            if (this.audioLeftSource != null) {
+                this.audioLeftSource.Play();
+            }
+            this.audioLeftFlag = false;
+        }
+        if (this.audioRightFlag) {
+            if (this.audioRightSource != null) {
+                this.audioRightSource.Play();
+            }
+            this.audioRightFlag = false;
+        }
     }
 
     private bool Destroied = false;
