@@ -345,40 +345,46 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.walkStraightTimer.Stop();
             this.walkStraightTimer.Dispose();
         }
-        if (this.coolingStatus == CoolingStatus.NowCooling) return;
-        
-        this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
-        this.th.Start();
 
-        this.targetCalculate();//目標値計算
-        //送信するデータを文字列でまとめる
-        this.sendText = "start" + ",";
-        for (int i = 0; i < 6; i++) {
-            this.sendText += this.targetPulseUp1[i].ToString() + "," + this.targetPulseDown1[i].ToString() + ",";
-            this.sendText += this.driveTimeUp1[i].ToString() + "," + this.driveTimeDown1[i].ToString() + ",";
-            this.sendText += this.delayTimeUp1[i].ToString() + "," + this.delayTimeDown1[i].ToString() + ",";
-            this.sendText += this.delayTimeFirst[i].ToString() + ",";
-        }
-        this.sendText += this.seatRotationPulse.ToString() + ",";
-        this.sendText += "/";//終わりの目印
-        this.esp32Main.SendText(this.sendText);
+        this.walkStraightTimer = new System.Timers.Timer(1000);
+        this.walkStraightTimer.AutoReset = false;
+        this.walkStraightTimer.Elapsed += (sender, e) => {
+            if (this.coolingStatus == CoolingStatus.NowCooling) return;
+            
+            this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
+            this.th.Start();
 
-        this.clockTime = 0;
-        this.lifter.init(this.epos4Main.lifter, this.period/2, this.length.lift, 0);
-        this.leftPedal.init(this.epos4Main.leftPedal, this.period, this.length.pedal, 0);
-        this.leftSlider.init(this.epos4Main.leftSlider, this.period, this.length.legForward, -this.length.legBackward);
-        this.rightPedal.init(this.epos4Main.rightPedal, this.period, this.length.pedal, 0);
-        this.rightSlider.init(this.epos4Main.rightSlider, this.period, this.length.legForward, -this.length.legBackward);
-        // this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
-        // this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
-        this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, 0);
-        this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.length.stockExtendTopPoint, 0);
-        this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.length.stockSlideForward, -this.length.stockSlideBackward);
-        this.stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.length.stockSlideForward, -this.length.stockSlideBackward);
-        this.trekkingTimer = new System.Timers.Timer(5);
-        this.trekkingTimer.AutoReset = true;
-        this.trekkingTimer.Elapsed += this.timerCallback;
-        this.trekkingTimer.Start();
+            this.targetCalculate();//目標値計算
+            //送信するデータを文字列でまとめる
+            this.sendText = "start" + ",";
+            for (int i = 0; i < 6; i++) {
+                this.sendText += this.targetPulseUp1[i].ToString() + "," + this.targetPulseDown1[i].ToString() + ",";
+                this.sendText += this.driveTimeUp1[i].ToString() + "," + this.driveTimeDown1[i].ToString() + ",";
+                this.sendText += this.delayTimeUp1[i].ToString() + "," + this.delayTimeDown1[i].ToString() + ",";
+                this.sendText += this.delayTimeFirst[i].ToString() + ",";
+            }
+            this.sendText += this.seatRotationPulse.ToString() + ",";
+            this.sendText += "/";//終わりの目印
+            this.esp32Main.SendText(this.sendText);
+
+            this.clockTime = 0;
+            this.lifter.init(this.epos4Main.lifter, this.period/2, this.length.lift, 0);
+            this.leftPedal.init(this.epos4Main.leftPedal, this.period, this.length.pedal, 0);
+            this.leftSlider.init(this.epos4Main.leftSlider, this.period, this.length.legForward, -this.length.legBackward);
+            this.rightPedal.init(this.epos4Main.rightPedal, this.period, this.length.pedal, 0);
+            this.rightSlider.init(this.epos4Main.rightSlider, this.period, this.length.legForward, -this.length.legBackward);
+            // this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
+            // this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
+            this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, 0);
+            this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.length.stockExtendTopPoint, 0);
+            this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.length.stockSlideForward, -this.length.stockSlideBackward);
+            this.stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.length.stockSlideForward, -this.length.stockSlideBackward);
+            this.trekkingTimer = new System.Timers.Timer(5);
+            this.trekkingTimer.AutoReset = true;
+            this.trekkingTimer.Elapsed += this.timerCallback;
+            this.trekkingTimer.Start();
+        };
+        this.walkStraightTimer.Start();
     }
 
     public void WalkStop() {
