@@ -16,8 +16,8 @@ public class Trekking : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField, Range(0, 68)] public double pedal = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double legForward = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double legBackward = 1;
-        [UnityEngine.SerializeField, Range(0, 100)] public double stockExtendTopPoint = 1;
-        [UnityEngine.SerializeField, Range(0, 100)] public double stockExtendPokePoint = 1;
+        [UnityEngine.SerializeField, Range(0, 300)] public double stockExtendTopPoint = 1;
+        [UnityEngine.SerializeField, Range(0, 300)] public double stockExtendPokePoint = 1;
         [UnityEngine.SerializeField, Range(0, 200)] public double stockSlideForward = 1;
         [UnityEngine.SerializeField, Range(0, 200)] public double stockSlideBackward = 1;
     }
@@ -78,10 +78,10 @@ public class Trekking : UnityEngine.MonoBehaviour {
             return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
         }
         public double motion3Duration() {
-            return (double)(this.motion3)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+            return (double)(this.motion3)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.motion3 + this.wait3)*this.period;
         }
         public double wait3Duration() {
-            return (double)(this.wait3)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+            return (double)(this.wait3)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.motion3 + this.wait3)*this.period;
         }
         [ReadOnly] public int motion1Index = 0;
         [ReadOnly] public int motion2Index = 0;
@@ -164,7 +164,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
                     this.motion3Index++;
                     this.epos4Node.SetPositionProfileInTime(
                         this.position3,
-                        this.period*this.motion3Duration(),
+                        this.motion3Duration(),
                         5, 1
                     );
                     this.epos4Node.MoveToPosition(this.activate);
@@ -324,7 +324,11 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.driveTimeDown1[2] = 0;
         }
         
+        // this.startClockTimeLeftTilt = this.period*1.0/10.0;
+        this.startClockTimeLeftTilt = 0;
         this.delayTimeFirst[0] = (int)(startClockTimeLeftTilt * 1000.0);
+        // this.startClockTimeRightTilt = this.period*6.0/10.0;
+        this.startClockTimeRightTilt = this.period*5.0/10.0;
         this.delayTimeFirst[2] = (int)(startClockTimeRightTilt * 1000.0);
     }
 
