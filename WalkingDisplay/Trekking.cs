@@ -9,6 +9,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
     [UnityEngine.SerializeField, ReadOnly] public Status status;
     [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
     [ReadOnly] public double clockTime = 0;
+     public float ExperienceTime = 0;
     [System.Serializable] public class Length {
         // Unit mm
         [UnityEngine.SerializeField, Range(0, 30)] public double lift = 1;
@@ -270,8 +271,6 @@ public class Trekking : UnityEngine.MonoBehaviour {
     private int[] delayTimeFirst = new int[6] { 0, 0, 0, 0, 0, 0 };//一歩目モータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
     private int seatRotationPulse;
 
-    public float ExperienceTime = 0;
-
     private void targetCalculate()//振幅値（mm）→出力パルス変換
     {
         //目標パルスを整数型で格納
@@ -387,13 +386,23 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.trekkingTimer.AutoReset = true;
             this.trekkingTimer.Elapsed += this.timerCallback;
             this.trekkingTimer.Start();
+            this.walkStopTimer.Start();
+        };
+        this.walkStopTimer = new System.Timers.Timer(this.ExperienceTime*1000f);
+        this.walkStopTimer.AutoReset = false;
+        this.walkStopTimer.Elapsed += (sender, e) => {
+            this.WalkStop();
         };
         this.walkStraightTimer.Start();
     }
 
+    private System.Timers.Timer walkStopTimer;
+
     public void WalkStop() {
         this.trekkingTimer?.Stop();
         this.trekkingTimer?.Dispose();
+        this.walkStopTimer?.Stop();
+        this.walkStopTimer?.Dispose();
         this.status = Status.stop;
         UnityEngine.Debug.Log("WalkStop");
         this.epos4Main.AllNodeMoveToHome();
@@ -516,5 +525,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
     private void OnDestroy() {
         this.WalkStop();
         this.Destroied = true;
+        this.walkStopTimer?.Stop();
+        this.walkStopTimer?.Dispose();
     }
 }
