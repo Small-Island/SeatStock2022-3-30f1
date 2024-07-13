@@ -346,7 +346,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.walkStraightTimer.Dispose();
         }
 
-        this.walkStraightTimer = new System.Timers.Timer(1000);
+        this.walkStraightTimer = new System.Timers.Timer(5000);
         this.walkStraightTimer.AutoReset = false;
         this.walkStraightTimer.Elapsed += (sender, e) => {
             if (this.coolingStatus == CoolingStatus.NowCooling) return;
