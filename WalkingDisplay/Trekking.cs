@@ -27,14 +27,14 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
     [System.Serializable] public class TimeSchedule {
         private Epos4Node epos4Node;
-        public double period;
+        private double period;
         public bool activate;
         public bool useStiffness;
-        [UnityEngine.SerializeField, Range(1, 10)] public int motion1 = 1;
+        [UnityEngine.SerializeField, Range(0, 10)] public int motion1 = 1;
         [UnityEngine.SerializeField, Range(0, 10)] public int wait1 = 0;
-        [UnityEngine.SerializeField, Range(1, 10)] public int motion2 = 1;
+        [UnityEngine.SerializeField, Range(0, 10)] public int motion2 = 1;
         [UnityEngine.SerializeField, Range(0, 10)] public int wait2 = 0;
-        [UnityEngine.SerializeField, Range(1, 10)] public int motion3 = 1;
+        [UnityEngine.SerializeField, Range(0, 10)] public int motion3 = 0;
         [UnityEngine.SerializeField, Range(0, 10)] public int wait3 = 0;
         [ReadOnly] public double position1;
         [ReadOnly] public double position2;
@@ -85,7 +85,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         [ReadOnly] public int motion1Index = 0;
         [ReadOnly] public int motion2Index = 0;
         [ReadOnly] public int motion3Index = 0;
-        [UnityEngine.SerializeField, UnityEngine.Header("歩行周期の割合(%)だけ遅延"), UnityEngine.Range(0f, 100f)] public int waitRate = 0;
+        [UnityEngine.SerializeField, UnityEngine.Header("歩行周期の割合(%)だけ遅延"), UnityEngine.Range(0f, 200f)] public int waitRate = 0;
 
         public void init(Epos4Node arg_epos4Node, double arg_period, double arg_position1, double arg_position2) {
             this.epos4Node = arg_epos4Node;
@@ -173,7 +173,9 @@ public class Trekking : UnityEngine.MonoBehaviour {
     }
     [UnityEngine.Header("動作時間比")]
     public TimeSchedule lifter;
+    public TimeSchedule leftPedal;
     public TimeSchedule leftSlider;
+     public TimeSchedule rightPedal;
     public TimeSchedule rightSlider;
     public TimeSchedule stockLeftExtend;
     public TimeSchedule stockRightExtend;
@@ -189,9 +191,15 @@ public class Trekking : UnityEngine.MonoBehaviour {
         if (this.status == Status.stop) return;
         this.lifter.timerCallback(this.clockTime, this.stiffness);
 
+        if (this.status == Status.stop) return;
+        this.leftPedal.timerCallback(this.clockTime, this.stiffness);
+
         // LegSlider
         if (this.status == Status.stop) return;
         this.leftSlider.timerCallback(this.clockTime, this.stiffness);
+
+        if (this.status == Status.stop) return;
+        this.rightPedal.timerCallback(this.clockTime, this.stiffness);
 
         if (this.status == Status.stop) return;
         this.rightSlider.timerCallback(this.clockTime, this.stiffness);
@@ -357,7 +365,9 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
         this.clockTime = 0;
         this.lifter.init(this.epos4Main.lifter, this.period/2, this.length.lift, 0);
+        this.leftPedal.init(this.epos4Main.leftPedal, this.period, this.length.pedal, 0);
         this.leftSlider.init(this.epos4Main.leftSlider, this.period, this.length.legForward, -this.length.legBackward);
+        this.rightPedal.init(this.epos4Main.rightPedal, this.period, this.length.pedal, 0);
         this.rightSlider.init(this.epos4Main.rightSlider, this.period, this.length.legForward, -this.length.legBackward);
         // this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
         // this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.length.stockExtendTopPoint, this.length.stockExtendPokePoint, 0);
