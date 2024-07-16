@@ -36,6 +36,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         public bool activate;
         public bool useStiffness;
         public bool useVibro;
+        public bool useRandom;
         public double climbMm = 0;
         public int climbCount = 0;
         public int climbIdx = 0;
@@ -49,6 +50,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         [ReadOnly] public double position2;
         [ReadOnly] public double position3;
         [ReadOnly] public double motionCount = 0;
+        private System.Random random;
         public double motion1Duration() {
             if (motionCount == 2) {
                 return (double)(this.motion1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
@@ -108,6 +110,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.motionCount = 2;
             this.vibroIndex = 0;
             this.climbIdx = 0;
+            this.random = new System.Random();
         }
 
         public void init(Epos4Node arg_epos4Node, double arg_period, double arg_position1, double arg_position2, double arg_position3) {
@@ -122,6 +125,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.motionCount = 3;
             this.vibroIndex = 0;
             this.climbIdx = 0;
+            this.random = new System.Random();
         }
 
         public void timerCallback(double arg_clockTime, double arg_stiffness, ref bool arg_flag) {
@@ -135,8 +139,15 @@ public class Trekking : UnityEngine.MonoBehaviour {
                 if (this.climbIdx > this.climbCount) {
                     this.climbIdx = 0;
                 }
+                double pos = 0;
+                if (this.useRandom) {
+                    pos = this.position1 * (double)(this.random.Next(1000))/1000.0;
+                }
+                else {
+                    pos = this.position1 + this.climbIdx*this.climbMm;
+                }
                 this.epos4Node.SetPositionProfileInTime(
-                    this.position1 + this.climbIdx*this.climbMm,
+                    pos,
                     this.motion1Duration(),
                     5, 1
                 );
@@ -151,16 +162,23 @@ public class Trekking : UnityEngine.MonoBehaviour {
                     + (double)this.waitRate/100.0*this.period
             ) {
                 this.motion2Index++;
+                double pos = 0;
+                if (this.useRandom) {
+                    pos = this.position2 * (double)(this.random.Next(1000))/1000.0;
+                }
+                else {
+                    pos = this.position2 + this.climbIdx*this.climbMm;
+                }
                 if (this.useStiffness) {
                     this.epos4Node.SetPositionProfileInTime(
-                        this.position2 + this.climbIdx*this.climbMm,
+                        pos,
                         this.motion2Duration(),
                         1, 1 + arg_stiffness
                     );
                 }
                 else {
                     this.epos4Node.SetPositionProfileInTime(
-                        this.position2 + this.climbIdx*this.climbMm,
+                        pos,
                         this.motion2Duration(),
                         5, 1
                     );
@@ -194,8 +212,15 @@ public class Trekking : UnityEngine.MonoBehaviour {
                         + (double)this.waitRate/100.0*this.period
                 ) {
                     this.motion3Index++;
+                    double pos = 0;
+                    if (this.useRandom) {
+                        pos = this.position3 * (double)(this.random.Next(1000))/1000.0;
+                    }
+                    else {
+                        pos = this.position3 + this.climbIdx*this.climbMm;
+                    }
                     this.epos4Node.SetPositionProfileInTime(
-                        this.position3 + this.climbIdx * this.climbMm,
+                        pos,
                         this.motion3Duration(),
                         5, 1
                     );
