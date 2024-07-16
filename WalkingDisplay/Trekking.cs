@@ -52,37 +52,37 @@ public class Trekking : UnityEngine.MonoBehaviour {
         [ReadOnly] public double motionCount = 0;
         private System.Random random;
         public double motion1Duration() {
-            if (motionCount == 2) {
+            if (this.motionCount == 2) {
                 return (double)(this.motion1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
             }
-            else if (motionCount == 3) {
+            else if (this.motionCount == 3) {
                 return (double)(this.motion1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.wait3 + this.motion3)*this.period;
             }
             return (double)(this.motion1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
         }
         public double wait1Duration() {
-            if (motionCount == 2) {
+            if (this.motionCount == 2) {
                 return (double)(this.wait1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
             }
-            else if (motionCount == 3) {
+            else if (this.motionCount == 3) {
                 return (double)(this.wait1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.wait3 + this.motion3)*this.period;
             }
             return (double)(this.wait1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
         }
         public double motion2Duration() {
-            if (motionCount == 2) {
+            if (this.motionCount == 2) {
                 return (double)(this.motion2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
             }
-            else if (motionCount == 3) {
+            else if (this.motionCount == 3) {
                 return (double)(this.motion2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.wait3 + this.motion3)*this.period;
             }
             return (double)(this.motion2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
         }
         public double wait2Duration() {
-            if (motionCount == 2) {
+            if (this.motionCount == 2) {
                 return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
             }
-            else if (motionCount == 3) {
+            else if (this.motionCount == 3) {
                 return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.wait3 + this.motion3)*this.period;
             }
             return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
