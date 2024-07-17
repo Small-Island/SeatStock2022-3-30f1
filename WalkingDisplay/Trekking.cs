@@ -144,7 +144,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
                     pos = this.position1 * (double)(this.random.Next(1000))/1000.0;
                 }
                 else {
-                    pos = this.position1 + this.climbIdx*this.climbMm;
+                    pos = this.position1 + (double)this.climbIdx*this.climbMm;
                 }
                 this.epos4Node.SetPositionProfileInTime(
                     pos,
@@ -167,7 +167,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
                     pos = this.position2 * (double)(this.random.Next(1000))/1000.0;
                 }
                 else {
-                    pos = this.position2 + this.climbIdx*this.climbMm;
+                    pos = this.position2 + (double)this.climbIdx*this.climbMm;
                 }
                 if (this.useStiffness) {
                     this.epos4Node.SetPositionProfileInTime(
@@ -217,7 +217,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
                         pos = this.position3 * (double)(this.random.Next(1000))/1000.0;
                     }
                     else {
-                        pos = this.position3 + this.climbIdx*this.climbMm;
+                        pos = this.position3 + (double)this.climbIdx*this.climbMm;
                     }
                     this.epos4Node.SetPositionProfileInTime(
                         pos,
