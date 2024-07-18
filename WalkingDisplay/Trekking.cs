@@ -500,14 +500,14 @@ public class Trekking : UnityEngine.MonoBehaviour {
         int i = 0;
         while (!this.Destroied && i < N && this.status == Status.walking) {
             data[i,0] = this.epos4Main.lifter.actualPosition / 10f; // Unit 10cm
-            data[i,1] = this.epos4Main.leftPedal.actualPosition / 100f;
-            data[i,2] = this.epos4Main.leftSlider.actualPosition / 100f;
-            data[i,3] = this.epos4Main.rightPedal.actualPosition / 100f;
-            data[i,4] = this.epos4Main.rightSlider.actualPosition / 100f;
-            data[i,5] = this.epos4Main.stockLeftExtend.actualPosition / 100f;
-            data[i,6] = this.epos4Main.stockLeftSlider.actualPosition / 100f;
-            data[i,7] = this.epos4Main.stockRightExtend.actualPosition / 100f;
-            data[i,8] = this.epos4Main.stockRightSlider.actualPosition / 100f;
+            data[i,1] = this.epos4Main.leftPedal.actualPosition / 10f;
+            data[i,2] = this.epos4Main.leftSlider.actualPosition / 10f;
+            data[i,3] = this.epos4Main.rightPedal.actualPosition / 10f;
+            data[i,4] = this.epos4Main.rightSlider.actualPosition / 10f;
+            data[i,5] = this.epos4Main.stockLeftExtend.actualPosition / 10f;
+            data[i,6] = this.epos4Main.stockLeftSlider.actualPosition / 10f;
+            data[i,7] = this.epos4Main.stockRightExtend.actualPosition / 10f;
+            data[i,8] = this.epos4Main.stockRightSlider.actualPosition / 10f;
 
             data[i,9] = this.epos4Main.lifter.current;
             data[i,10] = this.epos4Main.leftPedal.current;
