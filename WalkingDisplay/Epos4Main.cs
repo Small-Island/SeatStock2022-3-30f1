@@ -61,15 +61,15 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
 
     private void getActualPositionAsync() {
         while (!this.Destroied) {
-            this.lifter.actualPosition           = this.lifter.getPositionMM();
-            this.leftPedal.actualPosition        = this.leftPedal.getPositionMM();
-            this.leftSlider.actualPosition       = this.leftSlider.getPositionMM();
-            this.rightPedal.actualPosition       = this.rightPedal.getPositionMM();
-            this.rightSlider.actualPosition      = this.rightSlider.getPositionMM();
-            this.stockLeftExtend.actualPosition  = this.stockLeftExtend.getPositionMM();
-            this.stockLeftSlider.actualPosition  = this.stockLeftSlider.getPositionMM();
-            this.stockRightExtend.actualPosition = this.stockRightExtend.getPositionMM();
-            this.stockRightSlider.actualPosition = this.stockRightSlider.getPositionMM();
+            // this.lifter.actualPosition           = this.lifter.getPositionMM();
+            // this.leftPedal.actualPosition        = this.leftPedal.getPositionMM();
+            // this.leftSlider.actualPosition       = this.leftSlider.getPositionMM();
+            // this.rightPedal.actualPosition       = this.rightPedal.getPositionMM();
+            // this.rightSlider.actualPosition      = this.rightSlider.getPositionMM();
+            // this.stockLeftExtend.actualPosition  = this.stockLeftExtend.getPositionMM();
+            // this.stockLeftSlider.actualPosition  = this.stockLeftSlider.getPositionMM();
+            // this.stockRightExtend.actualPosition = this.stockRightExtend.getPositionMM();
+            // this.stockRightSlider.actualPosition = this.stockRightSlider.getPositionMM();
 
             // this.lifter.current           = this.lifter.getCurrentA();
             // this.leftPedal.current        = this.leftPedal.getCurrentA();
@@ -81,20 +81,20 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
             // this.stockRightExtend.current = this.stockRightExtend.getCurrentA();
             // this.stockRightSlider.current = this.stockRightSlider.getCurrentA();
 
-            // this.lifter.actualVelocity           = this.lifter.getVelocityIs();
-            // this.leftPedal.actualVelocity        = this.leftPedal.getVelocityIs();
-            // this.leftSlider.actualVelocity       = this.leftSlider.getVelocityIs();
-            // this.rightPedal.actualVelocity       = this.rightPedal.getVelocityIs();
-            // this.rightSlider.actualVelocity      = this.rightSlider.getVelocityIs();
-            // this.stockLeftExtend.actualVelocity  = this.stockLeftExtend.getVelocityIs();
-            // this.stockLeftSlider.actualVelocity  = this.stockLeftSlider.getVelocityIs();
-            // this.stockRightExtend.actualVelocity = this.stockRightExtend.getVelocityIs();
-            // this.stockRightSlider.actualVelocity = this.stockRightSlider.getVelocityIs();
+            this.lifter.actualVelocity           = this.lifter.getVelocityIs();
+            this.leftPedal.actualVelocity        = this.leftPedal.getVelocityIs();
+            this.leftSlider.actualVelocity       = this.leftSlider.getVelocityIs();
+            this.rightPedal.actualVelocity       = this.rightPedal.getVelocityIs();
+            this.rightSlider.actualVelocity      = this.rightSlider.getVelocityIs();
+            this.stockLeftExtend.actualVelocity  = this.stockLeftExtend.getVelocityIs();
+            this.stockLeftSlider.actualVelocity  = this.stockLeftSlider.getVelocityIs();
+            this.stockRightExtend.actualVelocity = this.stockRightExtend.getVelocityIs();
+            this.stockRightSlider.actualVelocity = this.stockRightSlider.getVelocityIs();
 
             // this.lifter.powerSupplyVoltage = this.lifter.GetPowerSupplyVoltage();
 
             // this.lifter.getError();
-            System.Threading.Thread.Sleep(50);
+            System.Threading.Thread.Sleep(100);
         }
         return;
     }

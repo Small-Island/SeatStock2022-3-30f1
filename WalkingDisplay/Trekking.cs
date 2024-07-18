@@ -499,15 +499,15 @@ public class Trekking : UnityEngine.MonoBehaviour {
         float[,] data = new float[N,18];
         int i = 0;
         while (!this.Destroied && i < N && this.status == Status.walking) {
-            data[i,0] = this.epos4Main.lifter.actualPosition / 10f; // Unit 10cm
-            data[i,1] = this.epos4Main.leftPedal.actualPosition / 10f;
-            data[i,2] = this.epos4Main.leftSlider.actualPosition / 10f;
-            data[i,3] = this.epos4Main.rightPedal.actualPosition / 10f;
-            data[i,4] = this.epos4Main.rightSlider.actualPosition / 10f;
-            data[i,5] = this.epos4Main.stockLeftExtend.actualPosition / 10f;
-            data[i,6] = this.epos4Main.stockLeftSlider.actualPosition / 10f;
-            data[i,7] = this.epos4Main.stockRightExtend.actualPosition / 10f;
-            data[i,8] = this.epos4Main.stockRightSlider.actualPosition / 10f;
+            data[i,0] = this.epos4Main.lifter.getPositionMMFloat() / 10f; // Unit 10cm
+            data[i,1] = this.epos4Main.leftPedal.getPositionMMFloat() / 10f;
+            data[i,2] = this.epos4Main.leftSlider.getPositionMMFloat() / 10f;
+            data[i,3] = this.epos4Main.rightPedal.getPositionMMFloat() / 10f;
+            data[i,4] = this.epos4Main.rightSlider.getPositionMMFloat() / 10f;
+            data[i,5] = this.epos4Main.stockLeftExtend.getPositionMMFloat() / 10f;
+            data[i,6] = this.epos4Main.stockLeftSlider.getPositionMMFloat() / 10f;
+            data[i,7] = this.epos4Main.stockRightExtend.getPositionMMFloat() / 10f;
+            data[i,8] = this.epos4Main.stockRightSlider.getPositionMMFloat() / 10f;
 
             data[i,9] = this.epos4Main.lifter.current;
             data[i,10] = this.epos4Main.leftPedal.current;
@@ -521,7 +521,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
             i++;
 
-            System.Threading.Thread.Sleep(50);
+            System.Threading.Thread.Sleep(20);
         }
 
         N = i;
@@ -533,10 +533,10 @@ public class Trekking : UnityEngine.MonoBehaviour {
         string result = dt.ToString("yyyyMMddHHmmss");
         fi = new System.IO.FileInfo(UnityEngine.Application.dataPath + "/Scripts/log/current" + result + ".csv");
         sw = fi.AppendText();
-        sw.WriteLine("time (s), lifter (1cm), left pedal pos (10cm), left slider pos (10cm), right pedal pos (10cm), right slider pos (10cm), stock left extend pos (10cm), stock left slider pos (10cm), stock right extend pos (10cm), stock right slider pos (10cm), lifter current (A), left pedal current (A), left slider current (A), right pedal current (A), right slider current (A), stock left extend current (A), stock left slider current (A), stock right extend current (A), stock right slider current (A)");
+        sw.WriteLine("time (s), lifter (1cm), left pedal pos (1cm), left slider pos (1cm), right pedal pos (1cm), right slider pos (1cm), stock left extend pos (1cm), stock left slider pos (1cm), stock right extend pos (10cm), stock right slider pos (1cm), lifter current (A), left pedal current (A), left slider current (A), right pedal current (A), right slider current (A), stock left extend current (A), stock left slider current (A), stock right extend current (A), stock right slider current (A)");
         for (i = 0; i < N; i++)
         {
-            float time = i*0.05f;
+            float time = i*0.02f;
             string a = time.ToString() + ",";
             for (int j = 0; j < 18; j++) {
                 a += data[i,j].ToString() + ",";

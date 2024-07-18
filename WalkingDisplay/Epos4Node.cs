@@ -148,10 +148,24 @@ public class Epos4Node {
         try {
             value = this.deviceOperation.GetPositionIs();
         }
-        catch (System.Exception) {
-            // this.status = e.ToString();
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
         }
         return (int)(this.direction*value/this.incPerRotation*this.milliPerRotation);
+    }
+
+    public float getPositionMMFloat() {
+        if (this.cs == ConnectionStatus.failed) return 0;
+        int value = 0;
+        try {
+            value = this.deviceOperation.GetPositionIs();
+        }
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
+        }
+        return (float)(this.direction*value/this.incPerRotation*this.milliPerRotation);
     }
 
     public float getCurrentA() {
