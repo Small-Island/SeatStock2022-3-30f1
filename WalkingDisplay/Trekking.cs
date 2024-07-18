@@ -521,7 +521,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
             i++;
 
-            System.Threading.Thread.Sleep(10);
+            System.Threading.Thread.Sleep(50);
         }
 
         N = i;

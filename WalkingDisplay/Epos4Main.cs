@@ -94,7 +94,7 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
             // this.lifter.powerSupplyVoltage = this.lifter.GetPowerSupplyVoltage();
 
             // this.lifter.getError();
-            System.Threading.Thread.Sleep(2);
+            System.Threading.Thread.Sleep(50);
         }
         return;
     }
