@@ -536,7 +536,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         sw.WriteLine("time (s), lifter (1cm), left pedal pos (10cm), left slider pos (10cm), right pedal pos (10cm), right slider pos (10cm), stock left extend pos (10cm), stock left slider pos (10cm), stock right extend pos (10cm), stock right slider pos (10cm), lifter current (A), left pedal current (A), left slider current (A), right pedal current (A), right slider current (A), stock left extend current (A), stock left slider current (A), stock right extend current (A), stock right slider current (A)");
         for (i = 0; i < N; i++)
         {
-            float time = i*0.01f;
+            float time = i*0.05f;
             string a = time.ToString() + ",";
             for (int j = 0; j < 18; j++) {
                 a += data[i,j].ToString() + ",";
