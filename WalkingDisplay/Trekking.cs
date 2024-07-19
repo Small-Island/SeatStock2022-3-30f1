@@ -397,6 +397,9 @@ public class Trekking : UnityEngine.MonoBehaviour {
     }
 
     private System.Threading.Thread th = null;
+    private System.Timers.Timer getActualPositionTimer;
+    private float[,] data;
+    private int idata = 0;
     private System.Timers.Timer walkStraightTimer;
     private System.Timers.Timer coolingTimer;
     public enum CoolingStatus {
@@ -422,8 +425,14 @@ public class Trekking : UnityEngine.MonoBehaviour {
         this.walkStraightTimer.Elapsed += (sender, e) => {
             if (this.coolingStatus == CoolingStatus.NowCooling) return;
             
-            this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
-            this.th.Start();
+            // this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
+            // this.th.Start();
+            this.data = new float[10000,18];
+            this.idata = 0;
+            this.getActualPositionTimer = new System.Timers.Timer(50);
+            this.getActualPositionTimer.AutoReset = true;
+            this.getActualPositionTimer.Elapsed += this.getActualPositionCallback;
+            this.getActualPositionTimer.Start();
 
             this.targetCalculate();//目標値計算
             //送信するデータを文字列でまとめる
@@ -494,59 +503,107 @@ public class Trekking : UnityEngine.MonoBehaviour {
         this.pauseFlag = true;
     }
 
-    private void getActualPositionAsync() {
-        int N = 10000;
-        float[,] data = new float[N,18];
-        int i = 0;
-        while (!this.Destroied && i < N && this.status == Status.walking) {
-            data[i,0] = this.epos4Main.lifter.getPositionMMFloat() / 10f; // Unit 10cm
-            // data[i,1] = this.epos4Main.leftPedal.getPositionMMFloat() / 10f;
-            // data[i,2] = this.epos4Main.leftSlider.getPositionMMFloat() / 10f;
-            // data[i,3] = this.epos4Main.rightPedal.getPositionMMFloat() / 10f;
-            // data[i,4] = this.epos4Main.rightSlider.getPositionMMFloat() / 10f;
-            data[i,5] = this.epos4Main.stockLeftExtend.getPositionMMFloat() / 10f;
-            data[i,6] = this.epos4Main.stockLeftSlider.getPositionMMFloat() / 10f;
-            // data[i,7] = this.epos4Main.stockRightExtend.getPositionMMFloat() / 10f;
-            // data[i,8] = this.epos4Main.stockRightSlider.getPositionMMFloat() / 10f;
-
-            data[i,9] = this.epos4Main.lifter.current;
-            data[i,10] = this.epos4Main.leftPedal.current;
-            data[i,11] = this.epos4Main.leftSlider.current;
-            data[i,12] = this.epos4Main.rightPedal.current;
-            data[i,13] = this.epos4Main.rightSlider.current;
-            data[i,14] = this.epos4Main.stockLeftExtend.current;
-            data[i,15] = this.epos4Main.stockLeftSlider.current;
-            data[i,16] = this.epos4Main.stockRightExtend.current;
-            data[i,17] = this.epos4Main.stockRightSlider.current;
-
-            i++;
-
-            System.Threading.Thread.Sleep(50);
-        }
-
-        N = i;
-
-        System.IO.StreamWriter sw; // これがキモらしい
-        System.IO.FileInfo fi;
-        　　// Aplication.dataPath で プロジェクトファイルがある絶対パスが取り込める
-        System.DateTime dt = System.DateTime.Now;
-        string result = dt.ToString("yyyyMMddHHmmss");
-        fi = new System.IO.FileInfo(UnityEngine.Application.dataPath + "/Scripts/log/current" + result + ".csv");
-        sw = fi.AppendText();
-        sw.WriteLine("time (s), lifter (1cm), left pedal pos (1cm), left slider pos (1cm), right pedal pos (1cm), right slider pos (1cm), stock left extend pos (1cm), stock left slider pos (1cm), stock right extend pos (10cm), stock right slider pos (1cm), lifter current (A), left pedal current (A), left slider current (A), right pedal current (A), right slider current (A), stock left extend current (A), stock left slider current (A), stock right extend current (A), stock right slider current (A)");
-        for (i = 0; i < N; i++)
-        {
-            float time = (float)i*0.05f;
-            string a = time.ToString() + ",";
-            for (int j = 0; j < 18; j++) {
-                a += data[i,j].ToString() + ",";
+    private void getActualPositionCallback(object source, System.Timers.ElapsedEventArgs e) {
+        if (this.Destroied && this.idata >= 10000 && this.status == Status.stop) {
+            this.getActualPositionTimer?.Stop();
+            this.getActualPositionTimer?.Dispose();
+            int N = this.idata;
+            System.IO.StreamWriter sw; // これがキモらしい
+            System.IO.FileInfo fi;
+            // Aplication.dataPath で プロジェクトファイルがある絶対パスが取り込める
+            System.DateTime dt = System.DateTime.Now;
+            string result = dt.ToString("yyyyMMddHHmmss");
+            fi = new System.IO.FileInfo(UnityEngine.Application.dataPath + "/Scripts/log/current" + result + ".csv");
+            sw = fi.AppendText();
+            sw.WriteLine("time (s), lifter (1cm), left pedal pos (1cm), left slider pos (1cm), right pedal pos (1cm), right slider pos (1cm), stock left extend pos (1cm), stock left slider pos (1cm), stock right extend pos (10cm), stock right slider pos (1cm), lifter current (A), left pedal current (A), left slider current (A), right pedal current (A), right slider current (A), stock left extend current (A), stock left slider current (A), stock right extend current (A), stock right slider current (A)");
+            for (int i = 0; i < N; i++)
+            {
+                float time = (float)i*0.05f;
+                string a = time.ToString() + ",";
+                for (int j = 0; j < 18; j++) {
+                    a += data[i,j].ToString() + ",";
+                }
+                sw.WriteLine(a);
             }
-            sw.WriteLine(a);
+            sw.Flush();
+            sw.Close();
+            return;
         }
-        sw.Flush();
-        sw.Close();
-        return;
+        data[this.idata,0] = this.epos4Main.lifter.getPositionMMFloat() / 10f; // Unit 10cm
+        data[this.idata,1] = this.epos4Main.leftPedal.getPositionMMFloat() / 10f;
+        data[this.idata,2] = this.epos4Main.leftSlider.getPositionMMFloat() / 10f;
+        data[this.idata,3] = this.epos4Main.rightPedal.getPositionMMFloat() / 10f;
+        data[this.idata,4] = this.epos4Main.rightSlider.getPositionMMFloat() / 10f;
+        data[this.idata,5] = this.epos4Main.stockLeftExtend.getPositionMMFloat() / 10f;
+        data[this.idata,6] = this.epos4Main.stockLeftSlider.getPositionMMFloat() / 10f;
+        data[this.idata,7] = this.epos4Main.stockRightExtend.getPositionMMFloat() / 10f;
+        data[this.idata,8] = this.epos4Main.stockRightSlider.getPositionMMFloat() / 10f;
+
+        data[this.idata,9] = this.epos4Main.lifter.current;
+        data[this.idata,10] = this.epos4Main.leftPedal.current;
+        data[this.idata,11] = this.epos4Main.leftSlider.current;
+        data[this.idata,12] = this.epos4Main.rightPedal.current;
+        data[this.idata,13] = this.epos4Main.rightSlider.current;
+        data[this.idata,14] = this.epos4Main.stockLeftExtend.current;
+        data[this.idata,15] = this.epos4Main.stockLeftSlider.current;
+        data[this.idata,16] = this.epos4Main.stockRightExtend.current;
+        data[this.idata,17] = this.epos4Main.stockRightSlider.current;
+        this.idata++;
     }
+
+    // private void getActualPositionAsync() {
+    //     int N = 10000;
+    //     float[,] data = new float[N,18];
+    //     int i = 0;
+    //     while (!this.Destroied && i < N && this.status == Status.walking) {
+    //         data[i,0] = this.epos4Main.lifter.getPositionMMFloat() / 10f; // Unit 10cm
+    //         data[i,1] = this.epos4Main.leftPedal.getPositionMMFloat() / 10f;
+    //         data[i,2] = this.epos4Main.leftSlider.getPositionMMFloat() / 10f;
+    //         data[i,3] = this.epos4Main.rightPedal.getPositionMMFloat() / 10f;
+    //         data[i,4] = this.epos4Main.rightSlider.getPositionMMFloat() / 10f;
+    //         data[i,5] = this.epos4Main.stockLeftExtend.getPositionMMFloat() / 10f;
+    //         data[i,6] = this.epos4Main.stockLeftSlider.getPositionMMFloat() / 10f;
+    //         data[i,7] = this.epos4Main.stockRightExtend.getPositionMMFloat() / 10f;
+    //         data[i,8] = this.epos4Main.stockRightSlider.getPositionMMFloat() / 10f;
+
+    //         data[i,9] = this.epos4Main.lifter.current;
+    //         data[i,10] = this.epos4Main.leftPedal.current;
+    //         data[i,11] = this.epos4Main.leftSlider.current;
+    //         data[i,12] = this.epos4Main.rightPedal.current;
+    //         data[i,13] = this.epos4Main.rightSlider.current;
+    //         data[i,14] = this.epos4Main.stockLeftExtend.current;
+    //         data[i,15] = this.epos4Main.stockLeftSlider.current;
+    //         data[i,16] = this.epos4Main.stockRightExtend.current;
+    //         data[i,17] = this.epos4Main.stockRightSlider.current;
+
+    //         i++;
+
+    //         System.Threading.Thread.Sleep(50);
+    //     }
+
+    //     N = i;
+
+    //     System.IO.StreamWriter sw; // これがキモらしい
+    //     System.IO.FileInfo fi;
+    //     　　// Aplication.dataPath で プロジェクトファイルがある絶対パスが取り込める
+    //     System.DateTime dt = System.DateTime.Now;
+    //     string result = dt.ToString("yyyyMMddHHmmss");
+    //     fi = new System.IO.FileInfo(UnityEngine.Application.dataPath + "/Scripts/log/current" + result + ".csv");
+    //     sw = fi.AppendText();
+    //     sw.WriteLine("time (s), lifter (1cm), left pedal pos (1cm), left slider pos (1cm), right pedal pos (1cm), right slider pos (1cm), stock left extend pos (1cm), stock left slider pos (1cm), stock right extend pos (10cm), stock right slider pos (1cm), lifter current (A), left pedal current (A), left slider current (A), right pedal current (A), right slider current (A), stock left extend current (A), stock left slider current (A), stock right extend current (A), stock right slider current (A)");
+    //     for (i = 0; i < N; i++)
+    //     {
+    //         float time = (float)i*0.05f;
+    //         string a = time.ToString() + ",";
+    //         for (int j = 0; j < 18; j++) {
+    //             a += data[i,j].ToString() + ",";
+    //         }
+    //         sw.WriteLine(a);
+    //     }
+    //     sw.Flush();
+    //     sw.Close();
+    //     return;
+    // }
     
     [UnityEngine.SerializeField, ReadOnly] private UnityEngine.Vector2 thumbStickR;
     [UnityEngine.SerializeField, ReadOnly] private UnityEngine.Vector2 thumbStickL;
