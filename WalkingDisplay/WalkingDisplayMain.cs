@@ -471,6 +471,9 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
     public enum CoolingStatus {
         Readied, NowCooling
     }
+    private System.Timers.Timer getActualPositionTimer;
+    private float[,] data;
+    private int idata = 0;
     // [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
 
     public void WalkStraight() {
@@ -510,8 +513,14 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
             this.stockRightSlider.start(this.activate.stockRightSlider);
             this.leftFootVibro.start();
             this.rightFootVibro.start();
-            this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
-            this.th.Start();
+            // this.th = new System.Threading.Thread(new System.Threading.ThreadStart(this.getActualPositionAsync));
+            // this.th.Start();
+            this.data = new float[10000,18];
+            this.idata = 0;
+            this.getActualPositionTimer = new System.Timers.Timer(100);
+            this.getActualPositionTimer.AutoReset = true;
+            this.getActualPositionTimer.Elapsed += this.getActualPositionCallback;
+            this.getActualPositionTimer.Start();
             this.walkStraightTimer.Stop();
             this.walkStraightTimer.Dispose();
 
@@ -544,6 +553,54 @@ public class WalkingDisplayMain : UnityEngine.MonoBehaviour {
         this.walkStopTimer.Start();
         this.video.Play();
         this.video.MuteOff();
+    }
+
+    private void getActualPositionCallback(object source, System.Timers.ElapsedEventArgs e) {
+        if (this.Destroied || this.idata >= 10000 || this.status == Status.stop) {
+            this.getActualPositionTimer?.Stop();
+            this.getActualPositionTimer?.Dispose();
+            int N = this.idata;
+            System.IO.StreamWriter sw; // これがキモらしい
+            System.IO.FileInfo fi;
+            // Aplication.dataPath で プロジェクトファイルがある絶対パスが取り込める
+            System.DateTime dt = System.DateTime.Now;
+            string result = dt.ToString("yyyyMMddHHmmss");
+            fi = new System.IO.FileInfo(UnityEngine.Application.dataPath + "/Scripts/log/current" + result + ".csv");
+            sw = fi.AppendText();
+            sw.WriteLine("time (s), lifter (1cm), left pedal pos (1cm), left slider pos (1cm), right pedal pos (1cm), right slider pos (1cm), stock left extend pos (1cm), stock left slider pos (1cm), stock right extend pos (10cm), stock right slider pos (1cm), lifter current (A), left pedal current (A), left slider current (A), right pedal current (A), right slider current (A), stock left extend current (A), stock left slider current (A), stock right extend current (A), stock right slider current (A)");
+            for (int i = 0; i < N; i++)
+            {
+                float time = (float)i*0.10f;
+                string a = time.ToString() + ",";
+                for (int j = 0; j < 18; j++) {
+                    a += this.data[i,j].ToString() + ",";
+                }
+                sw.WriteLine(a);
+            }
+            sw.Flush();
+            sw.Close();
+            return;
+        }
+        this.data[this.idata,0] = this.epos4Main.lifter.getPositionMMFloat() / 10f; // Unit 10cm
+        // data[this.idata,1] = this.epos4Main.leftPedal.getPositionMMFloat() / 10f;
+        // data[this.idata,2] = this.epos4Main.leftSlider.getPositionMMFloat() / 10f;
+        // data[this.idata,3] = this.epos4Main.rightPedal.getPositionMMFloat() / 10f;
+        // data[this.idata,4] = this.epos4Main.rightSlider.getPositionMMFloat() / 10f;
+        this.data[this.idata,5] = this.epos4Main.stockLeftExtend.getPositionMMFloat() / 10f;
+        this.data[this.idata,6] = this.epos4Main.stockLeftSlider.getPositionMMFloat() / 10f;
+        this.data[this.idata,7] = this.epos4Main.stockRightExtend.getPositionMMFloat() / 10f;
+        this.data[this.idata,8] = this.epos4Main.stockRightSlider.getPositionMMFloat() / 10f;
+
+        this.data[this.idata,9] = this.epos4Main.lifter.current;
+        this.data[this.idata,10] = this.epos4Main.leftPedal.current;
+        this.data[this.idata,11] = this.epos4Main.leftSlider.current;
+        this.data[this.idata,12] = this.epos4Main.rightPedal.current;
+        this.data[this.idata,13] = this.epos4Main.rightSlider.current;
+        this.data[this.idata,14] = this.epos4Main.stockLeftExtend.current;
+        this.data[this.idata,15] = this.epos4Main.stockLeftSlider.current;
+        this.data[this.idata,16] = this.epos4Main.stockRightExtend.current;
+        this.data[this.idata,17] = this.epos4Main.stockRightSlider.current;
+        this.idata++;
     }
 
     public void WalkStop() {
