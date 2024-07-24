@@ -3,12 +3,13 @@ public class ForceSensor : UnityEngine.MonoBehaviour {
     private System.IO.Ports.SerialPort client;
     public string recvstr;
     public int len = 0;
-    public ushort[] data;
+    public short[] data;
     private int samplingTime = 20;
     private long clockTimeMs = 0;
     [UnityEngine.SerializeField, ReadOnly] private double clockTimeSec = 0;
     public double c = 0;
     public double F = 0;
+    public string recvstrinfo;
 
     public UnityEngine.UI.Image[] image;
     private System.Timers.Timer timer;
@@ -23,7 +24,8 @@ public class ForceSensor : UnityEngine.MonoBehaviour {
         this.client.Handshake = System.IO.Ports.Handshake.None;
         this.client.ReadTimeout = 10;
         this.client.Open();
-        // this.client.Write(new char[] {'R'}, 0, 1);//送信
+        // this.client.Write("p");//送信
+        this.client.Write(new char[] {'R'}, 0, 1);//送信
         this.client.Write("R");//送信
         this.timer = new System.Timers.Timer(this.samplingTime);
         this.timer.AutoReset = true;
@@ -34,7 +36,7 @@ public class ForceSensor : UnityEngine.MonoBehaviour {
     }
 
     public void WriteRead() {
-        this.data = new ushort[6];
+        this.data = new short[6];
         if (this.client != null)
         {
             char[] buffer = new char[27];
@@ -43,23 +45,35 @@ public class ForceSensor : UnityEngine.MonoBehaviour {
             this.client.Read(buffer, 0, 27);//受信
             this.recvstr = new string(buffer);
             this.len = this.recvstr.Length;
-            this.data[0] = (ushort)(System.Convert.ToUInt16(recvstr[1 .. 5], 16));
-            this.data[1] = (ushort)(System.Convert.ToUInt16(recvstr[5 .. 9], 16));
-            this.data[2] = (ushort)(System.Convert.ToUInt16(recvstr[9 .. 13], 16));
-            this.data[3] = (ushort)(System.Convert.ToUInt16(recvstr[13 .. 17], 16));
-            this.data[4] = (ushort)(System.Convert.ToUInt16(recvstr[17 .. 21], 16));
-            this.data[5] = (ushort)(System.Convert.ToUInt16(recvstr[21 .. 25], 16));
+            this.data[0] = (short)(System.Convert.ToInt16(recvstr[1 .. 5], 16)); //32.950
+            this.data[1] = (short)(System.Convert.ToInt16(recvstr[5 .. 9], 16)); //32.770
+            this.data[2] = (short)(System.Convert.ToInt16(recvstr[9 .. 13], 16)); //32.980
+            this.data[3] = (short)(System.Convert.ToInt16(recvstr[13 .. 17], 16)); //323.100
+            this.data[4] = (short)(System.Convert.ToInt16(recvstr[17 .. 21], 16)); //331.600
+            this.data[5] = (short)(System.Convert.ToInt16(recvstr[21 .. 25], 16)); //328.350
             // - 6553 - 655
-            this.F = ((double)data[2] - 8192)/32.0;
-            this.c = (double)(-this.F + 40);
+            // this.F = ((double)data[2] - 8192 - 400)/32.980;
+            this.F = ((double)data[2] - 9430)/32.980;
+            this.c = -this.F;
             // this.image[0].color = new UnityEngine.Color32(0, 100, 0, 255);
             // this.data[0] = System.BitConverter.ToUInt16(new byte[] {buffer[0], buffer[1], buffer[2], buffer[3]}, 0);
             // UnityEngine.Debug.Log(buffer[0]);
         }
     }
 
+    public void info() {
+        char[] buffer = new char[45];
+        this.client.Read(buffer, 0, 45);//受信
+        this.recvstrinfo = new string(buffer);
+    }
+
     private void Update() {
-        this.image[0].color = new UnityEngine.Color32(0, 255, 0, (byte)this.c);
+        if (this.c > 0) {
+            this.image[0].color = new UnityEngine.Color32(0, 255, 0, (byte)this.c);
+        }
+        else {
+            this.image[0].color = new UnityEngine.Color32(255, 0, 255, (byte)(-this.c));
+        }
     }
 
     public void timerCallback(object source, System.Timers.ElapsedEventArgs e) {

@@ -14,9 +14,9 @@ public class ForceSensorEditor : Editor
         //     walkingDisplayMain.init();
         // }
 
-        if (GUILayout.Button("Write Read"))
+        if (GUILayout.Button("Info"))
         {
-            forceSensor.WriteRead();
+            forceSensor.info();
         }
 
         EditorGUIUtility.labelWidth = 200;
