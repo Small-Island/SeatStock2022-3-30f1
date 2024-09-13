@@ -1,2 +1,2 @@
 period,tiltBackwardDeg,tiltForwardDeg,tiltBackwardTimeRate,tiltForwardTimeRate,startClockTimeLeftTilt,startClockTimeRightTilt,leftTiltDeltaTimeB,leftTiltDeltaTimeF,rightTiltDeltaTimeB,rightTiltDeltaTimeF,leftTiltDelayTimeB,leftTiltDelayTimeF,rightTiltDelayTimeB,rightTiltDelayTimeF
-3,6,-15,4,6,0,1.5,1.2,1.8,1.2,1.8,0,0,0,0
+3.5,5,-10,3,4,1.3125,3.0625,1.5,2,1.5,2,0,0,0,0

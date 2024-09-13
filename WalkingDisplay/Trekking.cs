@@ -413,7 +413,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         if (this.coolingStatus == CoolingStatus.NowCooling) return;
         UnityEngine.Debug.Log("WalkStraight");
         this.status = Status.walking;
-        this.epos4Main.AllNodeDefinePosition();
+        // this.epos4Main.AllNodeDefinePosition();
         this.epos4Main.AllNodeActivateProfilePositionMode();
         if (this.walkStraightTimer != null) {
             this.walkStraightTimer.Stop();
