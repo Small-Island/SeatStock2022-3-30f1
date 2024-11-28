@@ -8,7 +8,10 @@
 
 public class Epos4Main : UnityEngine.MonoBehaviour {
     [UnityEngine.SerializeField]
-    public Epos4Node lifter, leftPedal, leftSlider, rightPedal, rightSlider, stockLeftExtend, stockLeftSlider, stockRightExtend, stockRightSlider;
+    public Epos4Node
+        lifter,
+        leftSlider, stockLeftSlider, leftPedal, leftPedalYaw, stockLeftExtend,
+        rightSlider, stockRightSlider, rightPedal, rightPedalYaw, stockRightExtend;
 
     // private UnityEngine.Coroutine coroutineActualPosition = null;
 
@@ -35,25 +38,50 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
         }
         catch (EposCmd.Net.DeviceException) {
         }
-        this.lifter      = new Epos4Node(connector, 8,  5, -1, 0.2, 1.1);
+        this.lifter      = new Epos4Node(connector, 1,  5, -1, 0.2, 1.1);
         this.lifter.MotorInit();
-        this.leftPedal   = new Epos4Node(connector, 1,  6,  1, 0.2, 1.1);
-        this.leftPedal.MotorInit();
-        this.leftSlider  = new Epos4Node(connector, 2, 12, -1, 0.2, 1.1);
-        this.leftSlider.MotorInit();
-        this.rightPedal  = new Epos4Node(connector, 3,  6,  1, 0.2, 1.1);
-        this.rightPedal.MotorInit();
-        this.rightSlider = new Epos4Node(connector, 4, 12, -1, 0.2, 1.1);
-        this.rightSlider.MotorInit();
+        this.lifter.SetEnableState();
+        this.lifter.ActivateProfilePositionMode();
 
-        this.stockLeftExtend   = new Epos4Node(this.connector, 9, 20,  -1, 0.2, 1.1);
-        this.stockLeftExtend.MotorInit();
-        this.stockLeftSlider  =  new Epos4Node(this.connector, 7, 20, -1, 0.1, 1.1);
+        this.leftSlider  = new Epos4Node(connector, 2, 20, -1, 0.2, 1.1);
+        this.leftSlider.MotorInit();
+        this.leftSlider.SetEnableState();
+        this.leftSlider.ActivateProfilePositionMode();
+        this.stockLeftSlider  =  new Epos4Node(this.connector, 3, 20, -1, 0.1, 1.1);
         this.stockLeftSlider.MotorInit();
-        this.stockRightExtend  = new Epos4Node(this.connector, 6, 20, -1, 0.2, 1.1);
-        this.stockRightExtend.MotorInit();
-        this.stockRightSlider =  new Epos4Node(this.connector, 5, 20, -1, 0.1, 1.1);
+        this.stockLeftSlider.SetEnableState();
+        this.stockLeftSlider.ActivateProfilePositionMode();
+        this.leftPedal   = new Epos4Node(connector, 4,  5,  1, 0.2, 1.1);
+        this.leftPedal.MotorInit();
+        this.leftPedal.SetEnableState();
+        this.leftPedal.ActivateProfilePositionMode();
+        this.leftPedalYaw   = new Epos4Node(connector, 5,  360,  1, 0.2, 1.1);
+        this.leftPedalYaw.MotorInit();
+        this.leftPedalYaw.SetEnableState();
+        this.leftPedalYaw.ActivateProfilePositionMode();
+        this.stockLeftExtend   = new Epos4Node(this.connector, 6, 20,  -1, 0.2, 1.1);
+        this.stockLeftExtend.MotorInit();
+        this.stockLeftExtend.SetEnableState();
+        this.stockLeftExtend.ActivateProfilePositionMode();
+
+        this.rightSlider = new Epos4Node(connector, 7, 20, -1, 0.2, 1.1);
+        this.rightSlider.MotorInit();
+        this.rightSlider.SetEnableState();
+        this.rightSlider.ActivateProfilePositionMode();
+        this.stockRightSlider =  new Epos4Node(this.connector, 8, 20, -1, 0.1, 1.1);
         this.stockRightSlider.MotorInit();
+        this.stockRightSlider.SetEnableState();
+        this.stockRightSlider.ActivateProfilePositionMode();
+        this.rightPedal  = new Epos4Node(connector, 9,  5,  1, 0.2, 1.1);
+        this.rightPedal.MotorInit();
+        this.rightPedal.SetEnableState();
+        this.rightPedal.ActivateProfilePositionMode();
+        this.rightPedalYaw  = new Epos4Node(connector, 10, 360,  1, 0.2, 1.1);
+        this.rightPedalYaw.MotorInit();
+        this.stockRightExtend  = new Epos4Node(this.connector, 11, 20, -1, 0.2, 1.1);
+        this.stockRightExtend.MotorInit();
+        this.stockRightExtend.SetEnableState();
+        this.stockRightExtend.ActivateProfilePositionMode();
     }
 
     // void Update() {
@@ -61,29 +89,35 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
 
     private void getActualPositionAsync() {
         while (!this.Destroied) {
-            // this.lifter.actualPosition           = this.lifter.getPositionMM();
-            // this.leftPedal.actualPosition        = this.leftPedal.getPositionMM();
-            // this.leftSlider.actualPosition       = this.leftSlider.getPositionMM();
-            // this.rightPedal.actualPosition       = this.rightPedal.getPositionMM();
-            // this.rightSlider.actualPosition      = this.rightSlider.getPositionMM();
-            // this.stockLeftExtend.actualPosition  = this.stockLeftExtend.getPositionMM();
-            // this.stockLeftSlider.actualPosition  = this.stockLeftSlider.getPositionMM();
-            // this.stockRightExtend.actualPosition = this.stockRightExtend.getPositionMM();
-            // this.stockRightSlider.actualPosition = this.stockRightSlider.getPositionMM();
+            this.lifter.actualPosition           = this.lifter.getPositionMM();
+            this.leftPedalYaw.actualPosition     = this.leftPedalYaw.getPositionMM();
+            this.leftPedal.actualPosition        = this.leftPedal.getPositionMM();
+            this.leftSlider.actualPosition       = this.leftSlider.getPositionMM();
+            this.rightPedalYaw.actualPosition    = this.rightPedalYaw.getPositionMM();
+            this.rightPedal.actualPosition       = this.rightPedal.getPositionMM();
+            this.rightSlider.actualPosition      = this.rightSlider.getPositionMM();
+            this.stockLeftExtend.actualPosition  = this.stockLeftExtend.getPositionMM();
+            this.stockLeftSlider.actualPosition  = this.stockLeftSlider.getPositionMM();
+            this.stockRightExtend.actualPosition = this.stockRightExtend.getPositionMM();
+            this.stockRightSlider.actualPosition = this.stockRightSlider.getPositionMM();
 
-            // this.lifter.current           = this.lifter.getCurrentA();
-            // this.leftPedal.current        = this.leftPedal.getCurrentA();
-            // this.leftSlider.current       = this.leftSlider.getCurrentA();
-            // this.rightPedal.current       = this.rightPedal.getCurrentA();
-            // this.rightSlider.current      = this.rightSlider.getCurrentA();
-            // this.stockLeftExtend.current  = this.stockLeftExtend.getCurrentA();
-            // this.stockLeftSlider.current  = this.stockLeftSlider.getCurrentA();
-            // this.stockRightExtend.current = this.stockRightExtend.getCurrentA();
-            // this.stockRightSlider.current = this.stockRightSlider.getCurrentA();
+            this.lifter.current           = this.lifter.getCurrentA();
+            this.leftPedalYaw.current     = this.leftPedalYaw.getCurrentA();
+            this.leftPedal.current        = this.leftPedal.getCurrentA();
+            this.leftSlider.current       = this.leftSlider.getCurrentA();
+            this.rightPedalYaw.current    = this.rightPedalYaw.getCurrentA();
+            this.rightPedal.current       = this.rightPedal.getCurrentA();
+            this.rightSlider.current      = this.rightSlider.getCurrentA();
+            this.stockLeftExtend.current  = this.stockLeftExtend.getCurrentA();
+            this.stockLeftSlider.current  = this.stockLeftSlider.getCurrentA();
+            this.stockRightExtend.current = this.stockRightExtend.getCurrentA();
+            this.stockRightSlider.current = this.stockRightSlider.getCurrentA();
 
             this.lifter.actualVelocity           = this.lifter.getVelocityIs();
+            this.leftPedalYaw.actualVelocity     = this.leftPedalYaw.getVelocityIs();
             this.leftPedal.actualVelocity        = this.leftPedal.getVelocityIs();
             this.leftSlider.actualVelocity       = this.leftSlider.getVelocityIs();
+            this.rightPedalYaw.actualVelocity       = this.rightPedalYaw.getVelocityIs();
             this.rightPedal.actualVelocity       = this.rightPedal.getVelocityIs();
             this.rightSlider.actualVelocity      = this.rightSlider.getVelocityIs();
             this.stockLeftExtend.actualVelocity  = this.stockLeftExtend.getVelocityIs();

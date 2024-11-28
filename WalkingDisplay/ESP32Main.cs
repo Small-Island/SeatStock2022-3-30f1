@@ -14,7 +14,15 @@ public class ESP32Main : UnityEngine.MonoBehaviour {
 
     void Start() {
         this.client = new System.IO.Ports.SerialPort(portName, baudRate, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One);
-        this.client.Open();
+        this.client.ReadTimeout = 500;
+        this.client.WriteTimeout = 500;
+
+        try {
+            this.client.Open();
+        }
+        catch (System.IO.IOException e) {
+            UnityEngine.Debug.Log(e.ToString());
+        }
     }
 
     public void SendText(string arg_sendText) {
@@ -22,7 +30,12 @@ public class ESP32Main : UnityEngine.MonoBehaviour {
         byte[] sendByte = System.Text.Encoding.ASCII.GetBytes(this.sendText);//送信する文字列をbyteに変換
         if (this.client != null)
         {
-            this.client.Write(sendByte, 0, sendByte.Length);//送信
+            try {
+                this.client.Write(sendByte, 0, sendByte.Length);//送信
+            }
+            catch (System.InvalidOperationException e) {
+                UnityEngine.Debug.Log(e.ToString());
+            }
         }
         UnityEngine.Debug.Log(this.sendText);
     }

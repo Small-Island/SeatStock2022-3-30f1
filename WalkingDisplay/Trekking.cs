@@ -17,6 +17,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         // Unit mm
         [UnityEngine.SerializeField, Range(0, 40)] public double lift = 1;
         [UnityEngine.SerializeField, Range(0, 68)] public double pedal = 1;
+        [UnityEngine.SerializeField, Range(0, 30)] public double pedalYaw = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double legForward = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double legBackward = 1;
         [UnityEngine.SerializeField, Range(0, 300)] public double stockExtendTopPoint = 1;
@@ -194,7 +195,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
                         + this.wait1Duration()
                         + this.motion2Duration()
                         + (double)this.waitRate/100.0*this.period
-                        - 0.6
+                        - 0.3
                 ) {
                     this.vibroIndex++;
                     arg_flag = true;
@@ -232,6 +233,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
     [UnityEngine.Header("動作時間比")]
     public TimeSchedule lifter;
     public TimeSchedule leftPedal;
+    public TimeSchedule leftPedalYaw;
     public TimeSchedule leftSlider;
      public TimeSchedule rightPedal;
     public TimeSchedule rightSlider;
@@ -246,13 +248,16 @@ public class Trekking : UnityEngine.MonoBehaviour {
     public bool dummyFlag = false;
 
     public void timerCallback(object source, System.Timers.ElapsedEventArgs e) {
-        this.clockTime += 0.005;
+        this.clockTime += 0.01;
         // Lifter
         if (this.status == Status.stop) return;
         this.lifter.timerCallback(this.clockTime, this.stiffness, ref this.dummyFlag);
 
         if (this.status == Status.stop) return;
         this.leftPedal.timerCallback(this.clockTime, this.stiffness, ref this.audioLeftFlag);
+
+        if (this.status == Status.stop) return;
+        this.leftPedalYaw.timerCallback(this.clockTime, this.stiffness, ref this.audioLeftFlag);
 
         // LegSlider
         if (this.status == Status.stop) return;
@@ -449,6 +454,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
             this.clockTime = 0;
             this.lifter.init(this.epos4Main.lifter, this.period/2, this.scaledLength.lift, 0);
+            this.leftPedalYaw.init(this.epos4Main.leftPedalYaw, this.period, this.scaledLength.pedalYaw, -this.scaledLength.pedalYaw);
             this.leftPedal.init(this.epos4Main.leftPedal, this.period, this.scaledLength.pedal, 0);
             this.leftSlider.init(this.epos4Main.leftSlider, this.period, this.scaledLength.legForward, -this.scaledLength.legBackward);
             this.rightPedal.init(this.epos4Main.rightPedal, this.period, this.scaledLength.pedal, 0);
@@ -459,7 +465,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
             // this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.scaledLength.stockExtendTopPoint, 0);
             this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
             this.stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
-            this.trekkingTimer = new System.Timers.Timer(5);
+            this.trekkingTimer = new System.Timers.Timer(10);
             this.trekkingTimer.AutoReset = true;
             this.trekkingTimer.Elapsed += this.timerCallback;
             this.trekkingTimer.Start();

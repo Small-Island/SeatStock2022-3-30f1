@@ -105,7 +105,7 @@ public class Epos4Node {
         // this.getError();
 
         try {
-            this.deviceOperation.ClearFaultAndSetEnableState();
+            this.deviceOperation.ClearFault();
         }
         catch (EposCmd.Net.DeviceException e) {
             this.status = e.Message;
@@ -114,10 +114,34 @@ public class Epos4Node {
             this.cs = ConnectionStatus.failed;
             return;
         }
-        this.ActivateProfilePositionMode();
+        // this.ActivateProfilePositionMode();
         this.cs = ConnectionStatus.success;
         // EposCmd.Net.VcsWrapper.Device.VcsGetKeyHandle("EPOS4", "MAXON SERIAL V2", "USB", "USB0", ref this.keyHandle, ref errorCode);
         // this.data = new EposCmd.Net.DeviceCmdSet.DataRecorder.Data(this.keyHandle, (ushort)this.nodeId);
+        return;
+    }
+
+    public void SetEnableState() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.SetEnableState();
+        }
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
+        }
+        return;
+    }
+
+    public void SetDisableState() {
+        if (this.cs == ConnectionStatus.failed) return;
+        try {
+            this.deviceOperation.SetDisableState();
+        }
+        catch (EposCmd.Net.DeviceException e) {
+            this.status = e.Message;
+            this.ecode = e.ErrorCode;
+        }
         return;
     }
 
@@ -226,11 +250,20 @@ public class Epos4Node {
 
     public void definePosition() {
         if (this.cs == ConnectionStatus.failed) return;
-        this.profile.absolute     = false;
-        this.profile.position     = 0;
-        this.profile.velocity     = 120;
-        this.profile.acceleration = 240;
-        this.profile.deceleration = 240;
+        if (this.nodeId == 5 || this.nodeId == 10) {
+            this.profile.absolute     = true;
+            this.profile.position     = 0;
+            this.profile.velocity     = 1;
+            this.profile.acceleration = 1;
+            this.profile.deceleration = 1;
+        }
+        else {
+            this.profile.absolute     = false;
+            this.profile.position     = 0;
+            this.profile.velocity     = 120;
+            this.profile.acceleration = 240;
+            this.profile.deceleration = 240;
+        }
         // try {
         //     this.deviceOperation.SetPositionProfile(
         //         this.profile.velocity,
@@ -410,7 +443,7 @@ public class Epos4Node {
                 return;
             }
             this.profile.position     = 0;
-            this.profile.velocity     = 720;
+            this.profile.velocity     = 300;
             // this.profile.acceleration = (int)(System.Math.Abs(this.actualVelocity * 5));
             // this.profile.deceleration = (int)(System.Math.Abs(this.actualVelocity * 2));
             // if (this.profile.acceleration < 1000) {
@@ -438,11 +471,20 @@ public class Epos4Node {
                 this.status = exc.Message;
                 this.ecode = exc.ErrorCode;
             }
-            this.profile.absolute     = false;
-            this.profile.position     = 0;
-            this.profile.velocity     = 120;
-            this.profile.acceleration = 240;
-            this.profile.deceleration = 240;
+            if (this.nodeId == 5 || this.nodeId == 10) {
+                this.profile.absolute     = true;
+                this.profile.position     = 0;
+                this.profile.velocity     = 1;
+                this.profile.acceleration = 1;
+                this.profile.deceleration = 1;
+            }
+            else {
+                 this.profile.absolute     = false;
+                this.profile.position     = 0;
+                this.profile.velocity     = 120;
+                this.profile.acceleration = 240;
+                this.profile.deceleration = 240;
+            }
             this.timerMoveToHome.Stop();
         };
         this.timerMoveToHome.Start();
@@ -503,6 +545,20 @@ public class Epos4Node {
         this.profile.velocity     = 120;
         this.profile.acceleration = 240;
         this.profile.deceleration = 240;
+        if (this.nodeId == 5 || this.nodeId == 10) {
+            this.profile.absolute     = true;
+            this.profile.position     = 0;
+            this.profile.velocity     = 1;
+            this.profile.acceleration = 1;
+            this.profile.deceleration = 1;
+        }
+        else {
+            this.profile.absolute     = false;
+            this.profile.position     = 0;
+            this.profile.velocity     = 120;
+            this.profile.acceleration = 240;
+            this.profile.deceleration = 240;
+        }
         try {
             this.deviceOperation.SetPositionMust(
                 (int) (this.direction * arg_positionMust/this.milliPerRotation*this.incPerRotation)
@@ -706,13 +762,20 @@ public class Epos4Node {
             this.sm.SetQuickStopState();
         }
 
-        public void ClearFaultAndSetEnableState() {
+        public void ClearFault() {
             if (this.sm.GetFaultState()) {
                 this.sm.ClearFault();
             }
+        }
+
+        public void SetEnableState() {
             this.sm.SetEnableState();
         }
 
+        public void SetDisableState() {
+            this.sm.SetDisableState();
+        }
+ 
         public void ActivateProfilePositionMode() {
             try {
                 this.ppm.ActivateProfilePositionMode();

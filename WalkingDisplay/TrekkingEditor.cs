@@ -30,6 +30,7 @@ public class TrekkingEditor : Editor
 
         trekking.scaledLength.lift = trekking.length.lift * trekking.scale;
         trekking.scaledLength.pedal = trekking.length.pedal;
+        trekking.scaledLength.pedalYaw = trekking.length.pedalYaw;
         trekking.scaledLength.legForward = trekking.length.legForward;
         trekking.scaledLength.legBackward = trekking.length.legBackward;
         trekking.scaledLength.stockExtendTopPoint = trekking.length.stockExtendTopPoint * trekking.scale;
