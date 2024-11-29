@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Trekking : UnityEngine.MonoBehaviour {
-    // public Video video;
+public class IntegratedControl : UnityEngine.MonoBehaviour {
+    [UnityEngine.SerializeField, Range(0, 20)] public int delay = 1;
+    public VideoControl videoControl;
+    public VideoControl[] otherVideo;
     public UnityEngine.AudioSource audioLeftSource;
     public UnityEngine.AudioSource audioRightSource;
     [UnityEngine.SerializeField, ReadOnly] public Status status;
@@ -15,8 +17,8 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
     [System.Serializable] public class Length {
         // Unit mm
-        [UnityEngine.SerializeField, Range(0, 40)] public double lift = 1;
-        [UnityEngine.SerializeField, Range(0, 68)] public double pedal = 1;
+        [UnityEngine.SerializeField, Range(0, 100)] public double lift = 1;
+        [UnityEngine.SerializeField, Range(0, 60)] public double pedal = 1;
         [UnityEngine.SerializeField, Range(0, 30)] public double pedalYaw = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double legForward = 1;
         [UnityEngine.SerializeField, Range(0, 100)] public double legBackward = 1;
@@ -37,6 +39,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
         public bool activate;
         public bool useStiffness;
         public bool useVibro;
+        // public bool yaw = false;
         public bool useRandom;
         public double climbMm = 0;
         public int climbCount = 0;
@@ -123,7 +126,12 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.position1 = arg_position1;
             this.position2 = arg_position2;
             this.position3 = arg_position3;
-            this.motionCount = 3;
+            if (this.motion3 == 0) {
+                this.motionCount = 2;
+            }
+            else {
+                this.motionCount = 3;
+            }
             this.vibroIndex = 0;
             this.climbIdx = 0;
             this.random = new System.Random();
@@ -235,6 +243,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
     public TimeSchedule leftPedal;
     public TimeSchedule leftPedalYaw;
     public TimeSchedule leftSlider;
+    public TimeSchedule rightPedalYaw;
      public TimeSchedule rightPedal;
     public TimeSchedule rightSlider;
     public TimeSchedule stockLeftExtend;
@@ -265,6 +274,10 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
         if (this.status == Status.stop) return;
         this.rightPedal.timerCallback(this.clockTime, this.stiffness, ref this.audioRightFlag);
+
+        if (this.status == Status.stop) return;
+        this.rightPedalYaw.timerCallback(this.clockTime, this.stiffness, ref this.audioLeftFlag);
+
 
         if (this.status == Status.stop) return;
         this.rightSlider.timerCallback(this.clockTime, this.stiffness, ref this.dummyFlag);
@@ -418,6 +431,9 @@ public class Trekking : UnityEngine.MonoBehaviour {
         if (this.coolingStatus == CoolingStatus.NowCooling) return;
         UnityEngine.Debug.Log("WalkStraight");
         this.status = Status.walking;
+        this.videoStartFlag = true;
+        // this.video.Stop();
+        // this.video.Play();
         // this.epos4Main.AllNodeDefinePosition();
         this.epos4Main.AllNodeActivateProfilePositionMode();
         if (this.walkStraightTimer != null) {
@@ -425,7 +441,7 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.walkStraightTimer.Dispose();
         }
 
-        this.walkStraightTimer = new System.Timers.Timer(1000);
+        this.walkStraightTimer = new System.Timers.Timer(this.delay*1000);
         this.walkStraightTimer.AutoReset = false;
         this.walkStraightTimer.Elapsed += (sender, e) => {
             if (this.coolingStatus == CoolingStatus.NowCooling) return;
@@ -454,9 +470,10 @@ public class Trekking : UnityEngine.MonoBehaviour {
 
             this.clockTime = 0;
             this.lifter.init(this.epos4Main.lifter, this.period/2, this.scaledLength.lift, 0);
-            this.leftPedalYaw.init(this.epos4Main.leftPedalYaw, this.period, this.scaledLength.pedalYaw, -this.scaledLength.pedalYaw);
+            this.leftPedalYaw.init(this.epos4Main.leftPedalYaw, this.period, -this.scaledLength.pedalYaw, this.scaledLength.pedalYaw);
             this.leftPedal.init(this.epos4Main.leftPedal, this.period, this.scaledLength.pedal, 0);
             this.leftSlider.init(this.epos4Main.leftSlider, this.period, this.scaledLength.legForward, -this.scaledLength.legBackward);
+            this.rightPedalYaw.init(this.epos4Main.rightPedalYaw, this.period, -this.scaledLength.pedalYaw, this.scaledLength.pedalYaw);
             this.rightPedal.init(this.epos4Main.rightPedal, this.period, this.scaledLength.pedal, 0);
             this.rightSlider.init(this.epos4Main.rightSlider, this.period, this.scaledLength.legForward, -this.scaledLength.legBackward);
             this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.scaledLength.stockExtendTopPoint, this.scaledLength.stockExtendPokePoint, 0);
@@ -486,10 +503,9 @@ public class Trekking : UnityEngine.MonoBehaviour {
         this.trekkingTimer?.Dispose();
         this.walkStopTimer?.Stop();
         this.walkStopTimer?.Dispose();
-        this.status = Status.stop;
         UnityEngine.Debug.Log("WalkStop");
         this.epos4Main.AllNodeMoveToHome();
-        if (this.coolingStatus == CoolingStatus.Readied) {
+        if (this.status == Status.walking && this.coolingStatus == CoolingStatus.Readied) {
             this.sendText = "stop" + "," + "/";
             this.esp32Main.SendText(this.sendText);
             UnityEngine.Debug.Log("walkmain: " + this.sendText);
@@ -507,6 +523,8 @@ public class Trekking : UnityEngine.MonoBehaviour {
             this.coolingTimer.Start();
         }
         this.pauseFlag = true;
+        this.status = Status.stop;
+        this.videoStopFlag = true;
     }
 
     private void getActualPositionCallback(object source, System.Timers.ElapsedEventArgs e) {
@@ -618,6 +636,8 @@ public class Trekking : UnityEngine.MonoBehaviour {
     private bool pauseFlag = false;
     private bool audioLeftFlag = false;
     private bool audioRightFlag = false;
+     private bool videoStartFlag = false;
+    private bool videoStopFlag = false;
 
     private void Update() {
         // this.thumbStickR = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, OVRInput.Controller.RTouch);
@@ -625,10 +645,10 @@ public class Trekking : UnityEngine.MonoBehaviour {
         // if (System.Math.Abs(this.thumbStickR.y) > 0.5 && System.Math.Abs(this.thumbStickL.y) > 0.5) {
         // }
         // else if (this.thumbStickR.y > 0.5 || this.thumbStickL.y > 0.5) {
-        //     // this.WalkStraight();
+        //     this.WalkStraight();
         // }
         // else if (this.thumbStickR.y < -0.5 || this.thumbStickL.y < -0.5) {
-        //     // this.WalkStop();
+        //     this.WalkStop();
         // }
 
         // if (this.video != null) {
@@ -645,6 +665,20 @@ public class Trekking : UnityEngine.MonoBehaviour {
         // this.scaledLength.stockSlideBackward = this.length.stockSlideBackward * this.scale;
         // this.tiltBackwardScaled = this.tiltBackward * this.scale;
         // this.tiltForwardScaled = this.tiltForward * this.scale;
+
+        if (this.videoStartFlag) {
+            this.videoControl.Stop();
+            this.videoControl.Play();
+            for (int i = 0; i < this.otherVideo.Length; i++) {
+                this.otherVideo[i].Stop();
+            }
+            this.videoStartFlag = false;
+        }
+
+        if (this.videoStopFlag) {
+            this.videoControl.Stop();
+            this.videoStopFlag = false;
+        }
 
         if (this.audioLeftFlag) {
             if (this.audioLeftSource != null) {

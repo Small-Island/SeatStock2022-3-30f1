@@ -33,6 +33,8 @@ public class Epos4MainEditor : Editor
         );
         if (GUILayout.Button("Clear Error")) {
             epos4Main.lifter.MotorInit();
+            epos4Main.lifter.SetEnableState();
+            epos4Main.lifter.ActivateProfilePositionMode();
         }
         if (GUILayout.Button("Show Error")) {
             epos4Main.lifter.getError();
@@ -114,10 +116,10 @@ public class Epos4MainEditor : Editor
                 //     epos4Main.leftPedalYaw.ActivateProfilePositionMode();
                 // }
                 epos4Main.leftPedalYaw.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.leftPedalYaw.profile.absolute);
-                epos4Main.leftPedalYaw.profile.position     = EditorGUILayout.Slider("Position (deg)", epos4Main.leftPedalYaw.profile.position, -10, 10);
-                epos4Main.leftPedalYaw.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.leftPedalYaw.profile.velocity, 1, 5);
-                epos4Main.leftPedalYaw.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.leftPedalYaw.profile.acceleration, 1, 2);
-                epos4Main.leftPedalYaw.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.leftPedalYaw.profile.deceleration, 1, 2);
+                epos4Main.leftPedalYaw.profile.position     = EditorGUILayout.Slider("Position (deg)", epos4Main.leftPedalYaw.profile.position, -30, 30);
+                epos4Main.leftPedalYaw.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.leftPedalYaw.profile.velocity, 1, 60);
+                epos4Main.leftPedalYaw.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.leftPedalYaw.profile.acceleration, 1, 60);
+                epos4Main.leftPedalYaw.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.leftPedalYaw.profile.deceleration, 1, 60);
                 // EditorGUILayout.Toggle("Absolute", epos4Main.leftPedalYaw.profile.absolute);
                 // EditorGUILayout.Slider("Position (mm)", epos4Main.leftPedalYaw.profile.position, -maxPosition, maxPosition);
                 // EditorGUILayout.Slider("Velocity (rpm)", epos4Main.leftPedalYaw.profile.velocity, 0, maxVel);
@@ -166,13 +168,14 @@ public class Epos4MainEditor : Editor
                 );
                 if (GUILayout.Button("Clear Error")) {
                     epos4Main.leftPedal.MotorInit();
-                }
-                if (GUILayout.Button("Enable")) {
                     epos4Main.leftPedal.SetEnableState();
                 }
-                if (GUILayout.Button("Disable")) {
-                    epos4Main.leftPedal.SetDisableState();
-                }
+                // if (GUILayout.Button("Enable")) {
+                //     epos4Main.leftPedal.SetEnableState();
+                // }
+                // if (GUILayout.Button("Disable")) {
+                //     epos4Main.leftPedal.SetDisableState();
+                // }
                 // if (GUILayout.Button("Activate PPM")) {
                 //     epos4Main.leftPedal.ActivateProfilePositionMode();
                 // }
@@ -229,13 +232,15 @@ public class Epos4MainEditor : Editor
                 );
                 if (GUILayout.Button("Clear Error")) {
                     epos4Main.leftSlider.MotorInit();
-                }
-                if (GUILayout.Button("Enable")) {
                     epos4Main.leftSlider.SetEnableState();
+                    epos4Main.leftSlider.ActivateProfilePositionMode();
                 }
-                if (GUILayout.Button("Disable")) {
-                    epos4Main.leftSlider.SetDisableState();
-                }
+                // if (GUILayout.Button("Enable")) {
+                //     epos4Main.leftSlider.SetEnableState();
+                // }
+                // if (GUILayout.Button("Disable")) {
+                //     epos4Main.leftSlider.SetDisableState();
+                // }
                 // if (GUILayout.Button("Activate PPM")) {
                 //     epos4Main.leftSlider.ActivateProfilePositionMode();
                 // }
@@ -304,10 +309,10 @@ public class Epos4MainEditor : Editor
                 //     epos4Main.rightPedalYaw.ActivateProfilePositionMode();
                 // }
                 epos4Main.rightPedalYaw.profile.absolute     = EditorGUILayout.Toggle ("Absolute", epos4Main.rightPedalYaw.profile.absolute);
-                epos4Main.rightPedalYaw.profile.position     = EditorGUILayout.Slider("Position (deg)", epos4Main.rightPedalYaw.profile.position, -10, 10);
-                epos4Main.rightPedalYaw.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.rightPedalYaw.profile.velocity, 1, 5);
-                epos4Main.rightPedalYaw.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.rightPedalYaw.profile.acceleration, 1, 2);
-                epos4Main.rightPedalYaw.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.rightPedalYaw.profile.deceleration, 1, 2);
+                epos4Main.rightPedalYaw.profile.position     = EditorGUILayout.Slider("Position (deg)", epos4Main.rightPedalYaw.profile.position, -30, 30);
+                epos4Main.rightPedalYaw.profile.velocity     = (int)EditorGUILayout.Slider("Velocity (rpm)", epos4Main.rightPedalYaw.profile.velocity, 1, 60);
+                epos4Main.rightPedalYaw.profile.acceleration = (int)EditorGUILayout.Slider("Acceleration (rpm/s)", epos4Main.rightPedalYaw.profile.acceleration, 1, 60);
+                epos4Main.rightPedalYaw.profile.deceleration = (int)EditorGUILayout.Slider("Deceleration (rpm/s)", epos4Main.rightPedalYaw.profile.deceleration, 1, 60);
                 // EditorGUILayout.Toggle("Absolute", epos4Main.rightPedalYaw.profile.absolute);
                 // EditorGUILayout.Slider("Position (mm)", epos4Main.rightPedalYaw.profile.position, -maxPosition, maxPosition);
                 // EditorGUILayout.Slider("Velocity (rpm)", epos4Main.rightPedalYaw.profile.velocity, 0, maxVel);
@@ -413,6 +418,8 @@ public class Epos4MainEditor : Editor
                 );
                 if (GUILayout.Button("Clear Error")) {
                     epos4Main.rightSlider.MotorInit();
+                    epos4Main.rightSlider.SetEnableState();
+                    epos4Main.rightSlider.ActivateProfilePositionMode();
                 }
                 // if (GUILayout.Button("Activate PPM")) {
                 //     epos4Main.rightSlider.ActivateProfilePositionMode();
@@ -473,6 +480,8 @@ public class Epos4MainEditor : Editor
                 );
                 if (GUILayout.Button("Clear Error")) {
                     epos4Main.stockLeftExtend.MotorInit();
+                    epos4Main.stockLeftExtend.SetEnableState();
+                    epos4Main.stockLeftExtend.ActivateProfilePositionMode();
                 }
                 // if (GUILayout.Button("Activate PPM")) {
                 //     epos4Main.leftPedal.ActivateProfilePositionMode();
@@ -531,6 +540,7 @@ public class Epos4MainEditor : Editor
                 if (GUILayout.Button("Clear Error")) {
                     epos4Main.stockLeftSlider.MotorInit();
                     epos4Main.stockLeftSlider.SetEnableState();
+                    epos4Main.stockLeftSlider.ActivateProfilePositionMode();
                 }
                 // if (GUILayout.Button("Activate PPM")) {
                 //     epos4Main.stockLeftSlider.ActivateProfilePositionMode();
@@ -589,6 +599,8 @@ public class Epos4MainEditor : Editor
                 );
                 if (GUILayout.Button("Clear Error")) {
                     epos4Main.stockRightExtend.MotorInit();
+                    epos4Main.stockRightExtend.SetEnableState();
+                    epos4Main.stockRightExtend.ActivateProfilePositionMode();
                 }
                 // if (GUILayout.Button("Activate PPM")) {
                 //     epos4Main.stockRightExtend.ActivateProfilePositionMode();
@@ -646,6 +658,8 @@ public class Epos4MainEditor : Editor
                 );
                 if (GUILayout.Button("Clear Error")) {
                     epos4Main.stockRightSlider.MotorInit();
+                    epos4Main.stockRightSlider.SetEnableState();
+                    epos4Main.stockRightSlider.ActivateProfilePositionMode();
                 }
                 // if (GUILayout.Button("Activate PPM")) {
                 //     epos4Main.stockRightSlider.ActivateProfilePositionMode();
