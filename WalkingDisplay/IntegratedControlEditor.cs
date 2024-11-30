@@ -30,7 +30,12 @@ public class IntegratedControlEditor : Editor
 
         integratedControl.scaledLength.lift = integratedControl.length.lift * integratedControl.scale;
         integratedControl.scaledLength.pedal = integratedControl.length.pedal * integratedControl.scale;
-        integratedControl.scaledLength.pedalYaw = integratedControl.length.pedalYaw * integratedControl.scale;
+        if (integratedControl.length.pedalYaw * integratedControl.scale > 30) {
+            integratedControl.scaledLength.pedalYaw = 30;
+        }
+        else {
+            integratedControl.scaledLength.pedalYaw = integratedControl.length.pedalYaw * integratedControl.scale;
+        }
         integratedControl.scaledLength.legForward = integratedControl.length.legForward * integratedControl.scale;
         integratedControl.scaledLength.legBackward = integratedControl.length.legBackward * integratedControl.scale;
         integratedControl.scaledLength.stockExtendTopPoint = integratedControl.length.stockExtendTopPoint * integratedControl.scale;

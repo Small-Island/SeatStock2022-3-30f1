@@ -59,7 +59,7 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
         this.leftPedalYaw.MotorInit();
         this.leftPedalYaw.SetEnableState();
         this.leftPedalYaw.ActivateProfilePositionMode();
-        this.stockLeftExtend   = new Epos4Node(this.connector, 6, 20,  -1, 0.2, 1.1);
+        this.stockLeftExtend   = new Epos4Node(this.connector, 6, 20,  -1, 0.2, 1.2);
         this.stockLeftExtend.MotorInit();
         this.stockLeftExtend.SetEnableState();
         this.stockLeftExtend.ActivateProfilePositionMode();
@@ -80,7 +80,7 @@ public class Epos4Main : UnityEngine.MonoBehaviour {
         this.rightPedalYaw.MotorInit();
         this.rightPedalYaw.SetEnableState();
         this.rightPedalYaw.ActivateProfilePositionMode();
-        this.stockRightExtend  = new Epos4Node(this.connector, 11, 20, -1, 0.2, 1.1);
+        this.stockRightExtend  = new Epos4Node(this.connector, 11, 20, -1, 0.2, 1.2);
         this.stockRightExtend.MotorInit();
         this.stockRightExtend.SetEnableState();
         this.stockRightExtend.ActivateProfilePositionMode();
