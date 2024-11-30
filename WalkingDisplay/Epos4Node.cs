@@ -316,14 +316,14 @@ public class Epos4Node {
     public void SetPositionProfileInTime(double arg_pos_milli, double arg_sec_time, double arg_arate, double arg_drate) {
         // if (this.cs == ConnectionStatus.failed) return;
         // if (this.status != "") return;
-        if (this.nodeId == 5 || this.nodeId == 10) {
-            this.profile.absolute = true;
-            this.profile.position = (int)arg_pos_milli;
-            this.profile.velocity = 5;
-            this.profile.acceleration = 10;
-            this.profile.deceleration = 10;
-            return;
-        }
+        // if (this.nodeId == 5 || this.nodeId == 10) {
+        //     this.profile.absolute = true;
+        //     this.profile.position = (int)arg_pos_milli;
+        //     this.profile.velocity = 5;
+        //     this.profile.acceleration = 10;
+        //     this.profile.deceleration = 10;
+        //     return;
+        // }
         double arg_pos_r = arg_pos_milli / this.milliPerRotation;
         double arg_pos_inc = this.incPerRotation * arg_pos_r;
 
@@ -362,10 +362,10 @@ public class Epos4Node {
         }
 
         if (this.profile.acceleration < 1) {
-            this.profile.acceleration = 1000;
+            this.profile.acceleration = 1;
         }
         if (this.profile.deceleration < 1) {
-            this.profile.deceleration = 1000;
+            this.profile.deceleration = 1;
         }
 
         this.SetPositionProfile();

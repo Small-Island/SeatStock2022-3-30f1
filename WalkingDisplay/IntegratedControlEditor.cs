@@ -29,14 +29,17 @@ public class IntegratedControlEditor : Editor
         }
 
         integratedControl.scaledLength.lift = integratedControl.length.lift * integratedControl.scale;
-        integratedControl.scaledLength.pedal = integratedControl.length.pedal;
-        integratedControl.scaledLength.pedalYaw = integratedControl.length.pedalYaw;
-        integratedControl.scaledLength.legForward = integratedControl.length.legForward;
-        integratedControl.scaledLength.legBackward = integratedControl.length.legBackward;
+        integratedControl.scaledLength.pedal = integratedControl.length.pedal * integratedControl.scale;
+        integratedControl.scaledLength.pedalYaw = integratedControl.length.pedalYaw * integratedControl.scale;
+        integratedControl.scaledLength.legForward = integratedControl.length.legForward * integratedControl.scale;
+        integratedControl.scaledLength.legBackward = integratedControl.length.legBackward * integratedControl.scale;
         integratedControl.scaledLength.stockExtendTopPoint = integratedControl.length.stockExtendTopPoint * integratedControl.scale;
         integratedControl.scaledLength.stockExtendPokePoint = integratedControl.length.stockExtendPokePoint * integratedControl.scale;
         integratedControl.scaledLength.stockSlideForward = integratedControl.length.stockSlideForward * integratedControl.scale;
         integratedControl.scaledLength.stockSlideBackward = integratedControl.length.stockSlideBackward * integratedControl.scale;
+        integratedControl.scaledLength.windHigh = integratedControl.length.windHigh * integratedControl.scale;
+        integratedControl.scaledLength.windLow = integratedControl.length.windLow * integratedControl.scale;
+
 
         integratedControl.lifter.position1 = integratedControl.scaledLength.lift;
         integratedControl.lifter.position2 = 0;

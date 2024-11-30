@@ -430,8 +430,8 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
             this.driveTimeDown1[2] = 0;
         }
         
-        this.delayTimeFirst[0] = (int)((float)this.waitFirstLeft/100f * 1000f);
-        this.delayTimeFirst[2] = (int)((float)this.waitFirstRight/100f * 1000f);
+        this.delayTimeFirst[0] = (int)((float) this.period * this.waitFirstLeft/100f * 1000f);
+        this.delayTimeFirst[2] = (int)((float) this.period * this.waitFirstRight/100f * 1000f);
 
         // //目標パルスを整数型で格納
         // if (this.activateLeftTilt) {
@@ -585,6 +585,12 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
         this.trekkingTimer?.Dispose();
         this.walkStopTimer?.Stop();
         this.walkStopTimer?.Dispose();
+        this.getActualPositionTimer?.Stop();
+        this.getActualPositionTimer?.Dispose();
+        this.walkStraightTimer?.Stop();
+        this.walkStraightTimer?.Dispose();
+        this.coolingTimer?.Stop();
+        this.coolingTimer?.Dispose();
         UnityEngine.Debug.Log("WalkStop");
         this.epos4Main.AllNodeMoveToHome();
         if (this.status == Status.walking && this.coolingStatus == CoolingStatus.Readied) {
@@ -783,7 +789,5 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
     private void OnDestroy() {
         this.WalkStop();
         this.Destroied = true;
-        this.walkStopTimer?.Stop();
-        this.walkStopTimer?.Dispose();
     }
 }
