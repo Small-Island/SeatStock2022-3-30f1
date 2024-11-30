@@ -8,6 +8,7 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
     public VideoControl[] otherVideo;
     public UnityEngine.AudioSource audioLeftSource;
     public UnityEngine.AudioSource audioRightSource;
+    public ESP32Main esp32Wind;
     [UnityEngine.SerializeField, ReadOnly] public Status status;
     [UnityEngine.SerializeField, ReadOnly] public CoolingStatus coolingStatus;
     [ReadOnly] public double clockTime = 0;
@@ -26,15 +27,17 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
         [UnityEngine.SerializeField, Range(0, 300)] public double stockExtendPokePoint = 1;
         [UnityEngine.SerializeField, Range(0, 300)] public double stockSlideForward = 1;
         [UnityEngine.SerializeField, Range(0, 300)] public double stockSlideBackward = 1;
+        [UnityEngine.SerializeField, Range(0, 300)] public double windHigh = 1;
+        [UnityEngine.SerializeField, Range(0, 300)] public double windLow = 0;
     }
 
     [UnityEngine.SerializeField, UnityEngine.Header("Unit (s)"), UnityEngine.Range(2f, 10f)] public float period = 5;
 
     public Length length;
     [UnityEngine.SerializeField] public Length scaledLength;
-
     [System.Serializable] public class TimeSchedule {
         private Epos4Node epos4Node;
+        private ESP32Main esp32Wind;
         private double period;
         public bool activate;
         public bool useStiffness;
@@ -44,58 +47,58 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
         public double climbMm = 0;
         public int climbCount = 0;
         public int climbIdx = 0;
-        [UnityEngine.SerializeField, Range(0, 10)] public int motion1 = 1;
+        [ReadOnly, UnityEngine.Range(-255, 255)] public double position1;
+        [UnityEngine.SerializeField, Range(0, 10)] public int duration1 = 1;
         [UnityEngine.SerializeField, Range(0, 10)] public int wait1 = 0;
-        [UnityEngine.SerializeField, Range(0, 10)] public int motion2 = 1;
+        [ReadOnly, UnityEngine.Range(-255, 255)] public double position2;
+        [UnityEngine.SerializeField, Range(0, 10)] public int duration2 = 1;
         [UnityEngine.SerializeField, Range(0, 10)] public int wait2 = 0;
-        [UnityEngine.SerializeField, Range(0, 10)] public int motion3 = 0;
+        [ReadOnly, UnityEngine.Range(-255, 255)] public double position3;
+        [UnityEngine.SerializeField, Range(0, 10)] public int duration3 = 0;
         [UnityEngine.SerializeField, Range(0, 10)] public int wait3 = 0;
-        [ReadOnly] public double position1;
-        [ReadOnly] public double position2;
-        [ReadOnly] public double position3;
-        [ReadOnly] public double motionCount = 0;
+        [ReadOnly, UnityEngine.Range(2, 3)] public double motionCount = 0;
         private System.Random random;
         public double motion1Duration() {
             if (this.motionCount == 2) {
-                return (double)(this.motion1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+                return (double)(this.duration1)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2)*this.period;
             }
             else if (this.motionCount == 3) {
-                return (double)(this.motion1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.wait3 + this.motion3)*this.period;
+                return (double)(this.duration1)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2 + this.wait3 + this.duration3)*this.period;
             }
-            return (double)(this.motion1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+            return (double)(this.duration1)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2)*this.period;
         }
         public double wait1Duration() {
             if (this.motionCount == 2) {
-                return (double)(this.wait1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+                return (double)(this.wait1)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2)*this.period;
             }
             else if (this.motionCount == 3) {
-                return (double)(this.wait1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.wait3 + this.motion3)*this.period;
+                return (double)(this.wait1)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2 + this.wait3 + this.duration3)*this.period;
             }
-            return (double)(this.wait1)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+            return (double)(this.wait1)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2)*this.period;
         }
         public double motion2Duration() {
             if (this.motionCount == 2) {
-                return (double)(this.motion2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+                return (double)(this.duration2)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2)*this.period;
             }
             else if (this.motionCount == 3) {
-                return (double)(this.motion2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.wait3 + this.motion3)*this.period;
+                return (double)(this.duration2)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2 + this.wait3 + this.duration3)*this.period;
             }
-            return (double)(this.motion2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+            return (double)(this.duration2)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2)*this.period;
         }
         public double wait2Duration() {
             if (this.motionCount == 2) {
-                return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+                return (double)(this.wait2)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2)*this.period;
             }
             else if (this.motionCount == 3) {
-                return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.wait3 + this.motion3)*this.period;
+                return (double)(this.wait2)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2 + this.wait3 + this.duration3)*this.period;
             }
-            return (double)(this.wait2)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2)*this.period;
+            return (double)(this.wait2)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2)*this.period;
         }
         public double motion3Duration() {
-            return (double)(this.motion3)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.motion3 + this.wait3)*this.period;
+            return (double)(this.duration3)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2 + this.duration3 + this.wait3)*this.period;
         }
         public double wait3Duration() {
-            return (double)(this.wait3)/(double)(this.wait1 + this.motion1 + this.wait2 + this.motion2 + this.motion3 + this.wait3)*this.period;
+            return (double)(this.wait3)/(double)(this.wait1 + this.duration1 + this.wait2 + this.duration2 + this.duration3 + this.wait3)*this.period;
         }
         [ReadOnly] public int motion1Index = 0;
         [ReadOnly] public int motion2Index = 0;
@@ -109,8 +112,8 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
             this.motion2Index = 0;
             this.motion3Index = 0;
             this.period = arg_period;
-            this.position1 = arg_position1;
-            this.position2 = arg_position2;
+            // this.position1 = arg_position1;
+            // this.position2 = arg_position2;
             this.motionCount = 2;
             this.vibroIndex = 0;
             this.climbIdx = 0;
@@ -123,10 +126,10 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
             this.motion2Index = 0;
             this.motion3Index = 0;
             this.period = arg_period;
-            this.position1 = arg_position1;
-            this.position2 = arg_position2;
-            this.position3 = arg_position3;
-            if (this.motion3 == 0) {
+            // this.position1 = arg_position1;
+            // this.position2 = arg_position2;
+            // this.position3 = arg_position3;
+            if (this.duration3 == 0) {
                 this.motionCount = 2;
             }
             else {
@@ -136,6 +139,38 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
             this.climbIdx = 0;
             this.random = new System.Random();
         }
+
+        public void initWind(ESP32Main arg_esp32Wind, double arg_period) {
+            this.esp32Wind = arg_esp32Wind;
+            this.motion1Index = 0;
+            this.motion2Index = 0;
+            this.motion3Index = 0;
+            this.period = arg_period;
+            this.motionCount = 2;
+        }
+
+        public void timerCallbackWind(double arg_clockTime, string arg_LorR) {
+            if (
+                arg_clockTime
+                > this.motion1Index * this.period
+                    + (double)this.waitRate/100.0*this.period
+            ) {
+                this.motion1Index++;
+                this.esp32Wind.SendText(arg_LorR + this.position1 + "e");
+            }
+
+            if (
+                arg_clockTime
+                > this.motion2Index * this.period
+                    + this.motion1Duration()
+                    + this.wait1Duration()
+                    + (double)this.waitRate/100.0*this.period
+            ) {
+                this.motion2Index++;
+                this.esp32Wind.SendText(arg_LorR + this.position2 + "e");
+            }
+        }
+
 
         public void timerCallback(double arg_clockTime, double arg_stiffness, ref bool arg_flag) {
             if (
@@ -250,6 +285,8 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
     public TimeSchedule stockRightExtend;
     public TimeSchedule stockLeftSlider;
     public TimeSchedule stockRightSlider;
+    public TimeSchedule windLeft;
+    public TimeSchedule windRight;
 
     public bool activateLeftTilt = false;
     public bool activateRightTilt = false;
@@ -299,6 +336,11 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
         // Slider
         if (this.status == Status.stop) return;
         this.stockRightSlider.timerCallback(this.clockTime, this.stiffness, ref this.dummyFlag);
+
+        if (this.status == Status.stop) return;
+        this.windLeft.timerCallbackWind(this.clockTime, "L");
+        if (this.status == Status.stop) return;
+        this.windRight.timerCallbackWind(this.clockTime, "R");
     }
 
 
@@ -314,31 +356,19 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
 
 
     [UnityEngine.Header("Stock Tilt Conf")]
-    // [UnityEngine.SerializeField] public UnityEngine.AddressableAssets.AssetReference csvFileTilt;
-    // public string portName = "COM3";    
-    // public int baudRate = 9600;
-    // private System.IO.Ports.SerialPort client;
     public ESP32Main esp32Main;
     private float degreePerPulse = 0.0072f; //[degrees/pulse]
     public string sendText;
-    [UnityEngine.SerializeField, UnityEngine.Header("Unit (deg), Absolute, Backward Positive, Forward Negative"), UnityEngine.Range(0, 10)] public float tiltBackward = 0;
-    [UnityEngine.SerializeField, UnityEngine.Range(-30, 0)] public float tiltForward = 0;
-    [UnityEngine.SerializeField, ReadOnly, UnityEngine.Header("Unit (deg), Absolute, Backward Positive, Forward Negative"), UnityEngine.Range(0, 10)] public double tiltBackwardScaled = 0;
-    [UnityEngine.SerializeField, ReadOnly, UnityEngine.Range(-30, 0)] public double tiltForwardScaled = 0;
-    [UnityEngine.SerializeField, UnityEngine.Header("Tilt Backward Time Ratio"), UnityEngine.Range(1, 10)] public float tiltBackwardTimeRatio = 1;
-    [UnityEngine.SerializeField, UnityEngine.Header("Tilt Forward delay Ratio"), UnityEngine.Range(0, 10)] public float tiltForwardDelayRatio = 1;
-    [UnityEngine.SerializeField, UnityEngine.Header("Tilt Forward  Time Ratio"), UnityEngine.Range(1, 10)] public float tiltForwardTimeRatio = 1;
-    public bool doubleStock = false;
-    public double startClockTimeLeftTilt = 0;
-    public double startClockTimeRightTilt = 0;
-    public double leftTiltDriveTimeBackward = 0;
-    public double leftTiltDriveTimeForward = 0;
-    public double rightTiltDriveTimeBackward = 0;
-    public double rightTiltDriveTimeForward = 0;
-    public double leftTiltDelayTimeBackward = 0;
-    public double leftTiltDelayTimeForward = 0;
-    public double rightTiltDelayTimeBackward = 0;
-    public double rightTiltDelayTimeForward = 0;
+    [UnityEngine.Header("Position Unit (deg), Absolute, Backward Positive, Forward Negative")]
+    [UnityEngine.SerializeField, UnityEngine.Range(0, 10)] public int wait1 = 0;
+    [UnityEngine.SerializeField, UnityEngine.Range(-10, 10)] public int position1 = 2;
+    [UnityEngine.SerializeField, UnityEngine.Range(1, 10)] public int duration1 = 1;
+     [UnityEngine.SerializeField, UnityEngine.Range(0, 10)] public int wait2 = 0;
+    [UnityEngine.SerializeField, UnityEngine.Range(-10, 10)] public int position2 = -7;
+    [UnityEngine.SerializeField, UnityEngine.Range(1, 10)] public float duration2 = 1;
+    [UnityEngine.SerializeField, UnityEngine.Range(0, 200)] public int waitFirstLeft = 0;
+    [UnityEngine.SerializeField, UnityEngine.Range(0, 200)] public int waitFirstRight = 0;
+    
     //出力パルス（送信）
     private int[] targetPulseUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
     private int[] targetPulseDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
@@ -355,8 +385,8 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
     {
         //目標パルスを整数型で格納
         if (this.activateLeftTilt) {
-            this.targetPulseUp1[0] = (int)(-this.tiltBackwardScaled / this.degreePerPulse);
-            this.targetPulseDown1[0] = (int)(-this.tiltForwardScaled / this.degreePerPulse);
+            this.targetPulseUp1[0] = (int)(-this.position1 / this.degreePerPulse);
+            this.targetPulseDown1[0] = (int)(-this.position2 / this.degreePerPulse);
         }
         else {
             this.targetPulseUp1[0] = 0;
@@ -365,8 +395,8 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
         this.targetPulseUp1[1] = 0;
         this.targetPulseDown1[1] = 0;
         if (this.activateRightTilt) {
-            this.targetPulseUp1[2] = (int)(this.tiltBackwardScaled / this.degreePerPulse);
-            this.targetPulseDown1[2] = (int)(this.tiltForwardScaled / this.degreePerPulse);
+            this.targetPulseUp1[2] = (int)(this.position1 / this.degreePerPulse);
+            this.targetPulseDown1[2] = (int)(this.position2 / this.degreePerPulse);
         }
         else {
             this.targetPulseUp1[2] = 0;
@@ -380,38 +410,88 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
         this.targetPulseDown1[5] = 0;
         this.seatRotationPulse = 0;
         if (this.activateLeftTilt) {
-            this.leftTiltDriveTimeBackward = this.period * (this.tiltBackwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
-            this.driveTimeUp1[0] = (int)(this.leftTiltDriveTimeBackward * 1000f);
-            this.leftTiltDriveTimeForward = this.period * (this.tiltForwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
-            this.driveTimeDown1[0] = (int)(this.leftTiltDriveTimeForward * 1000f);
-            this.delayTimeUp1[0] = (int)(this.leftTiltDelayTimeBackward * 1000f);
-            this.leftTiltDelayTimeForward = this.period * (this.tiltForwardDelayRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
-            this.delayTimeDown1[0] = (int)(this.leftTiltDelayTimeForward * 1000f);
+            this.driveTimeUp1[0]   = (int) (this.period * (float)(this.duration1) / (float)(this.wait1 + this.duration1 + this.wait2 + this.duration2) * 1000f);
+            this.driveTimeDown1[0] = (int) (this.period * (float)(this.duration2) / (float)(this.wait1 + this.duration1 + this.wait2 + this.duration2) * 1000f);
+            this.delayTimeUp1[0]   = (int) (this.period * (float)(this.wait1)     / (float)(this.wait1 + this.duration1 + this.wait2 + this.duration2) * 1000f);
+            this.delayTimeDown1[0] = (int) (this.period * (float)(this.wait1)     / (float)(this.wait1 + this.duration1 + this.wait2 + this.duration2) * 1000f);
         }
         else {
             this.driveTimeUp1[0] = 0;
             this.driveTimeDown1[0] = 0;
         }
         if (this.activateRightTilt) {
-            this.rightTiltDriveTimeBackward = this.period * (this.tiltBackwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
-            this.driveTimeUp1[2] = (int)(this.rightTiltDriveTimeBackward * 1000f);
-            this.rightTiltDriveTimeForward = this.period * (this.tiltForwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
-            this.driveTimeDown1[2] = (int)(this.rightTiltDriveTimeForward * 1000f);
-            this.delayTimeUp1[2] = (int)(this.rightTiltDelayTimeBackward * 1000f);
-            this.rightTiltDelayTimeForward = this.period * (this.tiltForwardDelayRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
-            this.delayTimeDown1[2] = (int)(this.rightTiltDelayTimeForward * 1000f);
+            this.driveTimeUp1[2]   = (int) (this.period * (float)(this.duration1) / (float)(this.wait1 + this.duration1 + this.wait2 + this.duration2) * 1000f);
+            this.driveTimeDown1[2] = (int) (this.period * (float)(this.duration2) / (float)(this.wait1 + this.duration1 + this.wait2 + this.duration2) * 1000f);
+            this.delayTimeUp1[2]   = (int) (this.period * (float)(this.wait1)     / (float)(this.wait1 + this.duration1 + this.wait2 + this.duration2) * 1000f);
+            this.delayTimeDown1[2] = (int) (this.period * (float)(this.wait1)     / (float)(this.wait1 + this.duration1 + this.wait2 + this.duration2) * 1000f);
         }
         else {
             this.driveTimeUp1[2] = 0;
             this.driveTimeDown1[2] = 0;
         }
         
-        // this.startClockTimeLeftTilt = this.period*1.0/10.0;
-        this.startClockTimeLeftTilt = this.period*0.0/10.0;
-        this.delayTimeFirst[0] = (int)(startClockTimeLeftTilt * 1000.0);
-        // this.startClockTimeRightTilt = this.period*6.0/10.0;
-        this.startClockTimeRightTilt = this.period*5.0/10.0;
-        this.delayTimeFirst[2] = (int)(startClockTimeRightTilt * 1000.0);
+        this.delayTimeFirst[0] = (int)((float)this.waitFirstLeft/100f * 1000f);
+        this.delayTimeFirst[2] = (int)((float)this.waitFirstRight/100f * 1000f);
+
+        // //目標パルスを整数型で格納
+        // if (this.activateLeftTilt) {
+        //     this.targetPulseUp1[0] = (int)(-this.tiltBackwardScaled / this.degreePerPulse);
+        //     this.targetPulseDown1[0] = (int)(-this.tiltForwardScaled / this.degreePerPulse);
+        // }
+        // else {
+        //     this.targetPulseUp1[0] = 0;
+        //     this.targetPulseDown1[0] = 0;
+        // }
+        // this.targetPulseUp1[1] = 0;
+        // this.targetPulseDown1[1] = 0;
+        // if (this.activateRightTilt) {
+        //     this.targetPulseUp1[2] = (int)(this.tiltBackwardScaled / this.degreePerPulse);
+        //     this.targetPulseDown1[2] = (int)(this.tiltForwardScaled / this.degreePerPulse);
+        // }
+        // else {
+        //     this.targetPulseUp1[2] = 0;
+        //     this.targetPulseDown1[2] = 0;
+        // }
+        // this.targetPulseUp1[3] = 0;
+        // this.targetPulseDown1[3] = 0;
+        // this.targetPulseUp1[4] = 0;
+        // this.targetPulseDown1[4] = 0;
+        // this.targetPulseUp1[5] = 0;
+        // this.targetPulseDown1[5] = 0;
+        // this.seatRotationPulse = 0;
+        // if (this.activateLeftTilt) {
+        //     this.leftTiltDriveTimeBackward = this.period * (this.tiltBackwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
+        //     this.driveTimeUp1[0] = (int)(this.leftTiltDriveTimeBackward * 1000f);
+        //     this.leftTiltDriveTimeForward = this.period * (this.tiltForwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
+        //     this.driveTimeDown1[0] = (int)(this.leftTiltDriveTimeForward * 1000f);
+        //     this.delayTimeUp1[0] = (int)(this.leftTiltDelayTimeBackward * 1000f);
+        //     this.leftTiltDelayTimeForward = this.period * (this.tiltForwardDelayRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
+        //     this.delayTimeDown1[0] = (int)(this.leftTiltDelayTimeForward * 1000f);
+        // }
+        // else {
+        //     this.driveTimeUp1[0] = 0;
+        //     this.driveTimeDown1[0] = 0;
+        // }
+        // if (this.activateRightTilt) {
+        //     this.rightTiltDriveTimeBackward = this.period * (this.tiltBackwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
+        //     this.driveTimeUp1[2] = (int)(this.rightTiltDriveTimeBackward * 1000f);
+        //     this.rightTiltDriveTimeForward = this.period * (this.tiltForwardTimeRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
+        //     this.driveTimeDown1[2] = (int)(this.rightTiltDriveTimeForward * 1000f);
+        //     this.delayTimeUp1[2] = (int)(this.rightTiltDelayTimeBackward * 1000f);
+        //     this.rightTiltDelayTimeForward = this.period * (this.tiltForwardDelayRatio) / (this.tiltBackwardTimeRatio + this.tiltForwardDelayRatio + this.tiltForwardTimeRatio);
+        //     this.delayTimeDown1[2] = (int)(this.rightTiltDelayTimeForward * 1000f);
+        // }
+        // else {
+        //     this.driveTimeUp1[2] = 0;
+        //     this.driveTimeDown1[2] = 0;
+        // }
+        
+        // // this.startClockTimeLeftTilt = this.period*1.0/10.0;
+        // this.startClockTimeLeftTilt = this.period*0.0/10.0;
+        // this.delayTimeFirst[0] = (int)(startClockTimeLeftTilt * 1000.0);
+        // // this.startClockTimeRightTilt = this.period*6.0/10.0;
+        // this.startClockTimeRightTilt = this.period*5.0/10.0;
+        // this.delayTimeFirst[2] = (int)(startClockTimeRightTilt * 1000.0);
     }
 
     private System.Threading.Thread th = null;
@@ -482,6 +562,8 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
             // this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.scaledLength.stockExtendTopPoint, 0);
             this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
             this.stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
+            this.windLeft.initWind(this.esp32Wind, this.period);
+            this.windRight.initWind(this.esp32Wind, this.period);
             this.trekkingTimer = new System.Timers.Timer(10);
             this.trekkingTimer.AutoReset = true;
             this.trekkingTimer.Elapsed += this.timerCallback;
@@ -521,6 +603,8 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
                 this.coolingStatus = CoolingStatus.Readied;
             };
             this.coolingTimer.Start();
+
+            this.esp32Wind.SendText("Se");
         }
         this.pauseFlag = true;
         this.status = Status.stop;

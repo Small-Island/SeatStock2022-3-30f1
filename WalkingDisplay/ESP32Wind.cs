@@ -6,12 +6,11 @@
 // using System.Text;
 // using UnityEngine.AddressableAssets;
 
-public class ESP32Main : UnityEngine.MonoBehaviour {
-    public string portName = "COM3";    
-    public int baudRate = 9600;
+public class ESP32Wind : UnityEngine.MonoBehaviour {
+    public string portName = "COM5";    
+    public int baudRate = 115000;
     private System.IO.Ports.SerialPort client;
     public string sendText;
-    [UnityEngine.TextArea] public string log;
 
     void Start() {
         this.client = new System.IO.Ports.SerialPort(portName, baudRate, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One);
@@ -23,7 +22,6 @@ public class ESP32Main : UnityEngine.MonoBehaviour {
         }
         catch (System.IO.IOException e) {
             UnityEngine.Debug.Log(e.ToString());
-            this.log = e.ToString() + "\n" + this.log;
         }
     }
 
@@ -37,22 +35,6 @@ public class ESP32Main : UnityEngine.MonoBehaviour {
             }
             catch (System.InvalidOperationException e) {
                 UnityEngine.Debug.Log(e.ToString());
-                this.log = e.ToString() + "\n" + this.log;
-            }
-        }
-        UnityEngine.Debug.Log(this.sendText);
-    }
-
-    public void Write() {
-        byte[] sendByte = System.Text.Encoding.ASCII.GetBytes(this.sendText + "\n");//送信する文字列をbyteに変換
-        if (this.client != null)
-        {
-            try {
-                this.client.Write(sendByte, 0, sendByte.Length);//送信
-            }
-            catch (System.InvalidOperationException e) {
-                UnityEngine.Debug.Log(e.ToString());
-                this.log = e.ToString() + "\n" + this.log;
             }
         }
         UnityEngine.Debug.Log(this.sendText);
