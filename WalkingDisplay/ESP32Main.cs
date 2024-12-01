@@ -40,7 +40,7 @@ public class ESP32Main : UnityEngine.MonoBehaviour {
                 this.log = e.ToString() + "\n" + this.log;
             }
         }
-        UnityEngine.Debug.Log(this.sendText);
+        // UnityEngine.Debug.Log(this.sendText);
     }
 
     public void Write() {
@@ -55,6 +55,6 @@ public class ESP32Main : UnityEngine.MonoBehaviour {
                 this.log = e.ToString() + "\n" + this.log;
             }
         }
-        UnityEngine.Debug.Log(this.sendText);
+        // UnityEngine.Debug.Log(this.sendText);
     }
 }

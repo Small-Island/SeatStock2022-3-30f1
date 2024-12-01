@@ -6,6 +6,8 @@ public class VideoControl : MonoBehaviour
 {
     public UnityEngine.Video.VideoPlayer videoPlayer;
     public UnityEngine.AudioSource audioSource;
+
+    [UnityEngine.SerializeField, UnityEngine.Range(0f, 180f)] public float startPoint = 0f;
     // public UnityEngine.GameObject gameObject;
     // Start is called before the first frame update
     void Start()
@@ -23,6 +25,7 @@ public class VideoControl : MonoBehaviour
 
     public void Play() {
         // this.videoPlayer.Stop();
+        this.videoPlayer.time = this.startPoint;
         this.videoPlayer.Play();
         this.audioSource.Play();
         // this.gameObject.transform.position = new UnityEngine.Vector3(0, 0, 0);
