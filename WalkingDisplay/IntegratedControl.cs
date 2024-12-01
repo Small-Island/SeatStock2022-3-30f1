@@ -38,6 +38,7 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
         private double period;
         private int waitFirstEpos;
         public bool activate;
+        [UnityEngine.SerializeField, Range(0.25f, 1.75f)] public float periodScale = 1;
         public bool useStiffness;
         public bool useVibro;
         // public bool yaw = false;
@@ -109,7 +110,7 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
             this.motion1Index = 0;
             this.motion2Index = 0;
             this.motion3Index = 0;
-            this.period = arg_period;
+            this.period = arg_period * this.periodScale;
             this.waitFirstEpos = arg_waitFirstEpos;
             // this.position1 = arg_position1;
             // this.position2 = arg_position2;
@@ -124,7 +125,7 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
             this.motion1Index = 0;
             this.motion2Index = 0;
             this.motion3Index = 0;
-            this.period = arg_period;
+            this.period = arg_period * this.periodScale;
             this.waitFirstEpos = arg_waitFirstEpos;
             // this.position1 = arg_position1;
             // this.position2 = arg_position2;
@@ -145,7 +146,7 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
             this.motion1Index = 0;
             this.motion2Index = 0;
             this.motion3Index = 0;
-            this.period = arg_period;
+            this.period = arg_period * this.periodScale;
             this.waitFirstEpos = arg_waitFirstEpos;
             this.motionCount = 2;
         }
@@ -583,35 +584,6 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
             this.esp32Main.SendText(this.sendText);
 
             this.clockTime = 0;
-            // this.lifter.init(this.epos4Main.lifter, this.period/2, this.waitFirstEpos, this.scaledLength.lift, 0);
-            // this.leftPedalYaw.init(this.epos4Main.leftPedalYaw, this.period, this.waitFirstEpos, -this.scaledLength.pedalYaw, this.scaledLength.pedalYaw);
-            // this.leftPedal.init(this.epos4Main.leftPedal, this.period, this.waitFirstEpos, this.scaledLength.pedal, 0);
-            // this.leftSlider.init(this.epos4Main.leftSlider, this.period, this.waitFirstEpos, this.scaledLength.legForward, -this.scaledLength.legBackward);
-            // this.rightPedalYaw.init(this.epos4Main.rightPedalYaw, this.period, this.waitFirstEpos, -this.scaledLength.pedalYaw, this.scaledLength.pedalYaw);
-            // this.rightPedal.init(this.epos4Main.rightPedal, this.period, this.waitFirstEpos, this.scaledLength.pedal, 0);
-            // this.rightSlider.init(this.epos4Main.rightSlider, this.period, this.waitFirstEpos, this.scaledLength.legForward, -this.scaledLength.legBackward);
-            // this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.waitFirstEpos, this.scaledLength.stockExtendTopPoint, this.scaledLength.stockExtendPokePoint, 0);
-            // this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.waitFirstEpos, this.scaledLength.stockExtendTopPoint, this.scaledLength.stockExtendPokePoint, 0);
-            // this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.waitFirstEpos, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
-            // this.stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.waitFirstEpos, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
-            // this.windLeft.initWind(this.esp32Wind, this.period, this.waitFirstEpos);
-            // this.windRight.initWind(this.esp32Wind, this.period, this.waitFirstEpos);
-
-            for (int i = 0; i < this.timeScheduleSet.Length; i++) {
-                this.timeScheduleSet[i].lifter.init(this.epos4Main.lifter, this.period/2, this.waitFirstEpos, this.scaledLength.lift, 0);
-                this.timeScheduleSet[i].leftPedalYaw.init(this.epos4Main.leftPedalYaw, this.period, this.waitFirstEpos, -this.scaledLength.pedalYaw, this.scaledLength.pedalYaw);
-                this.timeScheduleSet[i].leftPedal.init(this.epos4Main.leftPedal, this.period, this.waitFirstEpos, this.scaledLength.pedal, 0);
-                this.timeScheduleSet[i].leftSlider.init(this.epos4Main.leftSlider, this.period, this.waitFirstEpos, this.scaledLength.legForward, -this.scaledLength.legBackward);
-                this.timeScheduleSet[i].rightPedalYaw.init(this.epos4Main.rightPedalYaw, this.period, this.waitFirstEpos, -this.scaledLength.pedalYaw, this.scaledLength.pedalYaw);
-                this.timeScheduleSet[i].rightPedal.init(this.epos4Main.rightPedal, this.period, this.waitFirstEpos, this.scaledLength.pedal, 0);
-                this.timeScheduleSet[i].rightSlider.init(this.epos4Main.rightSlider, this.period, this.waitFirstEpos, this.scaledLength.legForward, -this.scaledLength.legBackward);
-                this.timeScheduleSet[i].stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.waitFirstEpos, this.scaledLength.stockExtendTopPoint, this.scaledLength.stockExtendPokePoint, 0);
-                this.timeScheduleSet[i].stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.waitFirstEpos, this.scaledLength.stockExtendTopPoint, this.scaledLength.stockExtendPokePoint, 0);
-                this.timeScheduleSet[i].stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.waitFirstEpos, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
-                this.timeScheduleSet[i].stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.waitFirstEpos, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
-                this.timeScheduleSet[i].windLeft.initWind(this.esp32Wind, this.period, this.waitFirstEpos);
-                this.timeScheduleSet[i].windRight.initWind(this.esp32Wind, this.period, this.waitFirstEpos);
-            }
             this.trekkingTimer = new System.Timers.Timer(10);
             this.trekkingTimer.AutoReset = true;
             this.trekkingTimer.Elapsed += this.timerCallback;
@@ -619,8 +591,35 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
             this.walkStopTimer.Start();
         };
 
+        // this.lifter.init(this.epos4Main.lifter, this.period/2, this.waitFirstEpos, this.scaledLength.lift, 0);
+        // this.leftPedalYaw.init(this.epos4Main.leftPedalYaw, this.period, this.waitFirstEpos, -this.scaledLength.pedalYaw, this.scaledLength.pedalYaw);
+        // this.leftPedal.init(this.epos4Main.leftPedal, this.period, this.waitFirstEpos, this.scaledLength.pedal, 0);
+        // this.leftSlider.init(this.epos4Main.leftSlider, this.period, this.waitFirstEpos, this.scaledLength.legForward, -this.scaledLength.legBackward);
+        // this.rightPedalYaw.init(this.epos4Main.rightPedalYaw, this.period, this.waitFirstEpos, -this.scaledLength.pedalYaw, this.scaledLength.pedalYaw);
+        // this.rightPedal.init(this.epos4Main.rightPedal, this.period, this.waitFirstEpos, this.scaledLength.pedal, 0);
+        // this.rightSlider.init(this.epos4Main.rightSlider, this.period, this.waitFirstEpos, this.scaledLength.legForward, -this.scaledLength.legBackward);
+        // this.stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.waitFirstEpos, this.scaledLength.stockExtendTopPoint, this.scaledLength.stockExtendPokePoint, 0);
+        // this.stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.waitFirstEpos, this.scaledLength.stockExtendTopPoint, this.scaledLength.stockExtendPokePoint, 0);
+        // this.stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.waitFirstEpos, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
+        // this.stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.waitFirstEpos, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
+        // this.windLeft.initWind(this.esp32Wind, this.period, this.waitFirstEpos);
+        // this.windRight.initWind(this.esp32Wind, this.period, this.waitFirstEpos);
+
         float WholeExperienceTime = 0;
         for (int i = 0; i < this.timeScheduleSet.Length; i++) {
+            this.timeScheduleSet[i].lifter.init(this.epos4Main.lifter, this.period, this.waitFirstEpos, this.scaledLength.lift, 0);
+            this.timeScheduleSet[i].leftPedalYaw.init(this.epos4Main.leftPedalYaw, this.period, this.waitFirstEpos, -this.scaledLength.pedalYaw, this.scaledLength.pedalYaw);
+            this.timeScheduleSet[i].leftPedal.init(this.epos4Main.leftPedal, this.period, this.waitFirstEpos, this.scaledLength.pedal, 0);
+            this.timeScheduleSet[i].leftSlider.init(this.epos4Main.leftSlider, this.period, this.waitFirstEpos, this.scaledLength.legForward, -this.scaledLength.legBackward);
+            this.timeScheduleSet[i].rightPedalYaw.init(this.epos4Main.rightPedalYaw, this.period, this.waitFirstEpos, -this.scaledLength.pedalYaw, this.scaledLength.pedalYaw);
+            this.timeScheduleSet[i].rightPedal.init(this.epos4Main.rightPedal, this.period, this.waitFirstEpos, this.scaledLength.pedal, 0);
+            this.timeScheduleSet[i].rightSlider.init(this.epos4Main.rightSlider, this.period, this.waitFirstEpos, this.scaledLength.legForward, -this.scaledLength.legBackward);
+            this.timeScheduleSet[i].stockLeftExtend.init(this.epos4Main.stockLeftExtend, this.period, this.waitFirstEpos, this.scaledLength.stockExtendTopPoint, this.scaledLength.stockExtendPokePoint, 0);
+            this.timeScheduleSet[i].stockRightExtend.init(this.epos4Main.stockRightExtend, this.period, this.waitFirstEpos, this.scaledLength.stockExtendTopPoint, this.scaledLength.stockExtendPokePoint, 0);
+            this.timeScheduleSet[i].stockLeftSlider.init(this.epos4Main.stockLeftSlider, this.period, this.waitFirstEpos, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
+            this.timeScheduleSet[i].stockRightSlider.init(this.epos4Main.stockRightSlider, this.period, this.waitFirstEpos, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
+            this.timeScheduleSet[i].windLeft.initWind(this.esp32Wind, this.period, this.waitFirstEpos);
+            this.timeScheduleSet[i].windRight.initWind(this.esp32Wind, this.period, this.waitFirstEpos);
             WholeExperienceTime +=  this.timeScheduleSet[i].ExperienceTime;
         }
         this.walkStopTimer = new System.Timers.Timer(WholeExperienceTime*1000f);
