@@ -11,7 +11,7 @@ public class ESP32Main : UnityEngine.MonoBehaviour {
     public int baudRate = 9600;
     private System.IO.Ports.SerialPort client;
     public string sendText;
-    [UnityEngine.TextArea] public string log;
+    [UnityEngine.SerializeField, UnityEngine.TextArea] public string log;
 
     void Start() {
         this.client = new System.IO.Ports.SerialPort(portName, baudRate, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One);

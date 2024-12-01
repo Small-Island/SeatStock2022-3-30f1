@@ -500,7 +500,7 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
     public ESP32Main esp32Main;
     private float degreePerPulse = 0.0072f; //[degrees/pulse]
     public string sendText;
-    [UnityEngine.SerializeField, UnityEngine.Range(0, 60)] public float delaySteppingMotor = 0;
+    [UnityEngine.SerializeField, UnityEngine.Range(1, 60)] public float delaySteppingMotor = 0;
     [UnityEngine.Header("Position Unit (deg), Absolute, Backward Positive, Forward Negative")]
     [UnityEngine.SerializeField, UnityEngine.Range(-20, 20)] public int position1 = 2;
     [UnityEngine.SerializeField, UnityEngine.Range(1, 10)] public int duration1 = 1;
