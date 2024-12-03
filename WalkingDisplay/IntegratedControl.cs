@@ -379,7 +379,7 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
 
     [System.Serializable] public class TimeScheduleSet {
         public float ExperienceTime;
-        [UnityEngine.SerializeField, UnityEngine.Header("Unit (s)"), UnityEngine.Range(2f, 10f)] public float period = 10;
+        [UnityEngine.SerializeField, UnityEngine.Header("Unit (s)"), UnityEngine.Range(0.5f, 10f)] public float period = 10;
         public TimeSchedule lifter;
         public TimeSchedule leftPedal;
         public TimeSchedule leftPedalYaw;
@@ -393,6 +393,7 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
         public TimeSchedule stockRightSlider;
         public TimeSchedule windLeft;
         public TimeSchedule windRight;
+        public OrientalSchedule orientalMotor;
     }
 
     public TimeScheduleSet[] timeScheduleSet;
@@ -482,6 +483,9 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
         this.timeScheduleSet[i].windLeft.timerCallbackWind(this.clockTime - this.clockTimeReset, "L");
         if (this.status == Status.stop) return;
         this.timeScheduleSet[i].windRight.timerCallbackWind(this.clockTime - this.clockTimeReset, "R");
+
+        if (this.status == Status.stop) return;
+        this.timeScheduleSet[i].orientalMotor.timerCallback(this.clockTime - this.clockTimeReset, this);
     }
 
 
@@ -500,7 +504,7 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
     public ESP32Main esp32Main;
     private float degreePerPulse = 0.0072f; //[degrees/pulse]
     public string sendText;
-    [UnityEngine.SerializeField, UnityEngine.Range(1, 60)] public float delaySteppingMotor = 0;
+    [UnityEngine.SerializeField, UnityEngine.Range(0.01f, 60f)] public float delaySteppingMotor = 0;
     [UnityEngine.Header("Position Unit (deg), Absolute, Backward Positive, Forward Negative")]
     [UnityEngine.SerializeField, UnityEngine.Range(-20, 20)] public int position1 = 2;
     [UnityEngine.SerializeField, UnityEngine.Range(1, 10)] public int duration1 = 1;
@@ -636,6 +640,120 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
         // this.delayTimeFirst[2] = (int)(startClockTimeRightTilt * 1000.0);
     }
 
+    [System.Serializable] public class OrientalSchedule {
+        [UnityEngine.SerializeField, ReadOnly] public bool timerCallBacked = false;
+        [UnityEngine.SerializeField] public bool activate = false;
+        [UnityEngine.SerializeField, UnityEngine.Header("Unit (s)"), UnityEngine.Range(0f, 20f)] public float delay = 5;
+        [UnityEngine.SerializeField, ReadOnly, UnityEngine.Header("Unit (s)"), UnityEngine.Range(2f, 20f)] public float period = 5;
+        [UnityEngine.Header("Position Unit (deg), Absolute, Backward Positive, Forward Negative")]
+        [UnityEngine.SerializeField, UnityEngine.Range(-20, 20)] public int position1left = 2;
+        [UnityEngine.SerializeField, UnityEngine.Range(1, 10)] public int duration1left = 1;
+        [UnityEngine.SerializeField, UnityEngine.Range(0, 10)] public int wait1left = 0;
+        [UnityEngine.SerializeField, UnityEngine.Range(-20, 20)] public int position2left = -7;
+        [UnityEngine.SerializeField, UnityEngine.Range(1, 10)] public float duration2left = 1;
+        [UnityEngine.SerializeField, UnityEngine.Range(0, 10)] public int wait2left = 0;
+        [UnityEngine.SerializeField, UnityEngine.Range(-20, 20)] public int position1right = 2;
+        [UnityEngine.SerializeField, UnityEngine.Range(1, 10)] public int duration1right = 1;
+        [UnityEngine.SerializeField, UnityEngine.Range(0, 10)] public int wait1right = 0;
+        [UnityEngine.SerializeField, UnityEngine.Range(-20, 20)] public int position2right = -7;
+        [UnityEngine.SerializeField, UnityEngine.Range(1, 10)] public float duration2right = 1;
+        [UnityEngine.SerializeField, UnityEngine.Range(0, 10)] public int wait2right = 0;
+        [UnityEngine.SerializeField, UnityEngine.Range(0, 200)] public int waitFirstLeft = 0;
+        [UnityEngine.SerializeField, UnityEngine.Range(0, 200)] public int waitFirstRight = 0;
+
+        private string sendText;
+        private float degreePerPulse = 0.0072f; //[degrees/pulse]
+        private int[] targetPulseUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
+        private int[] targetPulseDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
+        //駆動時間（送信）
+        private int[] driveTimeUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の駆動時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+        private int[] driveTimeDown1 = new int[6] {0, 0, 0, 0, 0, 0 };//下降／後退時の駆動時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+        //待機時間（送信）
+        private int[] delayTimeUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進始めモータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+        private int[] delayTimeDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退始めモータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+        private int[] delayTimeFirst = new int[6] { 0, 0, 0, 0, 0, 0 };//一歩目モータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+        private int seatRotationPulse;
+
+        public void init(float arg_period) {
+            this.timerCallBacked = false;
+            this.degreePerPulse = 0.0072f; //[degrees/pulse]
+            this.targetPulseUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
+            this.targetPulseDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退時の目標パルス（左ペダル、左スライダ、右ペダル、右スライダ）[pulse]
+            //駆動時間（送信）
+            this.driveTimeUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進時の駆動時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+            this.driveTimeDown1 = new int[6] {0, 0, 0, 0, 0, 0 };//下降／後退時の駆動時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+            //待機時間（送信）
+            this.delayTimeUp1 = new int[6] { 0, 0, 0, 0, 0, 0 };//上昇／前進始めモータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+            this.delayTimeDown1 = new int[6] { 0, 0, 0, 0, 0, 0 };//下降／後退始めモータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+            this.delayTimeFirst = new int[6] { 0, 0, 0, 0, 0, 0 };//一歩目モータ停止時間（左ペダル、左スライダ、右ペダル、右スライダ）[ms]
+            this.seatRotationPulse = 0;
+            this.period = arg_period;
+        }
+
+        public void timerCallback(double arg_clockTime, IntegratedControl arg_integratedControl) {
+            if (!this.activate) return;
+            if (!this.timerCallBacked) {
+                if (arg_clockTime > this.delay) {
+                    this.timerCallBacked = true;
+                    this.send2ESP(arg_integratedControl);
+                }
+            }
+        }
+
+        private void targetCalculate() {
+            //目標パルスを整数型で格納
+            this.targetPulseUp1[0]   = (int)(-this.position1left / this.degreePerPulse);
+            this.targetPulseDown1[0] = (int)(-this.position2left / this.degreePerPulse);
+            this.targetPulseUp1[1]   = 0;
+            this.targetPulseDown1[1] = 0;
+            this.targetPulseUp1[2]   = (int)(this.position1right / this.degreePerPulse);
+            this.targetPulseDown1[2] = (int)(this.position2right / this.degreePerPulse);
+            this.targetPulseUp1[3]   = 0;
+            this.targetPulseDown1[3] = 0;
+            this.targetPulseUp1[4]   = 0;
+            this.targetPulseDown1[4] = 0;
+            this.targetPulseUp1[5]   = 0;
+            this.targetPulseDown1[5] = 0;
+            this.seatRotationPulse   = 0;
+            this.driveTimeUp1[0]     = (int) (this.period * (float)(this.duration1left) / (float)(this.wait1left + this.duration1left + this.wait2left + this.duration2left) * 1000f);
+            this.driveTimeDown1[0]   = (int) (this.period * (float)(this.duration2left) / (float)(this.wait1left + this.duration1left + this.wait2left + this.duration2left) * 1000f);
+            this.delayTimeUp1[0]     = (int) (this.period * (float)(this.wait1left)     / (float)(this.wait1left + this.duration1left + this.wait2left + this.duration2left) * 1000f);
+            this.delayTimeDown1[0]   = (int) (this.period * (float)(this.wait2left)     / (float)(this.wait1left + this.duration1left + this.wait2left + this.duration2left) * 1000f);
+            this.driveTimeUp1[2]     = (int) (this.period * (float)(this.duration1right) / (float)(this.wait1right + this.duration1right + this.wait2right + this.duration2right) * 1000f);
+            this.driveTimeDown1[2]   = (int) (this.period * (float)(this.duration2right) / (float)(this.wait1right + this.duration1right + this.wait2right + this.duration2right) * 1000f);
+            this.delayTimeUp1[2]     = (int) (this.period * (float)(this.wait1right)     / (float)(this.wait1right + this.duration1right + this.wait2right + this.duration2right) * 1000f);
+            this.delayTimeDown1[2]   = (int) (this.period * (float)(this.wait2right)     / (float)(this.wait1right + this.duration1right + this.wait2right + this.duration2right) * 1000f);
+            
+            this.delayTimeFirst[0]   = (int)((float) this.period * (float)this.waitFirstLeft/100f * 1000f);
+            this.delayTimeFirst[2]   = (int)((float) this.period * (float)this.waitFirstRight/100f * 1000f);
+        }
+
+        public void send2ESP(IntegratedControl arg_integratedControl) {
+            if (arg_integratedControl.coolingStatus == IntegratedControl.CoolingStatus.NowCooling) return;
+            this.targetCalculate();//目標値計算
+            //送信するデータを文字列でまとめる
+            if (arg_integratedControl.coolingStatus == IntegratedControl.CoolingStatus.Readied) {
+                this.sendText = "start" + ",";
+            }
+            else if (arg_integratedControl.coolingStatus == IntegratedControl.CoolingStatus.OnMotion) {
+                this.sendText = "update" + ",";
+            }
+            for (int i = 0; i < 6; i++) {
+                this.sendText += this.targetPulseUp1[i].ToString() + "," + this.targetPulseDown1[i].ToString() + ",";
+                this.sendText += this.driveTimeUp1[i].ToString() + "," + this.driveTimeDown1[i].ToString() + ",";
+                this.sendText += this.delayTimeUp1[i].ToString() + "," + this.delayTimeDown1[i].ToString() + ",";
+                this.sendText += this.delayTimeFirst[i].ToString() + ",";
+            }
+            this.sendText += this.seatRotationPulse.ToString() + ",";
+            this.sendText += "/";//終わりの目印
+            arg_integratedControl.sendText = this.sendText;
+            arg_integratedControl.esp32Main.SendText(this.sendText);
+            arg_integratedControl.coolingStatus = IntegratedControl.CoolingStatus.OnMotion;
+            // this.delaySteppingMotorTimer.Stop();
+            // this.delaySteppingMotorTimer.Dispose();
+        }
+    }
+
     private System.Threading.Thread th = null;
     private System.Timers.Timer getActualPositionTimer;
     private float[,] data;
@@ -694,7 +812,7 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
                 }
                 this.sendText += this.seatRotationPulse.ToString() + ",";
                 this.sendText += "/";//終わりの目印
-                this.esp32Main.SendText(this.sendText);
+                // this.esp32Main.SendText(this.sendText);
                 this.coolingStatus = CoolingStatus.OnMotion;
                 this.delaySteppingMotorTimer.Stop();
                 this.delaySteppingMotorTimer.Dispose();
@@ -733,6 +851,7 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
             this.timeScheduleSet[i].stockRightSlider.init(this.epos4Main.stockRightSlider, this.timeScheduleSet[i].period, this.scaledLength.stockSlideForward, -this.scaledLength.stockSlideBackward);
             this.timeScheduleSet[i].windLeft.initWind(this.esp32Wind, this.timeScheduleSet[i].period);
             this.timeScheduleSet[i].windRight.initWind(this.esp32Wind, this.timeScheduleSet[i].period);
+            this.timeScheduleSet[i].orientalMotor.init(this.timeScheduleSet[i].period);
             WholeExperienceTime +=  this.timeScheduleSet[i].ExperienceTime;
         }
         this.walkStopTimer = new System.Timers.Timer(WholeExperienceTime*1000f);
