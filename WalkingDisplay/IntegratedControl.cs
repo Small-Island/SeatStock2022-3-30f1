@@ -36,7 +36,7 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
         private double initialPeriod;
         public double period;
         public bool activate;
-        [UnityEngine.SerializeField, Range(0.25f, 1.75f)] public float periodScale = 1;
+        [UnityEngine.SerializeField, Range(0.01f, 1.75f)] public float periodScale = 1;
         public bool useStiffness;
         public bool useVibro;
         // public bool yaw = false;
