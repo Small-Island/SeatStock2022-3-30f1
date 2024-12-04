@@ -440,7 +440,7 @@ public class Epos4Node {
         this.timerMoveToHome = new System.Timers.Timer(200);
         this.timerMoveToHome.AutoReset = true;
         this.timerMoveToHome.Elapsed += (sender, e) => {
-            if (System.Math.Abs(this.actualVelocity) > 100) {
+            if (System.Math.Abs(this.actualVelocity) > 500) {
                 UnityEngine.Debug.Log("still moving..");
                 return;
             }

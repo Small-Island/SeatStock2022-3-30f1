@@ -1054,7 +1054,8 @@ public class IntegratedControl : UnityEngine.MonoBehaviour {
         }
 
         if (this.videoStopFlag) {
-            this.videoControl.Stop();
+            // this.videoControl.Stop();
+            this.videoControl.Pause();
             this.videoStopFlag = false;
         }
 
